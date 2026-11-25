@@ -13,7 +13,7 @@ import {
   saveMenuRecipeIds,
   hasSeenTutorial,
   markTutorialSeen
-} from '../utils/store.js';
+} from '../utils/store.js?v=20261126p';
 import { createTutorialCardHtml, spawnFloatText } from '../utils/tutorial.js';
 import { showToast } from '../../../../shared/web-ui.js';
 

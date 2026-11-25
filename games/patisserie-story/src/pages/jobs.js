@@ -5,7 +5,7 @@ import { PART_TIME_JOBS } from '../data/part_time_jobs.js';
 import { RECIPES } from '../data/recipes.js';
 import { computeShopBonuses } from '../data/shop_upgrades.js';
 import { getUnitCost } from '../data/kitchen_recipes.js';
-import { loadProgress, recordPartTimeJob } from '../utils/store.js';
+import { loadProgress, recordPartTimeJob } from '../utils/store.js?v=20261126p';
 import { spawnFloatText } from '../utils/tutorial.js';
 import { showToast } from '../../../../shared/web-ui.js';
 

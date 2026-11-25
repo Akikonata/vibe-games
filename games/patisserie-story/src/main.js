@@ -3,12 +3,12 @@
 
 import { mountStartPage } from './pages/start.js';
 import { mountIntroPage } from './pages/intro.js';
-import { mountHomePage } from './pages/home.js';
+import { mountHomePage } from './pages/home.js?v=20261126p';
 import { mountMapPage } from './pages/map.js';
 import { mountStoryPage } from './pages/story.js';
 import { mountMinigamePage } from './pages/minigame.js';
-import { mountShopPage } from './pages/shop.js';
-import { mountJobsPage } from './pages/jobs.js';
+import { mountShopPage } from './pages/shop.js?v=20261126p';
+import { mountJobsPage } from './pages/jobs.js?v=20261126p';
 import { mountRecipesPage } from './pages/recipes.js';
 
 const ROUTES = {

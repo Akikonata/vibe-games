@@ -3,7 +3,7 @@
 
 import { CHARACTERS } from '../data/characters.js';
 import { CUTSCENES } from '../data/cutscenes.js';
-import { getDashboardState, resetProgress } from '../utils/store.js';
+import { getDashboardState, resetProgress } from '../utils/store.js?v=20261126p';
 import { showToast, showConfirmDialog } from '../../../../shared/web-ui.js';
 
 export function mountHomePage(root, _params, { navigate }) {
