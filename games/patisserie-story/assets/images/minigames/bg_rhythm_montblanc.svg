@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="rmWall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5B3520"/>
+      <stop offset="60%" stop-color="#875434"/>
+      <stop offset="100%" stop-color="#A8714A"/>
+    </linearGradient>
+    <linearGradient id="rmSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D9C5A8"/>
+      <stop offset="100%" stop-color="#F6E9D4"/>
+    </linearGradient>
+    <linearGradient id="rmMarble" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFBF2"/>
+      <stop offset="30%" stop-color="#EFE0C9"/>
+      <stop offset="100%" stop-color="#D1B48E"/>
+    </linearGradient>
+  </defs>
+  <!-- Warm Parisian chestnut salon paneling -->
+  <rect width="640" height="330" fill="url(#rmWall)"/>
+  <!-- Three arched salon windows showing soft Alpine/Parisian twilight & gold frames -->
+  <g>
+    <path d="M 32 325 L 32 102 A 74 74 0 0 1 180 102 L 180 325 Z" fill="url(#rmSky)" fill-opacity="0.22" stroke="#E8C284" stroke-width="4"/>
+    <path d="M 246 325 L 246 102 A 74 74 0 0 1 394 102 L 394 325 Z" fill="url(#rmSky)" fill-opacity="0.26" stroke="#E8C284" stroke-width="4"/>
+    <path d="M 460 325 L 460 102 A 74 74 0 0 1 608 102 L 608 325 Z" fill="url(#rmSky)" fill-opacity="0.22" stroke="#E8C284" stroke-width="4"/>
+  </g>
+  <!-- Subtle alpine snowy peaks silhouette inside arches -->
+  <path d="M 36 280 L 90 190 L 140 245 L 176 210 L 176 322 L 36 322 Z" fill="#FFF7E8" fill-opacity="0.16"/>
+  <path d="M 250 280 L 320 175 L 390 265 L 390 322 L 250 322 Z" fill="#FFF7E8" fill-opacity="0.2"/>
+  <path d="M 464 280 L 520 205 L 568 250 L 604 195 L 604 322 L 464 322 Z" fill="#FFF7E8" fill-opacity="0.16"/>
+  <!-- Decorative botanical olive garland across top -->
+  <path d="M 16 28 Q 160 64 320 28 Q 480 64 624 28" fill="none" stroke="#6B8E58" stroke-width="5" stroke-linecap="round"/>
+  <g fill="#84A96E" stroke="#3D5A31" stroke-width="1.5">
+    <ellipse cx="75" cy="40" rx="11" ry="6" transform="rotate(18 75 40)"/>
+    <ellipse cx="155" cy="48" rx="11" ry="6" transform="rotate(-10 155 48)"/>
+    <ellipse cx="245" cy="39" rx="11" ry="6" transform="rotate(-18 245 39)"/>
+    <ellipse cx="395" cy="39" rx="11" ry="6" transform="rotate(18 395 39)"/>
+    <ellipse cx="485" cy="48" rx="11" ry="6" transform="rotate(10 485 48)"/>
+    <ellipse cx="565" cy="40" rx="11" ry="6" transform="rotate(-18 565 40)"/>
+  </g>
+  <!-- Cream marble pastry counter -->
+  <rect x="0" y="324" width="640" height="156" fill="url(#rmMarble)"/>
+  <line x1="0" y1="324" x2="640" y2="324" stroke="#8C592B" stroke-width="4"/>
+  <!-- Marble veins -->
+  <g stroke="#C9A87E" stroke-opacity="0.45" stroke-width="2" fill="none">
+    <path d="M 40 358 Q 140 342 220 375"/>
+    <path d="M 300 350 Q 410 385 520 352"/>
+    <path d="M 120 420 Q 250 400 370 438"/>
+  </g>
+  <!-- Warm wood apron strip at bottom -->
+  <rect x="0" y="452" width="640" height="28" fill="#6E3E1E"/>
+</svg>

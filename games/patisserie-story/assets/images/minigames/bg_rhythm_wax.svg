@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="rwWall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3E1E0E"/>
+      <stop offset="55%" stop-color="#6B371A"/>
+      <stop offset="100%" stop-color="#8C4B24"/>
+    </linearGradient>
+    <linearGradient id="rwCounter" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C99156"/>
+      <stop offset="25%" stop-color="#A66B36"/>
+      <stop offset="100%" stop-color="#6E3E1A"/>
+    </linearGradient>
+    <radialGradient id="rwLantern" cx="50%" cy="30%" r="55%">
+      <stop offset="0%" stop-color="#FFE49C" stop-opacity="0.45"/>
+      <stop offset="65%" stop-color="#E58B32" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#3E1E0E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rwCopper" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8C3E16"/>
+      <stop offset="45%" stop-color="#E89A58"/>
+      <stop offset="100%" stop-color="#7A3412"/>
+    </linearGradient>
+  </defs>
+  <!-- Red-brick Bordeaux forge workshop wall -->
+  <rect width="640" height="330" fill="url(#rwWall)"/>
+  <!-- Subtle brick courses -->
+  <g stroke="#2E1408" stroke-opacity="0.32" stroke-width="2" fill="none">
+    <line x1="0" y1="48" x2="640" y2="48"/>
+    <line x1="0" y1="96" x2="640" y2="96"/>
+    <line x1="0" y1="144" x2="640" y2="144"/>
+    <line x1="0" y1="192" x2="640" y2="192"/>
+    <line x1="0" y1="240" x2="640" y2="240"/>
+    <line x1="0" y1="288" x2="640" y2="288"/>
+    <line x1="90" y1="0" x2="90" y2="48"/><line x1="250" y1="0" x2="250" y2="48"/><line x1="410" y1="0" x2="410" y2="48"/><line x1="560" y1="0" x2="560" y2="48"/>
+    <line x1="160" y1="48" x2="160" y2="96"/><line x1="320" y1="48" x2="320" y2="96"/><line x1="490" y1="48" x2="490" y2="96"/>
+    <line x1="100" y1="96" x2="100" y2="144"/><line x1="270" y1="96" x2="270" y2="144"/><line x1="430" y1="96" x2="430" y2="144"/><line x1="570" y1="96" x2="570" y2="144"/>
+    <line x1="180" y1="144" x2="180" y2="192"/><line x1="350" y1="144" x2="350" y2="192"/><line x1="510" y1="144" x2="510" y2="192"/>
+  </g>
+  <!-- Warm lantern glow -->
+  <rect width="640" height="340" fill="url(#rwLantern)"/>
+  <!-- Three arched copper forge alcoves aligning with 3 lanes -->
+  <g fill="#47210E" fill-opacity="0.52" stroke="#D49556" stroke-width="3" stroke-opacity="0.55">
+    <path d="M 32 325 L 32 105 A 74 74 0 0 1 180 105 L 180 325 Z"/>
+    <path d="M 246 325 L 246 105 A 74 74 0 0 1 394 105 L 394 325 Z"/>
+    <path d="M 460 325 L 460 105 A 74 74 0 0 1 608 105 L 608 325 Z"/>
+  </g>
+  <!-- Hanging brass copper shelf & small tools -->
+  <rect x="20" y="34" width="600" height="10" rx="5" fill="#B57438" stroke="#4A210D" stroke-width="2"/>
+  <!-- Decorative hanging copper ladles/whisk silhouettes -->
+  <g stroke="#E3A864" stroke-width="3" fill="url(#rwCopper)" opacity="0.72">
+    <line x1="106" y1="44" x2="106" y2="74"/><ellipse cx="106" cy="84" rx="14" ry="10"/>
+    <line x1="320" y1="44" x2="320" y2="74"/><ellipse cx="320" cy="84" rx="14" ry="10"/>
+    <line x1="534" y1="44" x2="534" y2="74"/><ellipse cx="534" cy="84" rx="14" ry="10"/>
+  </g>
+  <!-- Subtle golden vertical guide rails -->
+  <g stroke="#FFE09C" stroke-opacity="0.16" stroke-width="2" stroke-dasharray="8 8">
+    <line x1="106" y1="105" x2="106" y2="330"/>
+    <line x1="320" y1="105" x2="320" y2="330"/>
+    <line x1="534" y1="105" x2="534" y2="330"/>
+  </g>
+  <!-- Oak workbench counter -->
+  <rect x="0" y="324" width="640" height="156" fill="url(#rwCounter)"/>
+  <rect x="0" y="324" width="640" height="10" fill="#F0C68A" fill-opacity="0.55"/>
+  <line x1="0" y1="324" x2="640" y2="324" stroke="#47210E" stroke-width="4"/>
+  <!-- Carved wood counter panels -->
+  <g fill="none" stroke="#5E3014" stroke-opacity="0.45" stroke-width="3">
+    <rect x="22" y="352" width="168" height="108" rx="10"/>
+    <rect x="236" y="352" width="168" height="108" rx="10"/>
+    <rect x="450" y="352" width="168" height="108" rx="10"/>
+  </g>
+</svg>

@@ -1,0 +1,656 @@
+/* pages/shop/shop.css - 轻度胡闹厨房（Overcooked-Lite）可视化营业场景 */
+.page-shop .shop-wrap {
+  padding-top: 4px;
+}
+
+.page-shop .stats-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.page-shop .tier-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-shop .day-pill {
+  background: #5E3015;
+  color: #FCE6C2;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 499.5px;
+}
+
+.page-shop .stats-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.page-shop .stat-chip {
+  flex: 1;
+  background: #F6E9D7;
+  border: 1px solid #D9B68C;
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-shop .stat-label {
+  font-size: 11px;
+  color: #70492F;
+  font-weight: 600;
+}
+
+.page-shop .stat-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #9C4D1B;
+}
+
+.page-shop .tab-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.page-shop .tab-btn {
+  flex: 1;
+  text-align: center;
+  padding: 6px 0;
+  border-radius: 499.5px;
+  font-size: 12px;
+  background: #FFF9F0;
+  color: #6B3E1E;
+  border: 1.5px solid #CFA068;
+  font-weight: 700;
+}
+
+.page-shop .tab-btn.active {
+  background: linear-gradient(180deg, #C97A36, #964D1C);
+  color: #FFFBF4;
+  border-color: #F0C485;
+  box-shadow: 0 2.5px 0 #663010;
+}
+
+/* ==========================================
+   可视化厨房营业场景
+   ========================================== */
+.page-shop .kitchen-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #5E3015;
+  border: 1.5px solid #DFB06E;
+  border-radius: 9px;
+  padding: 6px 11px;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFF4DC;
+}
+
+.page-shop .hud-coins {
+  color: #FFD966;
+}
+
+/* 前厅 3 座位区 */
+.page-shop .cafe-dining {
+  display: flex;
+  gap: 6px;
+  background: linear-gradient(180deg, #EFE0CE 0%, #DEC3A2 100%);
+  border: 2px solid #9E6838;
+  border-radius: 11px;
+  padding: 7px 6px 5px;
+  margin-bottom: 7px;
+}
+
+.page-shop .seat-slot {
+  flex: 1;
+  min-height: 115px;
+  background: rgba(255, 251, 244, 0.72);
+  border: 1.5px solid #D4A97A;
+  border-radius: 9px;
+  padding: 5px 4px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-shop .seat-order-bubble {
+  width: 92%;
+  background: #FFFDF8;
+  border: 1.5px solid #C89662;
+  border-radius: 7px;
+  padding: 3px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 2px;
+  z-index: 3;
+}
+
+.page-shop .seat-order-img {
+  width: 28px;
+  height: 28px;
+}
+
+.page-shop .seat-patience-track {
+  width: 100%;
+  height: 5px;
+  background: #E8D5BC;
+  border-radius: 499.5px;
+  overflow: hidden;
+}
+
+.page-shop .seat-patience-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7BA16A, #537345);
+}
+
+.page-shop .seat-patience-fill.low {
+  background: linear-gradient(90deg, #E86F52, #B83A24);
+}
+
+.page-shop .seat-npc-img {
+  width: 64px;
+  margin-bottom: -7px;
+  display: block;
+}
+
+.page-shop .seat-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #FFF7E8;
+  background: rgba(74, 40, 22, 0.84);
+  padding: 1px 6px;
+  border-radius: 499.5px;
+  z-index: 4;
+}
+
+.page-shop .seat-chair-img {
+  width: 46px;
+  height: 56px;
+  opacity: 0.75;
+}
+
+.page-shop .seat-empty-text {
+  font-size: 10px;
+  color: #8D6A52;
+  margin-top: 3px;
+}
+
+/* 可可手中端盘条 */
+.page-shop .coco-hands-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #FFFBF4;
+  border: 1.5px solid #C89662;
+  border-radius: 10px;
+  padding: 5px 8px;
+  margin-bottom: 5px;
+}
+
+.page-shop .hands-coco {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid #B56125;
+  flex-shrink: 0;
+}
+
+.page-shop .hands-slot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-shop .hands-item-img {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.page-shop .hands-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.page-shop .hands-item-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-shop .hands-item-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 499.5px;
+  background: #F6E2C8;
+  color: #8C4E22;
+}
+
+.page-shop .hands-item-tag.ready {
+  background: #E2EEDD;
+  color: #35582E;
+}
+
+.page-shop .hands-item-tag.burnt {
+  background: #FCE4DF;
+  color: #C43B2B;
+}
+
+.page-shop .hands-empty {
+  font-size: 11.5px;
+  color: #7D5438;
+  font-weight: 600;
+}
+
+.page-shop .kitchen-tip-bar {
+  background: #7A4420;
+  color: #FFF6E5;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  padding: 5px 8px;
+  border-radius: 7px;
+  margin-bottom: 7px;
+}
+
+/* 后厨工位主地板 */
+.page-shop .kitchen-floor {
+  padding: 9px 8px 10px;
+}
+
+.page-shop .stations-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 9px;
+}
+
+.page-shop .station-cell {
+  width: calc(50% - 3.5px);
+  background: linear-gradient(180deg, #FFFDF8 0%, #F4E6D4 100%);
+  border: 1.5px solid #C89662;
+  border-bottom: 4px solid #9E6838;
+  border-radius: 10px;
+  padding: 6px 5px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.page-shop .station-cell.state-ready {
+  background: linear-gradient(180deg, #FFF8E0 0%, #FCE2A6 100%);
+  border-color: #E0922C;
+}
+
+.page-shop .station-cell.state-burnt {
+  background: #FCE4DF;
+  border-color: #C43B2B;
+}
+
+.page-shop .station-art {
+  width: 74px;
+  height: 64px;
+  display: block;
+}
+
+.page-shop .station-overlay {
+  position: absolute;
+  top: 11px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.page-shop .station-food {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 2px 3px rgba(58, 28, 10, 0.35));
+}
+
+.page-shop .station-prog-track {
+  width: 72%;
+  height: 6px;
+  background: rgba(58, 28, 10, 0.55);
+  border-radius: 499.5px;
+  overflow: hidden;
+  border: 1px solid #FFF4DC;
+}
+
+.page-shop .station-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD875, #E0922C);
+}
+
+.page-shop .station-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1.5px 7px;
+  border-radius: 499.5px;
+}
+
+.page-shop .station-badge.ready {
+  background: #4E7A44;
+  color: #FFF;
+}
+
+.page-shop .station-badge.burnt {
+  background: #C43B2B;
+  color: #FFF;
+}
+
+.page-shop .station-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #5E341A;
+  margin-top: 2px;
+}
+
+/* 原料篮 + 暂存台 + 回收铜桶 */
+.page-shop .pantry-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7A4824;
+  margin-bottom: 5px;
+}
+
+.page-shop .pantry-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.page-shop .pantry-btn {
+  flex: 1;
+  background: linear-gradient(180deg, #FFFDF8, #F6E6CE);
+  border: 1.5px solid #C89662;
+  border-bottom: 3.5px solid #9E6838;
+  border-radius: 9px;
+  padding: 6px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.page-shop .pantry-icon {
+  width: 31px;
+  height: 31px;
+}
+
+.page-shop .pantry-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-shop .pantry-flow {
+  font-size: 8.5px;
+  color: #8C4E22;
+}
+
+.page-shop .utility-row {
+  display: flex;
+  gap: 7px;
+}
+
+.page-shop .util-station {
+  flex: 1;
+  background: #F6ECE0;
+  border: 1.5px solid #C89662;
+  border-radius: 9px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+}
+
+.page-shop .util-art {
+  width: 36px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.page-shop .util-hold-item {
+  position: absolute;
+  left: 10px;
+  top: 4px;
+  width: 24px;
+  height: 24px;
+}
+
+.page-shop .util-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #5E341A;
+}
+
+/* 智能引导高亮呼吸框 */
+.page-shop .is-glow {
+  border-color: #F3B842 !important;
+  box-shadow: 0 0 11px rgba(243, 184, 66, 0.85) !important;
+}
+
+/* 未营业菜单备货与装潢升级 */
+.page-shop .prep-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.page-shop .prep-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.page-shop .prep-count {
+  font-size: 11px;
+  color: #9C4D1B;
+  font-weight: 700;
+}
+
+.page-shop .menu-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 11px;
+}
+
+.page-shop .menu-item {
+  width: calc(33.33% - 5px);
+  background: #FFFDF8;
+  border: 1.5px solid #DEC09A;
+  border-radius: 10px;
+  padding: 7px 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.page-shop .menu-item.is-picked {
+  border-color: #B56125;
+  background: #FDF0DA;
+}
+
+.page-shop .menu-icon {
+  width: 33px;
+  height: 33px;
+}
+
+.page-shop .menu-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #4A2816;
+  text-align: center;
+}
+
+.page-shop .menu-flow {
+  font-size: 8.5px;
+  color: #7D5438;
+  text-align: center;
+}
+
+.page-shop .menu-price {
+  font-size: 10px;
+  color: #9C4D1B;
+  font-weight: 700;
+}
+
+.page-shop .empty-tip {
+  font-size: 11.5px;
+  color: #7D5438;
+  text-align: center;
+  padding: 15px 8px;
+}
+
+.page-shop .open-btn {
+  width: 100%;
+}
+
+.page-shop .upgrade-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 11px;
+}
+
+.page-shop .upgrade-card.is-owned {
+  background: linear-gradient(180deg, #FCFDF9, #EBF3E6);
+  border-color: #8CA880;
+}
+
+.page-shop .upg-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.page-shop .upg-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #F6E9D7;
+  border: 1.5px solid #D4A97A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 3px;
+}
+
+.page-shop .upg-art {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-shop .upg-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-shop .upg-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-shop .upg-desc {
+  font-size: 10.5px;
+  color: #70492F;
+  line-height: 1.4;
+}
+
+.page-shop .upg-btn {
+  background: linear-gradient(180deg, #E5A655, #B56125);
+  color: #FFFBF4;
+  border: 1px solid #F5CE93;
+  border-radius: 499.5px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.page-shop .upg-btn.owned {
+  background: #6B8E5E;
+  border-color: #B5D9B9;
+}
+
+.page-shop .upg-btn.disabled {
+  background: #B8A99A;
+  border-color: #D8CFC6;
+}
+
+.page-shop .summary-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(52, 24, 10, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 99;
+}
+
+.page-shop .summary-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.page-shop .summary-rows {
+  width: 100%;
+  background: #FFFDF8;
+  border: 1px dashed #C89662;
+  border-radius: 9px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-shop .sum-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: #5E341A;
+}
+
+.page-shop .sum-val {
+  font-weight: 700;
+  color: #B56125;
+}

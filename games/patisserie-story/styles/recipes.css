@@ -1,0 +1,219 @@
+/* pages/recipes/recipes.css - 焦糖羊皮纸复古食谱手账 */
+.page-recipes .header-card {
+  background: linear-gradient(180deg, #FFFBF4, #F4E4CE);
+}
+
+.page-recipes .header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.page-recipes .book-count {
+  font-size: 12px;
+  color: #9C4D1B;
+  font-weight: 700;
+}
+
+.page-recipes .book-sub {
+  display: block;
+  font-size: 11.5px;
+  color: #70492F;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.page-recipes .tab-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.page-recipes .tab-btn {
+  flex: 1;
+  text-align: center;
+  padding: 6px 0;
+  border-radius: 499.5px;
+  font-size: 12px;
+  background: #FFF9F0;
+  color: #6B3E1E;
+  border: 1.5px solid #CFA068;
+  font-weight: 700;
+}
+
+.page-recipes .tab-btn.active {
+  background: linear-gradient(180deg, #C97A36, #964D1C);
+  color: #FFFBF4;
+  border-color: #F0C485;
+  box-shadow: 0 2.5px 0 #663010;
+}
+
+.page-recipes .recipe-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.page-recipes .recipe-item {
+  width: calc(50% - 5px);
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 13px 9px;
+  background: linear-gradient(180deg, #FFFBF4 0%, #F4E4CE 100%);
+}
+
+.page-recipes .recipe-item.locked {
+  opacity: 0.65;
+  background: #F4E9DC;
+}
+
+.page-recipes .recipe-arch {
+  width: 55px;
+  height: 61px;
+  border-radius: 27.5px 27.5px 9px 9px;
+  background: #FFFDF8;
+  border: 2px solid #C89662;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 6px;
+  box-shadow: inset 0 3px 5px rgba(74, 40, 22, 0.12);
+}
+
+.page-recipes .recipe-svg-icon {
+  width: 34px;
+  height: 34px;
+  display: block;
+}
+
+.page-recipes .recipe-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4A2816;
+  margin-bottom: 3px;
+}
+
+.page-recipes .recipe-origin {
+  font-size: 10.5px;
+  color: #7D5438;
+  margin-bottom: 6px;
+}
+
+.page-recipes .modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(52, 26, 12, 0.64);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 99;
+}
+
+.page-recipes .modal-panel {
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+  background: linear-gradient(180deg, #FFFBF4, #F4E4CE);
+  border: 2.5px solid #C89662;
+  border-bottom: 6px solid #8C4E22;
+  overflow: hidden;
+}
+
+.page-recipes .modal-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.page-recipes .modal-medallion {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #FFFDF8;
+  border: 2px dashed #C89662;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  flex-shrink: 0;
+}
+
+.page-recipes .modal-titles {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-recipes .modal-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-recipes .modal-en {
+  font-size: 11px;
+  color: #7D5438;
+}
+
+.page-recipes .modal-close {
+  font-size: 18px;
+  color: #7D5438;
+  padding: 4px 7px;
+}
+
+.page-recipes .modal-tagline {
+  font-size: 12.5px;
+  font-style: italic;
+  color: #9C4D1B;
+  margin-bottom: 8px;
+}
+
+.page-recipes .modal-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: #F6E9D7;
+  border: 1px dashed #C89662;
+  padding: 7px 9px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #5E341A;
+  margin-bottom: 8px;
+}
+
+.page-recipes .modal-scroll {
+  max-height: 46vh;
+}
+
+.page-recipes .culture-section {
+  background: #FFFDF8;
+  border: 1px solid #DEC09A;
+  border-radius: 8px;
+  padding: 9px;
+  margin-bottom: 7px;
+}
+
+.page-recipes .culture-title {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #8C4E22;
+  margin-bottom: 4px;
+}
+
+.page-recipes .culture-text {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #4A2816;
+}

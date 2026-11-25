@@ -1,0 +1,899 @@
+/* pages/minigame/minigame.css - 欧式复古红砖烤炉实景工作台 */
+.page-minigame .minigame-shell {
+  min-height: 100vh;
+}
+
+.page-minigame .game-wrap {
+  padding-top: 4px;
+}
+
+.page-minigame .header-card {
+  padding: 11px 12px;
+  margin-bottom: 10px;
+}
+
+.page-minigame .header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.page-minigame .game-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-minigame .recipe-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #F6E2C8;
+  color: #7A3E18;
+  border: 1px solid #C89662;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 499.5px;
+}
+
+.page-minigame .pill-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.page-minigame .game-desc {
+  font-size: 11.5px;
+  color: #70492F;
+  line-height: 1.5;
+}
+
+/* 欧式红砖烤炉卡片 */
+.page-minigame .oven-card {
+  padding: 11px 11px 14px;
+  background: linear-gradient(180deg, #FFFBF4 0%, #F4E4CE 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-minigame .oven-status-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  background: #5E3015;
+  border: 1.5px solid #DFB06E;
+  border-radius: 8px;
+  padding: 5px 9px;
+}
+
+.page-minigame .oven-stage-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FCE6C2;
+}
+
+.page-minigame .stage-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.page-minigame .s-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #3B1A0B;
+  border: 1.5px solid #A67244;
+}
+
+.page-minigame .s-dot.lit {
+  background: #FFB84D;
+  border-color: #FFF4C8;
+  box-shadow: 0 0 6px #FFA834;
+}
+
+.page-minigame .temp-readout {
+  font-size: 13px;
+  font-weight: 700;
+  color: #F4D2A4;
+  min-width: 48px;
+  text-align: right;
+}
+
+.page-minigame .temp-readout.in-zone {
+  color: #FFD966;
+}
+
+/* 红砖烤炉场景画框 */
+.page-minigame .oven-viewport {
+  width: 100%;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 3px solid #7A421E;
+  box-shadow:
+    inset 0 3px 7px rgba(42, 18, 6, 0.3),
+    0 5px 10px rgba(74, 40, 22, 0.22);
+  margin-bottom: 11px;
+  background: #D4AE84;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.page-minigame .oven-viewport.flash {
+  transform: scale(1.015);
+  box-shadow: 0 0 14px rgba(255, 178, 66, 0.72);
+}
+
+.page-minigame .oven-viewport.flip-anim {
+  animation: panFlipAnim 0.48s ease-in-out;
+}
+
+@keyframes panFlipAnim {
+  0% { transform: scale(1) rotateX(0deg); }
+  50% { transform: scale(0.92) rotateX(90deg); }
+  100% { transform: scale(1) rotateX(0deg); }
+}
+
+.page-minigame .burn-label {
+  color: #B83A24;
+  font-weight: 700;
+}
+
+.page-minigame .tatin-amber-zone {
+  position: absolute;
+  left: 54%;
+  width: 30%;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #FFD875 0%, #DE8424 100%);
+  border-left: 1.5px solid #FFF5D6;
+  border-right: 1.5px solid #FFF5D6;
+}
+
+.page-minigame .tatin-burn-zone {
+  position: absolute;
+  left: 84%;
+  width: 16%;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #D95B38 0%, #8C2612 100%);
+}
+
+.page-minigame .oven-scene-img {
+  width: 100%;
+  display: block;
+}
+
+/* 复古黄铜温度计滑轨 */
+.page-minigame .thermometer-box {
+  width: 100%;
+  margin-bottom: 9px;
+}
+
+.page-minigame .scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #8C5E3C;
+  font-weight: 600;
+  margin-bottom: 4px;
+  padding: 0 2px;
+}
+
+.page-minigame .gold-label {
+  color: #B56125;
+  font-weight: 700;
+}
+
+.page-minigame .meter-track {
+  position: relative;
+  height: 22px;
+  background: linear-gradient(180deg, #E2CAAE 0%, #EFE0CC 100%);
+  border-radius: 499.5px;
+  overflow: hidden;
+  border: 2px solid #8C4E22;
+  box-shadow: inset 0 2px 4px rgba(58, 28, 10, 0.24);
+}
+
+.page-minigame .golden-zone {
+  position: absolute;
+  left: 38%;
+  width: 24%;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #FFD875 0%, #E0922C 100%);
+  border-left: 1.5px solid #FFF5D6;
+  border-right: 1.5px solid #FFF5D6;
+}
+
+.page-minigame .meter-pointer {
+  position: absolute;
+  top: -1px;
+  width: 7px;
+  height: 24px;
+  margin-left: -3.5px;
+  background: linear-gradient(180deg, #FFF7E8, #5E3015);
+  border-radius: 4px;
+  border: 1px solid #3B1A0B;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.page-minigame .feedback-text {
+  font-size: 12px;
+  color: #8C4218;
+  font-weight: 700;
+  margin-bottom: 11px;
+  text-align: center;
+  min-height: 18px;
+}
+
+.page-minigame .tap-btn {
+  width: 86%;
+}
+
+/* ==========================================
+   真实物理下落精准堆叠游戏舞台（Stacker）
+   ========================================== */
+.page-minigame .stack-hud {
+  gap: 5px;
+}
+
+.page-minigame .hud-score {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #FFD966;
+}
+
+.page-minigame .hud-layers {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #FFF4DC;
+}
+
+.page-minigame .hud-lives {
+  display: flex;
+  gap: 3px;
+}
+
+.page-minigame .heart {
+  font-size: 13px;
+  color: #7A4B32;
+}
+
+.page-minigame .heart.on {
+  color: #F26B5B;
+}
+
+.page-minigame .stack-arena {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 3px solid #7A421E;
+  background: #EFE0CE;
+  box-shadow: inset 0 4px 8px rgba(58, 28, 10, 0.16);
+  margin-bottom: 9px;
+}
+
+.page-minigame .arena-bg-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page-minigame .crane-rail {
+  position: absolute;
+  top: 7px;
+  left: 12px;
+  right: 12px;
+  height: 4px;
+  border-radius: 499.5px;
+  background: linear-gradient(180deg, #B8844A, #6E3B1E);
+  z-index: 3;
+}
+
+.page-minigame .crane-cord {
+  position: absolute;
+  top: 10px;
+  width: 2px;
+  height: 13px;
+  margin-left: -1px;
+  background: #6E3B1E;
+  z-index: 3;
+}
+
+.page-minigame .center-guide {
+  position: absolute;
+  top: 13px;
+  bottom: 22px;
+  left: 50%;
+  width: 1px;
+  border-left: 1px dashed rgba(140, 78, 34, 0.28);
+  z-index: 2;
+}
+
+.page-minigame .serving-plate {
+  position: absolute;
+  bottom: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 74%;
+  height: 12px;
+  border-radius: 6px 6px 14px 14px;
+  background: linear-gradient(180deg, #FFFDF8 0%, #E8D5BC 100%);
+  border: 1.5px solid #B58150;
+  z-index: 2;
+}
+
+.page-minigame .plate-shadow {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 66%;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(68, 32, 12, 0.25);
+  z-index: 1;
+}
+
+/* 堆叠甜点层基础造型 */
+.page-minigame .pastry-block {
+  position: absolute;
+  transform: translateX(-50%);
+  border-radius: 7px;
+  box-shadow: 0 3px 5px rgba(58, 28, 10, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.page-minigame .pastry-block.is-active {
+  z-index: 8;
+}
+
+.page-minigame .block-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: #4A2511;
+  background: rgba(255, 251, 244, 0.88);
+  padding: 1px 6px;
+  border-radius: 499.5px;
+  white-space: nowrap;
+}
+
+/* 各类真实甜点材质层 */
+.page-minigame .layer-puff {
+  background: repeating-linear-gradient(180deg, #F4BA58 0px, #D9862B 4px, #FCE09B 7px);
+  border: 1.5px solid #7A3E14;
+}
+
+.page-minigame .layer-custard {
+  background: radial-gradient(circle at 9px 50%, #FFFDF5 0, #FCEEC4 8px, #E3BE7B 9px);
+  background-size: 18px 100%;
+  border: 1.5px solid #C89B58;
+  border-radius: 11px;
+}
+
+.page-minigame .layer-fondant {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF6E8 70%, #E39D42 70%, #C77A28 100%);
+  border: 1.5px solid #7A3E14;
+}
+
+.page-minigame .layer-ladyfinger {
+  background: repeating-linear-gradient(90deg, #9E5E32 0px, #C9864C 12px, #6E3B1E 14px);
+  border: 1.5px solid #4A2511;
+}
+
+.page-minigame .layer-mascarpone {
+  background: linear-gradient(180deg, #FFFDF8 0%, #F7EAD2 100%);
+  border: 1.5px solid #C8A274;
+}
+
+.page-minigame .layer-cocoa {
+  background: linear-gradient(180deg, #6E381C 0%, #4A210D 100%);
+  border: 1.5px solid #2E1308;
+}
+
+.page-minigame .layer-sponge {
+  background: linear-gradient(180deg, #F5D59B 0%, #DFB068 100%);
+  border: 1.5px solid #8C5422;
+}
+
+.page-minigame .layer-ganache {
+  background: linear-gradient(180deg, #4A210D 0%, #2B1005 100%);
+  border: 1.5px solid #1C0A03;
+}
+
+.page-minigame .layer-coffee_cream {
+  background: linear-gradient(180deg, #C99668 0%, #9E683B 100%);
+  border: 1.5px solid #5E341A;
+}
+
+.page-minigame .layer-gold_glaze {
+  background: linear-gradient(90deg, #2E1308 0%, #2E1308 40%, #FFD966 42%, #FFD966 58%, #2E1308 60%, #2E1308 100%);
+  border: 1.5px solid #D49B42;
+}
+
+.page-minigame .layer-caramel_puff {
+  background: radial-gradient(circle at 11px 50%, #FFE08A 0, #D97A22 9px, #7A340C 11px);
+  background-size: 22px 100%;
+  border: 1.5px solid #632B0A;
+  border-radius: 11px;
+}
+
+.page-minigame .layer-chiboust {
+  background: linear-gradient(180deg, #FFFDF8 0%, #F5E6CA 100%);
+  border: 1.5px solid #C89B62;
+  border-radius: 10px;
+}
+
+.page-minigame .layer-crown_puff {
+  background: radial-gradient(circle at 40% 35%, #FFE89C 0%, #D97A22 65%, #7A340C 100%);
+  border: 1.5px solid #FFD966;
+  border-radius: 499.5px;
+}
+
+.page-minigame .judge-bar {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #7A4420;
+  margin-bottom: 9px;
+  min-height: 18px;
+  text-align: center;
+}
+
+.page-minigame .judge-perfect {
+  color: #C47A14;
+}
+
+.page-minigame .judge-great {
+  color: #3D7A47;
+}
+
+.page-minigame .judge-miss {
+  color: #C43B2B;
+}
+
+.page-minigame .stack-fail-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(52, 24, 10, 0.78);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  z-index: 20;
+  padding: 12px;
+}
+
+.page-minigame .fail-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #FFF7E8;
+}
+
+.page-minigame .fail-sub {
+  font-size: 12px;
+  color: #F4DCBA;
+  margin-bottom: 4px;
+}
+
+.page-minigame .retry-btn {
+  width: 64%;
+}
+
+/* ==========================================
+   引擎 3：3 轨音游节拍实景工坊（Rhythm）
+   ========================================== */
+.page-minigame .rhythm-stage {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 3px solid #7A421E;
+  background: linear-gradient(180deg, #522914 0%, #7A421E 68%, #B57A44 68%, #8F562A 100%);
+  display: flex;
+  margin-bottom: 9px;
+}
+
+.page-minigame .rhythm-lane {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  border-right: 1px dashed rgba(255, 232, 194, 0.28);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 6px;
+}
+
+.page-minigame .rhythm-lane:last-child {
+  border-right: none;
+}
+
+.page-minigame .lane-guide-line {
+  position: absolute;
+  top: 8px;
+  bottom: 60px;
+  width: 2px;
+  background: rgba(255, 232, 194, 0.22);
+}
+
+.page-minigame .hit-ring {
+  position: absolute;
+  top: 76%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 224, 130, 0.88);
+  background: rgba(255, 217, 102, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-minigame .target-vessel-img {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+.page-minigame .lane-name {
+  font-size: 10px;
+  color: #FFF4DC;
+  font-weight: 700;
+  background: rgba(58, 28, 10, 0.72);
+  padding: 1px 7px;
+  border-radius: 499.5px;
+  z-index: 2;
+}
+
+.page-minigame .rhythm-note {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 39px;
+  height: 39px;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 5px rgba(36, 16, 6, 0.45));
+  z-index: 6;
+}
+
+.page-minigame .note-sprite {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-minigame .rhythm-keys {
+  width: 100%;
+  display: flex;
+  gap: 6px;
+}
+
+.page-minigame .rhythm-key-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: linear-gradient(180deg, #E5A655, #B56125);
+  color: #FFFBF4;
+  border: 1.5px solid #F5CE93;
+  border-radius: 10px;
+  padding: 8px 3px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 3.5px 0 #663010;
+}
+
+.page-minigame .key-mini-img {
+  width: 18px;
+  height: 18px;
+}
+
+/* ==========================================
+   引擎 4：法式三眼灶台 / 石板烤炉实景多锅厨房（Multi-Pan）
+   ========================================== */
+.page-minigame .stovetop-arena {
+  position: relative;
+  width: 100%;
+  height: 245px;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 3px solid #7A421E;
+  margin-bottom: 9px;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 6px 22px;
+}
+
+.page-minigame .burners-row {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  gap: 5px;
+  align-items: flex-end;
+}
+
+.page-minigame .burner-slot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 3px 5px;
+  border-radius: 10px;
+  background: rgba(52, 24, 10, 0.35);
+  border: 1.5px solid transparent;
+  transition: transform 0.14s ease;
+}
+
+.page-minigame .burner-slot.state-ready {
+  background: rgba(255, 212, 102, 0.25);
+  border-color: #FFD966;
+  transform: translateY(-3px);
+  box-shadow: 0 0 12px rgba(255, 200, 72, 0.65);
+}
+
+.page-minigame .burner-slot.state-burnt {
+  background: rgba(196, 59, 43, 0.28);
+  border-color: #E86F52;
+}
+
+.page-minigame .burner-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #FFF7E8;
+  background: rgba(58, 28, 10, 0.85);
+  padding: 2px 6px;
+  border-radius: 499.5px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.page-minigame .burner-slot.state-ready .burner-badge {
+  background: #D97B1E;
+  color: #FFFDF8;
+}
+
+.page-minigame .burner-slot.state-burnt .burner-badge {
+  background: #C43B2B;
+}
+
+.page-minigame .cookware-sprite {
+  width: 93px;
+  height: 79px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.page-minigame .burner-heat-track {
+  width: 92%;
+  position: relative;
+  height: 9px;
+  background: rgba(36, 16, 6, 0.65);
+  border-radius: 499.5px;
+  overflow: hidden;
+  border: 1px solid #DFB06E;
+  margin-bottom: 3px;
+}
+
+.page-minigame .pan-ready-band {
+  position: absolute;
+  left: 62%;
+  width: 24%;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 217, 102, 0.58);
+}
+
+.page-minigame .pan-heat-fill {
+  position: relative;
+  height: 100%;
+  background: linear-gradient(90deg, #F3B842, #DE5B24);
+  z-index: 2;
+}
+
+.page-minigame .burner-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #FCE6C2;
+}
+
+/* ==========================================
+   引擎 5：果园 / 维也纳咖啡馆实景接盘收集（Catch）
+   ========================================== */
+.page-minigame .catch-arena {
+  position: relative;
+  width: 100%;
+  height: 235px;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 3px solid #7A421E;
+  margin-bottom: 8px;
+}
+
+.page-minigame .falling-sprite-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 39px;
+  height: 39px;
+  pointer-events: none;
+  z-index: 4;
+  filter: drop-shadow(0 3px 4px rgba(42, 18, 6, 0.3));
+}
+
+.page-minigame .falling-sprite {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-minigame .catch-vessel {
+  position: absolute;
+  bottom: 7px;
+  transform: translateX(-50%);
+  width: 77px;
+  height: 43px;
+  z-index: 6;
+  transition: left 0.08s linear;
+  filter: drop-shadow(0 4px 6px rgba(42, 18, 6, 0.35));
+}
+
+.page-minigame .vessel-sprite {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-minigame .catch-controls {
+  width: 100%;
+  display: flex;
+  gap: 9px;
+}
+
+.page-minigame .move-btn {
+  flex: 1;
+}
+
+/* 工序配对工作台样式 */
+.page-minigame .play-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 13px;
+  background: linear-gradient(180deg, #FFFBF4 0%, #F4E4CE 100%);
+}
+
+.page-minigame .queue-box {
+  display: flex;
+  gap: 7px;
+  margin: 14px 0 12px;
+}
+
+.page-minigame .queue-item {
+  width: 43px;
+  height: 46px;
+  border-radius: 21.5px 21.5px 8px 8px;
+  background: #FFFBF4;
+  border: 1.5px solid #C89662;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-minigame .queue-item.current {
+  border-color: #A85520;
+  background: #F6DFC0;
+  transform: scale(1.1);
+}
+
+.page-minigame .queue-item.done {
+  opacity: 0.38;
+  border-color: #6B8E5E;
+}
+
+.page-minigame .queue-emoji {
+  font-size: 21px;
+}
+
+.page-minigame .ingredient-grid {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.page-minigame .ingredient-btn {
+  width: calc(33.33% - 5.5px);
+  border-radius: 12px;
+  padding: 12px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1.5px solid #D4A97A;
+  box-shadow: 0 3px 0 #A87A4D;
+}
+
+.page-minigame .ing-emoji {
+  font-size: 24px;
+}
+
+.page-minigame .ing-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+/* 全引擎统一：制作失败重来弹层 */
+.page-minigame .fail-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(42, 18, 6, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.page-minigame .fail-modal-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 18px 15px 16px;
+  margin-bottom: 0;
+}
+
+.page-minigame .fail-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #6B2A14;
+  margin-bottom: 7px;
+}
+
+.page-minigame .fail-modal-reason {
+  font-size: 12.5px;
+  color: #5E351D;
+  line-height: 1.6;
+  margin-bottom: 9px;
+}
+
+.page-minigame .fail-modal-hint {
+  width: 100%;
+  background: #F6E6CE;
+  border: 1px solid #D4A97A;
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 10.5px;
+  color: #7A4420;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.page-minigame .fail-retry-btn {
+  width: 82%;
+}

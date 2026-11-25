@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 166" width="200" height="166">
+      <path d="M56 154 Q72 132 88 148 Q100 126 114 148 Q128 134 144 154 Z" fill="#FF8C2B" opacity="0.88"/>
+               <path d="M74 154 Q100 136 126 154 Z" fill="#FFE07D"/>
+      <path d="M156 88 L194 74 C198 73, 200 83, 195 86 L158 102 Z" fill="#6E3B1E" stroke="#2E1308" stroke-width="3"/>
+      <ellipse cx="100" cy="104" rx="68" ry="46" fill="#A65522" stroke="#3B1A0B" stroke-width="4"/>
+      <ellipse cx="100" cy="96" rx="64" ry="42" fill="#DF9A58" stroke="#5E2D12" stroke-width="3.5"/>
+      <ellipse cx="100" cy="96" rx="58" ry="40" fill="#DE7D20"/>
+                  <g fill="#E89432" stroke="#6B2B0A" stroke-width="2.2">
+                    <ellipse cx="78" cy="86" rx="19" ry="12"/><ellipse cx="120" cy="86" rx="19" ry="12"/>
+                    <ellipse cx="84" cy="108" rx="19" ry="12"/><ellipse cx="118" cy="106" rx="19" ry="12"/>
+                  </g>
+                  <path d="M72 78 Q88 70 104 75" fill="none" stroke="#FFF8DC" stroke-width="3.5" stroke-linecap="round"/>
+                  <g fill="#FFF4B8"><path d="M40 36 L44 45 L53 49 L44 53 L40 62 L36 53 L27 49 L36 45 Z"/><path d="M160 32 L163 39 L170 42 L163 45 L160 52 L157 45 L150 42 L157 39 Z"/></g>
+    </svg>

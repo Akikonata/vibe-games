@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 680" width="520" height="680">
+  <defs>
+    
+    <linearGradient id="skin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F8F0EA"/>
+      <stop offset="75%" stop-color="#E6D6CB"/>
+      <stop offset="100%" stop-color="#CDB8AA"/>
+    </linearGradient>
+    <linearGradient id="hair" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#D4DCE4"/>
+      <stop offset="50%" stop-color="#9BA7B5"/>
+      <stop offset="100%" stop-color="#636E7C"/>
+    </linearGradient>
+    <linearGradient id="hairBack" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9BA7B5"/>
+      <stop offset="100%" stop-color="#636E7C"/>
+    </linearGradient>
+    <linearGradient id="eye" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1B2430"/>
+      <stop offset="48%" stop-color="#475B73"/>
+      <stop offset="100%" stop-color="#8DA6C2"/>
+    </linearGradient>
+    <radialGradient id="blush" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D99A96" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#D99A96" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  
+  
+  
+    <path d="M148 214 C138 148, 182 100, 260 100 C338 100, 382 148, 372 214
+             C368 262, 354 304, 338 332 L182 332 C166 304, 152 262, 148 214 Z"
+          fill="url(#hairBack)" stroke="#636E7C" stroke-width="2.8"/>
+  
+    <!-- 自然溜肩与垂落双臂轮廓 -->
+    <path d="M227 410
+             C189 418, 134 430, 120 458
+             C106 508, 98 585, 94 680
+             L426 680
+             C422 585, 414 508, 400 458
+             C386 430, 331 418, 293 410 Z"
+          fill="#424D5B" stroke="#52301E" stroke-width="2.8" stroke-linejoin="round"/>
+    <!-- 腋下与袖子自然垂坠褶皱线 -->
+    <path d="M164 492 C158 556, 162 620, 166 680"
+          fill="none" stroke="#52301E" stroke-width="2.4" stroke-linecap="round" opacity="0.72"/>
+    <path d="M356 492 C362 556, 358 620, 354 680"
+          fill="none" stroke="#52301E" stroke-width="2.4" stroke-linecap="round" opacity="0.72"/>
+    <path d="M237 348 L237 414 Q260 434 283 414 L283 348 Z"
+          fill="url(#skin)" stroke="#52301E" stroke-width="2.6"/>
+    <!-- 下巴投射到脖颈的赛璐璐阴影 -->
+    <path d="M238 356 Q260 384 282 356 Q260 370 238 356 Z"
+          fill="#CDB8AA" opacity="0.85"/>
+        <!-- 笔挺西装、白衬衫与银匙领带 -->
+        <path d="M224 410 L260 556 L296 410 Z" fill="#FFFFFF" stroke="#2B333D" stroke-width="2.4"/>
+        <path d="M254 422 L266 422 L270 540 L260 554 L250 540 Z" fill="#9EB0C4" stroke="#2B333D" stroke-width="2"/>
+        <rect x="250" y="476" width="20" height="5" rx="2" fill="#E8EEF2" stroke="#2B333D" stroke-width="1.5"/>
+        <path d="M222 410 L186 468 L218 490 L204 514 L256 566" fill="#2B333D" stroke="#1E252D" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M298 410 L334 468 L302 490 L316 514 L264 566" fill="#2B333D" stroke="#1E252D" stroke-width="2.4" stroke-linejoin="round"/>
+
+  <!-- 耳朵 -->
+  <ellipse cx="168" cy="278" rx="13" ry="19" fill="#E6D6CB" stroke="#52301E" stroke-width="2.6"/>
+  <ellipse cx="352" cy="278" rx="13" ry="19" fill="#E6D6CB" stroke="#52301E" stroke-width="2.6"/>
+
+  <!-- 精致二次元瓜子脸轮廓 -->
+  <path d="M174 232 C172 296, 184 338, 222 362 C240 374, 280 374, 298 362
+           C336 338, 348 296, 346 232 C344 170, 308 138, 260 138 C212 138, 176 170, 174 232 Z"
+        fill="url(#skin)" stroke="#52301E" stroke-width="2.8" stroke-linejoin="round"/>
+
+  
+
+  <!-- 腮红与高光斜线 -->
+  <ellipse cx="204" cy="306" rx="26" ry="13" fill="url(#blush)"/>
+  <ellipse cx="316" cy="306" rx="26" ry="13" fill="url(#blush)"/>
+  
+
+  <!-- 眼睛与眉毛 -->
+  
+        <path d="M194 218 Q214 205 234 216" fill="none" stroke="#5E351D" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M286 216 Q306 205 326 218" fill="none" stroke="#5E351D" stroke-width="3.2" stroke-linecap="round"/>
+        <!-- 左眼（二游多层高光虹膜 + 眼白上部阴影） -->
+        <g>
+          <ellipse cx="214" cy="274" rx="23" ry="28" fill="#FFFFFF"/>
+          <path d="M192 256 Q214 248 236 256 L236 246 L192 246 Z" fill="#E6DDD6" opacity="0.7"/>
+          <ellipse cx="216" cy="276" rx="18" ry="24" fill="url(#eye)"/>
+          <ellipse cx="216" cy="275" rx="6.5" ry="8.5" fill="#261106"/>
+          <path d="M203 292 Q216 300 229 292" fill="none" stroke="#D9E8F7" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="207" cy="264" r="6.5" fill="#FFFFFF"/>
+          <circle cx="225" cy="285" r="3" fill="#FFFFFF"/>
+          <circle cx="224" cy="267" r="2.2" fill="#FFFFFF" opacity="0.85"/>
+          <path d="M187 265 C195 245, 227 244, 238 261" fill="none" stroke="#381A0A" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M189 263 L182 256" stroke="#381A0A" stroke-width="3" stroke-linecap="round"/>
+          <path d="M197 245 Q214 238 231 245" fill="none" stroke="#8C5A3E" stroke-width="1.8" stroke-linecap="round"/>
+        </g>
+        <!-- 右眼 -->
+        <g>
+          <ellipse cx="306" cy="274" rx="23" ry="28" fill="#FFFFFF"/>
+          <path d="M284 256 Q306 248 328 256 L328 246 L284 246 Z" fill="#E6DDD6" opacity="0.7"/>
+          <ellipse cx="304" cy="276" rx="18" ry="24" fill="url(#eye)"/>
+          <ellipse cx="304" cy="275" rx="6.5" ry="8.5" fill="#261106"/>
+          <path d="M291 292 Q304 300 317 292" fill="none" stroke="#D9E8F7" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="295" cy="264" r="6.5" fill="#FFFFFF"/>
+          <circle cx="313" cy="285" r="3" fill="#FFFFFF"/>
+          <circle cx="312" cy="267" r="2.2" fill="#FFFFFF" opacity="0.85"/>
+          <path d="M282 261 C293 244, 325 245, 333 265" fill="none" stroke="#381A0A" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M331 263 L338 256" stroke="#381A0A" stroke-width="3" stroke-linecap="round"/>
+          <path d="M289 245 Q306 238 323 245" fill="none" stroke="#8C5A3E" stroke-width="1.8" stroke-linecap="round"/>
+        </g>
+
+  <!-- 精致鼻尖与嘴巴 -->
+  <path d="M258 300 Q260 304 262 302" fill="none" stroke="#B87A56" stroke-width="2.2" stroke-linecap="round"/>
+  <ellipse cx="260" cy="332" rx="9" ry="12" fill="#EB827B" stroke="#5E351D" stroke-width="2.8"/>
+
+  <!-- 前发与高光 -->
+  
+        <path d="M150 222 C152 148, 198 110, 260 110 C322 110, 368 148, 370 222
+                 C356 188, 330 166, 294 164 C270 184, 236 212, 194 216 C172 204, 160 210, 150 222 Z"
+              fill="url(#hair)" stroke="#636E7C" stroke-width="2.6"/>
+
+  <!-- 配饰 -->
+  
+
+  <!-- 表情特效 -->
+  
+        <g stroke="#D95E38" stroke-width="6" stroke-linecap="round">
+          <line x1="406" y1="138" x2="414" y2="174"/>
+          <circle cx="417" cy="190" r="4.5" fill="#D95E38" stroke="none"/>
+        </g>
+  
+</svg>

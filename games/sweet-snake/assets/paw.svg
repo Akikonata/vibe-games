@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 152"><defs><linearGradient id="goldStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff5a8"/><stop offset="100%" stop-color="#ffba32"/></linearGradient></defs>
+          <defs>
+            <linearGradient id="pawBaseGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffe7f1" />
+              <stop offset="55%" stop-color="#ffc1da" />
+              <stop offset="100%" stop-color="#ffa3c8" />
+            </linearGradient>
+            <linearGradient id="pawBeanGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff9ec4" />
+              <stop offset="55%" stop-color="#ff699e" />
+              <stop offset="100%" stop-color="#e84683" />
+            </linearGradient>
+          </defs>
+          <!-- Outer Fluffy Paw Silhouette -->
+          <path d="M30 84 C12 76 9 50 24 41 C35 34 46 42 48 48 C45 30 56 14 70 15 C81 16 86 24 88 29 C93 17 106 13 118 21 C128 28 128 42 124 49 C137 44 150 54 148 70 C146 82 138 89 132 93 C142 110 135 138 109 142 C96 144 88 139 80 139 C72 139 64 144 51 142 C25 138 18 110 30 84 Z"
+                fill="url(#pawBaseGrad)" stroke="#6b2d47" stroke-width="5" stroke-linejoin="round" />
+          <!-- 4 Cute Pink Toe Beans -->
+          <ellipse cx="32" cy="61" rx="12" ry="16" transform="rotate(-24 32 61)" fill="url(#pawBeanGrad)" stroke="#6b2d47" stroke-width="3.4" />
+          <ellipse cx="64" cy="39" rx="13" ry="18" transform="rotate(-8 64 39)" fill="url(#pawBeanGrad)" stroke="#6b2d47" stroke-width="3.4" />
+          <ellipse cx="101" cy="40" rx="13" ry="18" transform="rotate(10 101 40)" fill="url(#pawBeanGrad)" stroke="#6b2d47" stroke-width="3.4" />
+          <ellipse cx="131" cy="63" rx="12" ry="16" transform="rotate(26 131 63)" fill="url(#pawBeanGrad)" stroke="#6b2d47" stroke-width="3.4" />
+          <!-- Specular dots on toe beans -->
+          <ellipse cx="29" cy="54" rx="3.5" ry="2" fill="#ffffff" opacity="0.65" />
+          <ellipse cx="61" cy="31" rx="4" ry="2.2" fill="#ffffff" opacity="0.65" />
+          <ellipse cx="98" cy="32" rx="4" ry="2.2" fill="#ffffff" opacity="0.65" />
+          <ellipse cx="128" cy="56" rx="3.5" ry="2" fill="#ffffff" opacity="0.65" />
+
+          <!-- Large Heart-Shaped Center Pad -->
+          <path d="M80 65 C62 65 44 82 42 104 C40 120 53 130 68 127 C75 125.5 77 123 80 123 C83 123 85 125.5 92 127 C107 130 120 120 118 104 C116 82 98 65 80 65 Z"
+                fill="url(#pawBeanGrad)" stroke="#6b2d47" stroke-width="3.8" stroke-linejoin="round" />
+          <path d="M62 77 C68 72 75 71 80 71" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity="0.55" fill="none" />
+
+          <!-- Crisp Label "加速" -->
+          <text x="80" y="109" text-anchor="middle" font-family="'ZCOOL KuaiLe', 'PingFang SC', sans-serif" font-size="30" font-weight="700"
+                fill="#ffffff" stroke="#6b2d47" stroke-width="6.5" stroke-linejoin="round">加速</text>
+          <text x="80" y="109" text-anchor="middle" font-family="'ZCOOL KuaiLe', 'PingFang SC', sans-serif" font-size="30" font-weight="700"
+                fill="#ffffff">加速</text>
+        </svg>

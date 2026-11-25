@@ -1,0 +1,205 @@
+/* pages/start/start.css - 欧风焦糖开始游戏界面 */
+.page-start .start-shell {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-start .start-bg-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  animation: titleBreath 16s ease-in-out infinite alternate;
+}
+
+@keyframes titleBreath {
+  0% {
+    transform: scale(1.04) translateX(-1%);
+  }
+  100% {
+    transform: scale(1.14) translateX(1.5%);
+  }
+}
+
+.page-start .start-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(64, 34, 16, 0.5) 0%,
+    rgba(94, 52, 24, 0.24) 45%,
+    rgba(46, 22, 10, 0.84) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 可可立绘迎宾区（使用 absolute 贴底，绝不与 fixed 按钮抢占点击层） */
+.page-start .start-coco-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 270px;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(28, 12, 4, 0.45));
+}
+
+.page-start .start-coco-img {
+  width: 100%;
+  display: block;
+}
+
+.page-start .start-canopy {
+  position: relative;
+  z-index: 10;
+}
+
+.page-start .start-content {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px 27px;
+}
+
+/* 古典标题徽章 */
+.page-start .title-crest {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-start .crest-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: -9px;
+  z-index: 2;
+}
+
+.page-start .crest-leaf {
+  font-size: 16px;
+}
+
+.page-start .crest-leaf.flip {
+  transform: scaleX(-1);
+}
+
+.page-start .crest-shell {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #F7D494, #C78236);
+  border: 2px solid #5E3015;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 8px rgba(36, 16, 6, 0.35);
+}
+
+.page-start .crest-plaque {
+  width: 92%;
+  background: linear-gradient(180deg, rgba(84, 45, 22, 0.92) 0%, rgba(52, 26, 11, 0.95) 100%);
+  border: 2.5px solid #E5B97C;
+  border-radius: 15px;
+  padding: 16px 14px 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow:
+    inset 0 0 0 2.5px rgba(255, 232, 194, 0.2),
+    0 8px 16px rgba(28, 12, 4, 0.45);
+}
+
+.page-start .crest-en {
+  font-size: 10px;
+  color: #EBC48D;
+  letter-spacing: 2.5px;
+  margin-bottom: 5px;
+}
+
+.page-start .crest-zh {
+  font-size: 27px;
+  font-weight: 700;
+  color: #FFF7E8;
+  letter-spacing: 5px;
+}
+
+.page-start .crest-divider {
+  width: 74%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 8px 0 6px;
+}
+
+.page-start .crest-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #E5B97C, transparent);
+}
+
+.page-start .crest-star {
+  color: #F5CE93;
+  font-size: 10px;
+}
+
+.page-start .crest-sub {
+  font-size: 11.5px;
+  color: #F4DCBA;
+  letter-spacing: 1.5px;
+}
+
+/* 底部开始操作区（独立 fixed 最高层级 z-index: 999） */
+.page-start .start-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 999;
+}
+
+.page-start .start-cta {
+  width: 86%;
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 12px 18px;
+}
+
+.page-start .start-cta::after {
+  border: none;
+}
+
+.page-start .cta-hover {
+  transform: translateY(2px);
+  opacity: 0.94;
+}
+
+.page-start .save-hint {
+  font-size: 11px;
+  color: #FFF7E8;
+  background: rgba(54, 24, 10, 0.58);
+  padding: 4px 12px;
+  border-radius: 999px;
+  opacity: 0.96;
+}

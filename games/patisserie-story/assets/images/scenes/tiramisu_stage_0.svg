@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460" width="640" height="460">
+  <defs>
+    <linearGradient id="bgG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EFE0CE"/><stop offset="100%" stop-color="#DEC5A6"/>
+    </linearGradient>
+    <linearGradient id="surfG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D9BA94"/><stop offset="100%" stop-color="#BC9468"/>
+    </linearGradient>
+  </defs>
+  <!-- 欧式烘焙工坊墙面与台面 -->
+  <rect x="0" y="0" width="640" height="190" fill="url(#bgG)"/>
+  <g stroke="#B89066" stroke-width="2" opacity="0.28">
+    <line x1="0" y1="64" x2="640" y2="64"/><line x1="0" y1="128" x2="640" y2="128"/>
+  </g>
+  <rect x="0" y="180" width="640" height="280" fill="url(#surfG)"/>
+  <line x1="0" y1="180" x2="640" y2="180" stroke="#7A4824" stroke-width="5"/>
+  
+  <!-- 顶部工艺铭牌 -->
+  <rect x="150" y="18" width="340" height="40" rx="20" fill="#4A2511" stroke="#DFB06E" stroke-width="3"/>
+  <text x="320" y="44" text-anchor="middle" fill="#FFF4DC" font-size="18" font-weight="700"
+        font-family="-apple-system, 'PingFang SC', sans-serif">步骤 1/4 · 现萃意式浓缩与手指饼干</text>
+  <rect x="136" y="186" width="368" height="202" rx="22" fill="#FFFDF8" stroke="#B88E62" stroke-width="6"/><rect x="172" y="220" width="44" height="134" rx="20" fill="#F5D393" stroke="#9C6528" stroke-width="3"/><rect x="232" y="220" width="44" height="134" rx="20" fill="#F5D393" stroke="#9C6528" stroke-width="3"/><rect x="292" y="220" width="44" height="134" rx="20" fill="#F5D393" stroke="#9C6528" stroke-width="3"/><rect x="352" y="220" width="44" height="134" rx="20" fill="#F5D393" stroke="#9C6528" stroke-width="3"/><rect x="412" y="220" width="44" height="134" rx="20" fill="#F5D393" stroke="#9C6528" stroke-width="3"/>
+</svg>

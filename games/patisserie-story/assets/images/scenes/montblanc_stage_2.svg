@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460" width="640" height="460">
+  <defs>
+    <linearGradient id="bgG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ECE4F0"/><stop offset="100%" stop-color="#D9CEE0"/>
+    </linearGradient>
+    <linearGradient id="surfG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F2E8DC"/><stop offset="100%" stop-color="#D9C4AA"/>
+    </linearGradient>
+  </defs>
+  <!-- 欧式烘焙工坊墙面与台面 -->
+  <rect x="0" y="0" width="640" height="190" fill="url(#bgG)"/>
+  <g stroke="#B89066" stroke-width="2" opacity="0.28">
+    <line x1="0" y1="64" x2="640" y2="64"/><line x1="0" y1="128" x2="640" y2="128"/>
+  </g>
+  <rect x="0" y="180" width="640" height="280" fill="url(#surfG)"/>
+  <line x1="0" y1="180" x2="640" y2="180" stroke="#7A4824" stroke-width="5"/>
+  
+  <!-- 顶部工艺铭牌 -->
+  <rect x="150" y="18" width="340" height="40" rx="20" fill="#4A2511" stroke="#DFB06E" stroke-width="3"/>
+  <text x="320" y="44" text-anchor="middle" fill="#FFF4DC" font-size="18" font-weight="700"
+        font-family="-apple-system, 'PingFang SC', sans-serif">步骤 3/4 · 螺旋绕圈挤出细密栗子泥丝带</text>
+  <ellipse cx="320" cy="356" rx="186" ry="48" fill="#FFFDF8" stroke="#C89662" stroke-width="4.5"/><ellipse cx="320" cy="356" rx="154" ry="34" fill="none" stroke="#DFB06E" stroke-width="2" stroke-dasharray="8 6"/><rect x="216" y="320" width="208" height="32" rx="16" fill="#FFF7E8" stroke="#B88E60" stroke-width="3.5"/><path d="M214 324 C224 220, 272 178, 320 178 C368 178, 416 220, 426 324 Z" fill="#9C653A" stroke="#522B12" stroke-width="4"/><g fill="none" stroke="#DFB184" stroke-width="5" stroke-linecap="round"><path d="M226 306 Q320 326 414 306"/><path d="M234 282 Q320 302 406 282"/><path d="M246 258 Q320 276 394 258"/><path d="M262 234 Q320 250 378 234"/><path d="M280 210 Q320 222 360 210"/></g>
+</svg>

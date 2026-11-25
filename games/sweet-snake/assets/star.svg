@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="frame-deco frame-star" style="top: -7px; left: -6px;" viewBox="0 0 40 40"><defs><linearGradient id="goldStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff5a8"/><stop offset="100%" stop-color="#ffba32"/></linearGradient></defs>
+          <path d="M20 3 L24.8 13.5 L36.5 14.9 L27.8 22.8 L30 34.4 L20 28.7 L10 34.4 L12.2 22.8 L3.5 14.9 L15.2 13.5 Z"
+                fill="url(#goldStarGrad)" stroke="#6b2d47" stroke-width="2.8" stroke-linejoin="round" />
+        </svg>

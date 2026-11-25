@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <defs>
+    <radialGradient id="madBase" cx="42%" cy="34%" r="65%">
+      <stop offset="0%" stop-color="#FFF5C8"/>
+      <stop offset="45%" stop-color="#F5BE55"/>
+      <stop offset="82%" stop-color="#D47E28"/>
+      <stop offset="100%" stop-color="#9E4E14"/>
+    </radialGradient>
+    <linearGradient id="madRib" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF9DC" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#B85D19" stop-opacity="0.65"/>
+    </linearGradient>
+  </defs>
+  <!-- 盘面柔和阴影 -->
+  <ellipse cx="82" cy="136" rx="46" ry="11" fill="#5E3015" opacity="0.2"/>
+  <!-- 贝壳外轮廓（带微微波浪扇形边） -->
+  <path d="M80 20 C114 20, 134 52, 126 88 C118 118, 98 136, 80 138 C62 136, 42 118, 34 88 C26 52, 46 20, 80 20 Z"
+        fill="url(#madBase)" stroke="#753912" stroke-width="3.2"/>
+  <!-- 7道经典放射状贝壳棱纹（明暗立体） -->
+  <g stroke-linecap="round" fill="none">
+    <path d="M80 30 L80 126" stroke="#8F4816" stroke-width="3"/>
+    <path d="M83 32 L83 122" stroke="#FFF6D1" stroke-width="2" opacity="0.7"/>
+    <path d="M64 34 Q58 80 70 124" stroke="#8F4816" stroke-width="2.6"/>
+    <path d="M67 36 Q61 80 72 120" stroke="#FFF6D1" stroke-width="1.8" opacity="0.6"/>
+    <path d="M96 34 Q102 80 90 124" stroke="#8F4816" stroke-width="2.6"/>
+    <path d="M99 36 Q105 80 92 120" stroke="#FFF6D1" stroke-width="1.8" opacity="0.5"/>
+    <path d="M49 46 Q42 84 61 120" stroke="#8F4816" stroke-width="2.3"/>
+    <path d="M111 46 Q118 84 99 120" stroke="#8F4816" stroke-width="2.3"/>
+  </g>
+  <!-- 表面黄油高光与微撒糖粉/柠檬屑 -->
+  <ellipse cx="64" cy="48" rx="14" ry="7" fill="#FFFDF5" opacity="0.52" transform="rotate(-24 64 48)"/>
+  <g fill="#FFFDF8" opacity="0.85">
+    <circle cx="72" cy="64" r="1.8"/><circle cx="88" cy="56" r="1.5"/><circle cx="78" cy="86" r="1.6"/>
+    <circle cx="96" cy="78" r="1.4"/><circle cx="62" cy="92" r="1.4"/>
+  </g>
+  <!-- 底部迷迭香小绿叶点缀 -->
+  <g transform="translate(114, 114) rotate(22)">
+    <ellipse cx="0" cy="0" rx="13" ry="5.5" fill="#6F965A" stroke="#3D5930" stroke-width="2"/>
+    <line x1="-10" y1="0" x2="10" y2="0" stroke="#A6C792" stroke-width="1.5"/>
+  </g>
+</svg>

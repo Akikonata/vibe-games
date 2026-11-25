@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <ellipse cx="80" cy="136" rx="58" ry="10" fill="#5E3015" opacity="0.2"/>
+  <!-- 第3层酥皮（底） -->
+  <rect x="24" y="114" width="112" height="15" rx="6" fill="#D99038" stroke="#6E3812" stroke-width="2.8"/>
+  <!-- 下层挤花卡仕达酱 -->
+  <g fill="#FFF5D6" stroke="#BA8E4E" stroke-width="2.2">
+    <circle cx="38" cy="105" r="11"/><circle cx="59" cy="105" r="11"/><circle cx="80" cy="105" r="11"/>
+    <circle cx="101" cy="105" r="11"/><circle cx="122" cy="105" r="11"/>
+  </g>
+  <!-- 第2层酥皮（中） -->
+  <rect x="24" y="84" width="112" height="14" rx="6" fill="#E39D42" stroke="#6E3812" stroke-width="2.8"/>
+  <!-- 上层挤花卡仕达酱 -->
+  <g fill="#FFF7DF" stroke="#BA8E4E" stroke-width="2.2">
+    <circle cx="38" cy="75" r="11"/><circle cx="59" cy="75" r="11"/><circle cx="80" cy="75" r="11"/>
+    <circle cx="101" cy="75" r="11"/><circle cx="122" cy="75" r="11"/>
+  </g>
+  <!-- 第1层酥皮（顶） + 法式白糖霜羽毛纹 -->
+  <rect x="24" y="54" width="112" height="14" rx="6" fill="#E8A64B" stroke="#6E3812" stroke-width="2.8"/>
+  <path d="M26 54 L40 38 L120 38 L134 54 Z" fill="#FFFDF8" stroke="#753D14" stroke-width="2.8" stroke-linejoin="round"/>
+  <!-- 经典巧克力羽毛纹拉花 -->
+  <path d="M36 46 Q48 40 60 46 Q72 52 84 46 Q96 40 108 46 Q116 50 124 46"
+        fill="none" stroke="#633216" stroke-width="3" stroke-linecap="round"/>
+</svg>

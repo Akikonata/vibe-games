@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <title>糖心蛇蛇 · Sweet Snake</title>
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <main id="app">
+    <div id="screen" class="screen">
+      <img class="clouds fit-fill" src="assets/clouds.png" alt="" />
+      <div class="bubble bubble-one"></div>
+      <div class="bubble bubble-two"></div>
+
+      <!-- 顶部 HUD -->
+      <div id="hud-header" class="header"></div>
+      <div id="level-strip" class="level-strip"></div>
+
+      <!-- 主游戏棋盘区（Canvas 持久挂载，绝不随 UI 重绘销毁） -->
+      <div id="board-area" class="board-area">
+        <div id="board-frame" class="board-frame">
+          <canvas id="gameCanvas" class="game-canvas"></canvas>
+          <div id="tutorial-layer"></div>
+          <img class="corner corner-left" src="assets/star.png" alt="" />
+          <img class="corner corner-right" src="assets/star.png" alt="" />
+        </div>
+      </div>
+
+      <!-- 弹窗与全屏功能视图插槽 -->
+      <div id="overlay-layer"></div>
+      <div id="levels-layer"></div>
+      <div id="home-layer"></div>
+      <div id="shop-layer"></div>
+      <div id="garden-layer" class="garden-view is-hidden">
+        <div id="garden-header" class="garden-header"></div>
+        <div class="garden-stage">
+          <canvas id="gardenCanvas" class="garden-canvas"></canvas>
+          <span class="garden-tip">✨ 戳戳小蛇互动，点右上角金币可去糖果小屋～</span>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

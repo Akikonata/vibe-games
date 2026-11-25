@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="logo-svg" viewBox="0 0 540 132" role="img" aria-label="SWEET SNAKE 糖心蛇蛇"><defs><linearGradient id="goldStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff5a8"/><stop offset="100%" stop-color="#ffba32"/></linearGradient></defs>
+          <defs>
+            <linearGradient id="logoSweetGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffb8db" />
+              <stop offset="45%" stop-color="#ff69a8" />
+              <stop offset="100%" stop-color="#ff9944" />
+            </linearGradient>
+            <linearGradient id="logoSnakeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff49c" />
+              <stop offset="50%" stop-color="#ffcb3b" />
+              <stop offset="100%" stop-color="#ff7a6b" />
+            </linearGradient>
+            <linearGradient id="logoCnGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ff7ab8" />
+              <stop offset="48%" stop-color="#ff5c9e" />
+              <stop offset="75%" stop-color="#ffbe3b" />
+              <stop offset="100%" stop-color="#ffd95c" />
+            </linearGradient>
+            <linearGradient id="wingGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="100%" stop-color="#ffd9ea" />
+            </linearGradient>
+          </defs>
+
+          <!-- Cute Angel Wing Left -->
+          <g transform="translate(8, 20)">
+            <path d="M58 26 C35 6 10 8 4 19 C13 24 22 25 22 25 C10 29 8 39 18 42 C26 44 33 41 33 41 C24 47 26 56 38 54 C48 52 56 44 62 36 Z"
+                  fill="url(#wingGrad)" stroke="#6b2d47" stroke-width="4" stroke-linejoin="round" />
+            <path d="M46 28 C34 22 24 22 18 24" stroke="#ffb3d4" stroke-width="2.5" stroke-linecap="round" fill="none" />
+          </g>
+
+          <!-- Cute Angel Wing Right -->
+          <g transform="translate(472, 20) scale(-1, 1) translate(-60, 0)">
+            <path d="M58 26 C35 6 10 8 4 19 C13 24 22 25 22 25 C10 29 8 39 18 42 C26 44 33 41 33 41 C24 47 26 56 38 54 C48 52 56 44 62 36 Z"
+                  fill="url(#wingGrad)" stroke="#6b2d47" stroke-width="4" stroke-linejoin="round" />
+            <path d="M46 28 C34 22 24 22 18 24" stroke="#ffb3d4" stroke-width="2.5" stroke-linecap="round" fill="none" />
+          </g>
+
+          <!-- Outer White Sticker Outline for "SWEET SNAKE" -->
+          <text x="270" y="64" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="60" font-weight="700"
+                fill="#ffffff" stroke="#ffffff" stroke-width="22" stroke-linejoin="round" letter-spacing="1">
+            SWEET SNAKE
+          </text>
+          <!-- Thick Dark Berry Outline -->
+          <text x="270" y="64" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="60" font-weight="700"
+                fill="#6b2d47" stroke="#6b2d47" stroke-width="11" stroke-linejoin="round" letter-spacing="1">
+            SWEET SNAKE
+          </text>
+          <!-- Main Candy Gradient Fill -->
+          <text x="270" y="64" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="60" font-weight="700"
+                letter-spacing="1">
+            <tspan fill="url(#logoSweetGrad)">SWEET </tspan><tspan fill="url(#logoSnakeGrad)">SNAKE</tspan>
+          </text>
+          <!-- Subtle Glossy Top Highlight -->
+          <text x="270" y="61" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="60" font-weight="700"
+                fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.6" letter-spacing="1">
+            SWEET SNAKE
+          </text>
+
+          <!-- Chinese Subtitle "糖心蛇蛇" -->
+          <text x="270" y="116" text-anchor="middle" font-family="'ZCOOL KuaiLe', 'PingFang SC', sans-serif" font-size="40" font-weight="700"
+                fill="#ffffff" stroke="#ffffff" stroke-width="16" stroke-linejoin="round" letter-spacing="4">
+            糖心蛇蛇
+          </text>
+          <text x="270" y="116" text-anchor="middle" font-family="'ZCOOL KuaiLe', 'PingFang SC', sans-serif" font-size="40" font-weight="700"
+                fill="#6b2d47" stroke="#6b2d47" stroke-width="8" stroke-linejoin="round" letter-spacing="4">
+            糖心蛇蛇
+          </text>
+          <text x="270" y="116" text-anchor="middle" font-family="'ZCOOL KuaiLe', 'PingFang SC', sans-serif" font-size="40" font-weight="700"
+                fill="url(#logoCnGrad)" letter-spacing="4">
+            糖心蛇蛇
+          </text>
+
+          <!-- Cute Tiny Blossoms Flanking Subtitle -->
+          <g transform="translate(118, 97)">
+            <circle cx="0" cy="-6" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="6" cy="0" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="0" cy="6" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="-6" cy="0" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="0" cy="0" r="3.5" fill="#ff69a8" />
+          </g>
+          <g transform="translate(422, 97)">
+            <circle cx="0" cy="-6" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="6" cy="0" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="0" cy="6" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="-6" cy="0" r="5" fill="#fff099" stroke="#6b2d47" stroke-width="2" />
+            <circle cx="0" cy="0" r="3.5" fill="#ff69a8" />
+          </g>
+          <!-- Little Pink Sparkle Dots -->
+          <circle cx="136" cy="113" r="3.5" fill="#ff7eb3" stroke="#6b2d47" stroke-width="1.5" />
+          <circle cx="404" cy="113" r="3.5" fill="#ff7eb3" stroke="#6b2d47" stroke-width="1.5" />
+        </svg>

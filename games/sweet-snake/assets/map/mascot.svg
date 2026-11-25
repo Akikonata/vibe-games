@@ -1,0 +1,25 @@
+<svg viewBox="0 0 72 72" width="58" height="58" xmlns="http://www.w3.org/2000/svg">
+          <!-- Cute coiled pink tail peeking behind -->
+          <circle cx="52" cy="48" r="10" fill="#FF6EA4" stroke="#6B2846" stroke-width="2.5"/>
+          <circle cx="43" cy="54" r="10.5" fill="#FF89B8" stroke="#6B2846" stroke-width="2.5"/>
+          <!-- Main plump head -->
+          <ellipse cx="34" cy="41" rx="20" ry="17.5" fill="#FFB3D1" stroke="#6B2846" stroke-width="2.6"/>
+          <!-- Gloss highlight -->
+          <ellipse cx="26" cy="31" rx="7" ry="3.6" fill="#FFE6F0" transform="rotate(-18 26 31)"/>
+          <!-- Tiny golden crown -->
+          <path d="M23 24 L20 11 L29 17 L34 8 L39 17 L48 11 L45 24 Z"
+                fill="#FFD84D" stroke="#6B2846" stroke-width="2.3" stroke-linejoin="round"/>
+          <circle cx="34" cy="18.5" r="2.2" fill="#FF5D92"/>
+          <!-- Sparkling kawaii eyes -->
+          <circle cx="25.5" cy="40.5" r="3.8" fill="#521C35"/>
+          <circle cx="24.2" cy="39.2" r="1.4" fill="#FFFFFF"/>
+          <circle cx="42.5" cy="40.5" r="3.8" fill="#521C35"/>
+          <circle cx="41.2" cy="39.2" r="1.4" fill="#FFFFFF"/>
+          <!-- Rosy cheeks -->
+          <ellipse cx="20" cy="45.5" rx="4" ry="2.3" fill="#FF6B9E" opacity="0.65"/>
+          <ellipse cx="48" cy="45.5" rx="4" ry="2.3" fill="#FF6B9E" opacity="0.65"/>
+          <!-- Cute 'w' smile -->
+          <path d="M30 45.5 Q32 48.2 34 45.8 Q36 48.2 38 45.5" fill="none" stroke="#6B2846" stroke-width="2.1" stroke-linecap="round"/>
+          <!-- Pointer triangle underneath -->
+          <polygon points="30,61 38,61 34,67" fill="#FFD84D" stroke="#6B2846" stroke-width="2" stroke-linejoin="round"/>
+        </svg>

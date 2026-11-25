@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460" width="640" height="460">
+  <defs>
+    <!-- 欧式红砖烤炉墙壁渐变 -->
+    <linearGradient id="wallBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EBD3B6"/>
+      <stop offset="100%" stop-color="#D4AE84"/>
+    </linearGradient>
+    <!-- 红砖拱门材质 -->
+    <linearGradient id="brickGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B5653B"/>
+      <stop offset="100%" stop-color="#874220"/>
+    </linearGradient>
+    <!-- 炉膛内部火光渐变 -->
+    <linearGradient id="hearthGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6E3718"/>
+      <stop offset="100%" stop-color="#C46320"/>
+    </linearGradient>
+    <!-- 暖火外溢光晕 -->
+    <radialGradient id="fireGlow" cx="50%" cy="62%" r="52%">
+      <stop offset="0%" stop-color="#FFB84D" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FFB84D" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 铜烤盘金属渐变 -->
+    <linearGradient id="copperPan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9E5626"/>
+      <stop offset="35%" stop-color="#E39D5B"/>
+      <stop offset="70%" stop-color="#C97B38"/>
+      <stop offset="100%" stop-color="#87461C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 1. 烘焙坊暖焦糖砖墙背景 -->
+  <rect x="0" y="0" width="640" height="460" fill="url(#wallBg)"/>
+  <!-- 背景隐约砖缝 -->
+  <g stroke="#C29A6E" stroke-width="2" opacity="0.45">
+    <line x1="0" y1="60" x2="640" y2="60"/>
+    <line x1="0" y1="120" x2="640" y2="120"/>
+    <line x1="0" y1="180" x2="640" y2="180"/>
+    <line x1="0" y1="240" x2="640" y2="240"/>
+    <line x1="0" y1="300" x2="640" y2="300"/>
+    <line x1="80" y1="0" x2="80" y2="60"/><line x1="560" y1="0" x2="560" y2="60"/>
+    <line x1="40" y1="60" x2="40" y2="120"/><line x1="600" y1="60" x2="600" y2="120"/>
+  </g>
+
+  <!-- 两侧墙面挂件：铜制打蛋器、木铲与迷迭香绿植 -->
+  <g stroke="#5E3015" stroke-width="3" stroke-linecap="round">
+    <!-- 左侧悬挂迷迭香香草束 -->
+    <path d="M56 54 L56 128" stroke="#6E4424"/>
+    <g fill="#6B8E58" stroke="#3D5932" stroke-width="2">
+      <ellipse cx="44" cy="96" rx="12" ry="5" transform="rotate(-35 44 96)"/>
+      <ellipse cx="68" cy="100" rx="12" ry="5" transform="rotate(35 68 100)"/>
+      <ellipse cx="42" cy="116" rx="13" ry="5" transform="rotate(-28 42 116)"/>
+      <ellipse cx="70" cy="120" rx="13" ry="5" transform="rotate(28 70 120)"/>
+    </g>
+    <!-- 右侧悬挂铜锅/木铲 -->
+    <line x1="584" y1="54" x2="584" y2="112" stroke="#8C4E22" stroke-width="5"/>
+    <circle cx="584" cy="134" r="24" fill="url(#copperPan)" stroke="#5E3015" stroke-width="3"/>
+    <circle cx="584" cy="134" r="15" fill="none" stroke="#F7D59C" stroke-width="2" opacity="0.7"/>
+  </g>
+
+  <!-- 2. 欧式古典烤炉石砌拱顶主体 -->
+  <!-- 顶部壁炉烟囱与木质壁炉架 -->
+  <rect x="176" y="0" width="288" height="44" fill="#A65B34" stroke="#5E3015" stroke-width="4"/>
+  <rect x="96" y="38" width="448" height="28" rx="10" fill="#7A421E" stroke="#4A2511" stroke-width="4"/>
+  <rect x="110" y="44" width="420" height="8" rx="4" fill="#B5733B" opacity="0.65"/>
+
+  <!-- 烤炉砖砌主身 -->
+  <rect x="112" y="66" width="416" height="330" rx="18" fill="url(#brickGrad)" stroke="#522810" stroke-width="4.5"/>
+
+  <!-- 古典石砌拱门外环 -->
+  <path d="M148 368 L148 232 A172 152 0 0 1 492 232 L492 368 Z"
+        fill="#E8CBA6" stroke="#5E3015" stroke-width="4.5"/>
+  <!-- 拱顶中心锁石（Keystone）与黄铜温度小牌 -->
+  <polygon points="292,76 348,76 340,114 300,114" fill="#F5DFC0" stroke="#5E3015" stroke-width="3.5"/>
+  <rect x="262" y="84" width="116" height="26" rx="13" fill="#4A2511" stroke="#DFB06E" stroke-width="2.5"/>
+  <text x="320" y="102" text-anchor="middle" fill="#FCE2A6" font-size="15" font-weight="700"
+        font-family="-apple-system, 'PingFang SC', sans-serif">185°C · 烘焙</text>
+
+  <!-- 3. 铸铁内拱门框与炉膛内部 -->
+  <path d="M174 364 L174 238 A146 124 0 0 1 466 238 L466 364 Z"
+        fill="url(#hearthGrad)" stroke="#3D1F10" stroke-width="7"/>
+
+  <!-- 炉膛内部耐火砖弧线纹理 -->
+  <g stroke="#000000" stroke-width="2" opacity="0.22">
+    <line x1="184" y1="224" x2="456" y2="224"/>
+    <line x1="178" y1="264" x2="462" y2="264"/>
+    <line x1="178" y1="304" x2="462" y2="304"/>
+  </g>
+
+  <!-- 4. 炉膛底部柴火与火苗 -->
+  <!-- 木柴 -->
+  <g stroke="#3B1A0B" stroke-width="3">
+    <rect x="234" y="344" width="96" height="16" rx="8" fill="#6E3B1E" transform="rotate(-6 282 352)"/>
+    <rect x="308" y="344" width="98" height="16" rx="8" fill="#5E3015" transform="rotate(7 357 352)"/>
+  </g>
+  
+    <g opacity="0.95">
+      <ellipse cx="320" cy="350" rx="132" ry="18" fill="#FF9E3D" opacity="0.32"/>
+      <!-- 跃动温暖柴火 -->
+      <path d="M238 352 Q248 316.4 262 332 Q272 302 284 352 Z" fill="#E86220"/>
+      <path d="M276 352 Q292 297.2 312 317.2 Q326 294.8 342 352 Z" fill="#F27A24"/>
+      <path d="M336 352 Q352 304.4 366 330 Q382 314.0 398 352 Z" fill="#E86220"/>
+      <!-- 亮黄内焰 -->
+      <path d="M288 352 Q306 316.0 320 328.0 Q334 317.44 348 352 Z" fill="#FFD66B"/>
+      <path d="M250 352 Q262 328.0 274 352 Z" fill="#FFE28A"/>
+      <path d="M352 352 Q366 325.6 380 352 Z" fill="#FFE28A"/>
+    </g>
+
+  <!-- 5. 中层铸铁烤架与玛德琳手工铜烤盘 -->
+  <rect x="176" y="308" width="288" height="8" rx="4" fill="#3D261C" stroke="#24140E" stroke-width="2"/>
+  <!-- 铜烤盘托盘 -->
+  <path d="M206 296 L434 296 L424 312 L216 312 Z" fill="url(#copperPan)" stroke="#4A2511" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 烤盘里的 3 颗玛德琳蛋糕 -->
+  
+    <g transform="translate(254, 286) scale(1, 1.04)">
+      <path d="M0 -22 C16 -22, 24 -4, 16 14 C10 24, -10 24, -16 14 C-24 -4, -16 -22, 0 -22 Z"
+            fill="#E39F3E" stroke="#9C5A1E" stroke-width="2.4"/>
+      <path d="M0 -18 C11 -18, 17 -4, 11 10 C6 18, -6 18, -11 10 C-17 -4, -11 -18, 0 -18 Z"
+            fill="#FAD682" opacity="0.72"/>
+      <!-- 玛德琳经典贝壳棱纹 -->
+      <path d="M0 -16 L0 16 M-8 -12 L-10 13 M8 -12 L10 13" stroke="#9C5A1E" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+      <ellipse cx="248" cy="280" rx="6" ry="3" fill="#FFFDF5" opacity="0.65"/>
+    </g>
+    <g transform="translate(320, 286) scale(1, 1.04)">
+      <path d="M0 -22 C16 -22, 24 -4, 16 14 C10 24, -10 24, -16 14 C-24 -4, -16 -22, 0 -22 Z"
+            fill="#E39F3E" stroke="#9C5A1E" stroke-width="2.4"/>
+      <path d="M0 -18 C11 -18, 17 -4, 11 10 C6 18, -6 18, -11 10 C-17 -4, -11 -18, 0 -18 Z"
+            fill="#FAD682" opacity="0.72"/>
+      <!-- 玛德琳经典贝壳棱纹 -->
+      <path d="M0 -16 L0 16 M-8 -12 L-10 13 M8 -12 L10 13" stroke="#9C5A1E" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+      <ellipse cx="314" cy="280" rx="6" ry="3" fill="#FFFDF5" opacity="0.65"/>
+    </g>
+    <g transform="translate(386, 286) scale(1, 1.04)">
+      <path d="M0 -22 C16 -22, 24 -4, 16 14 C10 24, -10 24, -16 14 C-24 -4, -16 -22, 0 -22 Z"
+            fill="#E39F3E" stroke="#9C5A1E" stroke-width="2.4"/>
+      <path d="M0 -18 C11 -18, 17 -4, 11 10 C6 18, -6 18, -11 10 C-17 -4, -11 -18, 0 -18 Z"
+            fill="#FAD682" opacity="0.72"/>
+      <!-- 玛德琳经典贝壳棱纹 -->
+      <path d="M0 -16 L0 16 M-8 -12 L-10 13 M8 -12 L10 13" stroke="#9C5A1E" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+      <ellipse cx="380" cy="280" rx="6" ry="3" fill="#FFFDF5" opacity="0.65"/>
+    </g>
+
+  <!-- 6. 烘焙热气与星光 -->
+  
+    <g fill="none" stroke="#FFF7E6" stroke-width="4" stroke-linecap="round" opacity="0.55">
+      <path d="M266 256 C256 238, 276 222, 264 202"/>
+      <path d="M320 250 C310 230, 332 214, 320 192"/>
+      <path d="M374 256 C364 238, 384 222, 372 202"/>
+    </g>
+    
+
+  <!-- 7. 炉膛底部石质炉台与储木槽 -->
+  <rect x="84" y="364" width="472" height="24" rx="10" fill="#DFBE96" stroke="#5E3015" stroke-width="4"/>
+  <rect x="108" y="388" width="424" height="72" fill="#5A2F16" stroke="#3B1A0B" stroke-width="4"/>
+  <!-- 底部储木圆木堆 -->
+  <g fill="#9E6234" stroke="#4A2511" stroke-width="3">
+    <circle cx="176" cy="426" r="18"/><circle cx="212" cy="426" r="18"/><circle cx="248" cy="426" r="18"/>
+    <circle cx="194" cy="404" r="16"/><circle cx="230" cy="404" r="16"/>
+    <circle cx="464" cy="426" r="18"/><circle cx="428" cy="426" r="18"/><circle cx="392" cy="426" r="18"/>
+    <circle cx="446" cy="404" r="16"/><circle cx="410" cy="404" r="16"/>
+  </g>
+  <!-- 底部中央小铁铲 -->
+  <rect x="315" y="400" width="10" height="44" rx="4" fill="#3D261C"/>
+  <path d="M300 440 L340 440 L334 454 L306 454 Z" fill="#6E4E3D" stroke="#2C1810" stroke-width="2"/>
+
+  <!-- 整体温暖炉火外溢光晕 -->
+  <rect x="0" y="0" width="640" height="460" fill="url(#fireGlow)" pointer-events="none"/>
+</svg>

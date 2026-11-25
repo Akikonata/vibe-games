@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 500" width="640" height="500">
+  <defs>
+    <linearGradient id="tileW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2E2CE"/><stop offset="1" stop-color="#DFC4A6"/></linearGradient>
+    <linearGradient id="ironTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B3826"/><stop offset="1" stop-color="#3A2014"/></linearGradient>
+  </defs>
+  <!-- 欧式厨房瓷砖背墙 -->
+  <rect width="640" height="220" fill="url(#tileW)"/>
+  <g stroke="#C8A882" stroke-width="2" opacity="0.5">
+    <line x1="0" y1="55" x2="640" y2="55"/><line x1="0" y1="110" x2="640" y2="110"/><line x1="0" y1="165" x2="640" y2="165"/>
+    <line x1="106" y1="0" x2="106" y2="220"/><line x1="212" y1="0" x2="212" y2="220"/><line x1="320" y1="0" x2="320" y2="220"/>
+    <line x1="428" y1="0" x2="428" y2="220"/><line x1="534" y1="0" x2="534" y2="220"/>
+  </g>
+  <!-- 顶部悬挂铜勺、肉桂与迷迭香架 -->
+  <rect x="34" y="28" width="572" height="10" rx="5" fill="#7A4420" stroke="#4A2511" stroke-width="2"/>
+  <g stroke="#5E3015" stroke-width="3">
+    <line x1="94" y1="38" x2="94" y2="90"/><circle cx="94" cy="108" r="20" fill="#D98B48"/>
+    <line x1="546" y1="38" x2="546" y2="88"/><path d="M532 88 L560 88 L554 126 L538 126 Z" fill="#C97B38"/>
+  </g>
+  <g fill="#6B8E58" stroke="#3B5430" stroke-width="2">
+    <ellipse cx="180" cy="64" rx="14" ry="6" transform="rotate(-30 180 64)"/>
+    <ellipse cx="198" cy="76" rx="14" ry="6" transform="rotate(24 198 76)"/>
+    <ellipse cx="456" cy="66" rx="14" ry="6" transform="rotate(28 456 66)"/>
+    <ellipse cx="438" cy="78" rx="14" ry="6" transform="rotate(-24 438 78)"/>
+  </g>
+  <!-- 复古法式铸铁三眼灶台台面 -->
+  <rect x="0" y="196" width="640" height="304" fill="url(#ironTop)"/>
+  <rect x="0" y="196" width="640" height="16" fill="#B87A44" stroke="#4A2511" stroke-width="3"/>
+  <!-- 灶台金属旋钮底栏 -->
+  <rect x="0" y="458" width="640" height="42" fill="#4A2511"/>
+  <g fill="#DFB06E" stroke="#2E1308" stroke-width="3">
+    <circle cx="136" cy="479" r="13"/><circle cx="320" cy="479" r="13"/><circle cx="504" cy="479" r="13"/>
+  </g>
+</svg>

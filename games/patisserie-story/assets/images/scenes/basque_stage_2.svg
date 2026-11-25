@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460" width="640" height="460">
+  <defs>
+    <linearGradient id="bgG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D8CEBE"/><stop offset="100%" stop-color="#BCAE9A"/>
+    </linearGradient>
+    <linearGradient id="surfG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C9A47C"/><stop offset="100%" stop-color="#A67B52"/>
+    </linearGradient>
+  </defs>
+  <!-- 欧式烘焙工坊墙面与台面 -->
+  <rect x="0" y="0" width="640" height="190" fill="url(#bgG)"/>
+  <g stroke="#B89066" stroke-width="2" opacity="0.28">
+    <line x1="0" y1="64" x2="640" y2="64"/><line x1="0" y1="128" x2="640" y2="128"/>
+  </g>
+  <rect x="0" y="180" width="640" height="280" fill="url(#surfG)"/>
+  <line x1="0" y1="180" x2="640" y2="180" stroke="#7A4824" stroke-width="5"/>
+  
+  <!-- 顶部工艺铭牌 -->
+  <rect x="150" y="18" width="340" height="40" rx="20" fill="#4A2511" stroke="#DFB06E" stroke-width="3"/>
+  <text x="320" y="44" text-anchor="middle" fill="#FFF4DC" font-size="18" font-weight="700"
+        font-family="-apple-system, 'PingFang SC', sans-serif">步骤 3/4 · 230°C 超高温焦糖化烘焙</text>
+  <path d="M188 182 L212 138 L256 164 L318 130 L382 162 L428 136 L452 186 L438 356 L202 356 Z" fill="#EFE0C6" stroke="#9E764E" stroke-width="4" stroke-linejoin="round"/><path d="M206 204 Q320 176 434 204 Q320 232 206 204 Z" fill="#7A3B16" stroke="#3B1807" stroke-width="3.5"/><path d="M208 206 Q320 232 432 206 L424 352 Q320 370 216 352 Z" fill="#F7DC88" stroke="#8C4E22" stroke-width="3.5"/>
+</svg>

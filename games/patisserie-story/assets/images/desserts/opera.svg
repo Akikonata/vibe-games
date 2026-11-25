@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <ellipse cx="80" cy="136" rx="58" ry="10" fill="#3B1A0B" opacity="0.24"/>
+  <!-- 顶面黑巧镜面 -->
+  <polygon points="24,64 78,42 136,64 82,86" fill="#2E1308" stroke="#1A0903" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 顶面一片璀璨金箔 -->
+  <polygon points="74,56 90,52 94,64 78,68" fill="#FFD966" stroke="#B88224" stroke-width="1.8"/>
+  <!-- 左侧 7 层精密条纹 -->
+  <g stroke="#2E1308" stroke-width="1.5">
+    <polygon points="24,64 82,86 82,93 24,71" fill="#3B1A0B"/>
+    <polygon points="24,71 82,93 82,100 24,78" fill="#F2D29B"/>
+    <polygon points="24,78 82,100 82,107 24,85" fill="#9C6032"/>
+    <polygon points="24,85 82,107 82,114 24,92" fill="#F2D29B"/>
+    <polygon points="24,92 82,114 82,121 24,99" fill="#4A210D"/>
+    <polygon points="24,99 82,121 82,128 24,106" fill="#E6BE82"/>
+  </g>
+  <!-- 右侧 7 层精密条纹 -->
+  <g stroke="#2E1308" stroke-width="1.5">
+    <polygon points="82,86 136,64 136,71 82,93" fill="#291106"/>
+    <polygon points="82,93 136,71 136,78 82,100" fill="#DFBA80"/>
+    <polygon points="82,100 136,78 136,85 82,107" fill="#824E26"/>
+    <polygon points="82,107 136,85 136,92 82,114" fill="#DFBA80"/>
+    <polygon points="82,114 136,92 136,99 82,121" fill="#3B1808"/>
+    <polygon points="82,121 136,99 136,106 82,128" fill="#CFA66B"/>
+  </g>
+</svg>

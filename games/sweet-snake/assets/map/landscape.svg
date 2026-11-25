@@ -1,0 +1,320 @@
+<svg class="map-bg-svg" viewBox="0 0 430 1460" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Sky to Meadow vertical gradient -->
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFB9D8"/>
+              <stop offset="18%" stop-color="#FFD8EA"/>
+              <stop offset="36%" stop-color="#FFEAF2"/>
+              <stop offset="56%" stop-color="#E7F6D5"/>
+              <stop offset="100%" stop-color="#CBEBB9"/>
+            </linearGradient>
+
+            <!-- Soft hills -->
+            <linearGradient id="hillPink" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFD1E4"/>
+              <stop offset="100%" stop-color="#F6B0CE"/>
+            </linearGradient>
+            <linearGradient id="hillPeach" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E2F4C8"/>
+              <stop offset="100%" stop-color="#BCE4A8"/>
+            </linearGradient>
+            <linearGradient id="hillMint" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#D4F0BA"/>
+              <stop offset="100%" stop-color="#A8DA92"/>
+            </linearGradient>
+            <linearGradient id="hillDeep" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#C6E9AA"/>
+              <stop offset="100%" stop-color="#9BD384"/>
+            </linearGradient>
+
+            <!-- Strawberry Milk Creek -->
+            <linearGradient id="creekGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#B5EEFF"/>
+              <stop offset="50%" stop-color="#E2F8FF"/>
+              <stop offset="100%" stop-color="#A5E4FA"/>
+            </linearGradient>
+
+            <!-- Winding Cream Road -->
+            <linearGradient id="roadBase" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFF4EC"/>
+              <stop offset="100%" stop-color="#FFE3D6"/>
+            </linearGradient>
+            <linearGradient id="roadUnlocked" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#FF7AA8"/>
+              <stop offset="100%" stop-color="#FFB75E"/>
+            </linearGradient>
+
+            <!-- Tree canopy -->
+            <radialGradient id="canopyPink" cx="40%" cy="30%" r="65%">
+              <stop offset="0%" stop-color="#FFE1EE"/>
+              <stop offset="55%" stop-color="#FFA6CA"/>
+              <stop offset="100%" stop-color="#EE7AA9"/>
+            </radialGradient>
+            <radialGradient id="canopyGreen" cx="38%" cy="30%" r="65%">
+              <stop offset="0%" stop-color="#DDF7B8"/>
+              <stop offset="60%" stop-color="#9EDB82"/>
+              <stop offset="100%" stop-color="#76BF62"/>
+            </radialGradient>
+            <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#B6765D"/>
+              <stop offset="50%" stop-color="#D7997E"/>
+              <stop offset="100%" stop-color="#9D5E48"/>
+            </linearGradient>
+
+            <!-- Cloud gradient -->
+            <linearGradient id="cloudGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFFFFF"/>
+              <stop offset="100%" stop-color="#FFE8F2"/>
+            </linearGradient>
+            <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+              <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#7C3253" flood-opacity="0.16"/>
+            </filter>
+          </defs>
+
+          <!-- Base backdrop -->
+          <rect width="430" height="1460" fill="url(#skyGrad)"/>
+
+          <!-- ================= TOP CLOUD KINGDOM (COMING SOON) ================= -->
+          <!-- Rainbow Candy Arch -->
+          <path d="M 75 215 A 140 120 0 0 1 355 215" fill="none" stroke="#FF92BC" stroke-width="14" stroke-linecap="round" opacity="0.55"/>
+          <path d="M 89 215 A 126 108 0 0 1 341 215" fill="none" stroke="#FFE17D" stroke-width="12" stroke-linecap="round" opacity="0.62"/>
+          <path d="M 101 215 A 114 96 0 0 1 329 215" fill="none" stroke="#B7F1FF" stroke-width="10" stroke-linecap="round" opacity="0.6"/>
+
+          <!-- Twinkling sky stars -->
+          <g fill="#FFFDF0">
+            <path class="twinkle" d="M52 130 l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+            <path class="twinkle-delay" d="M376 118 l2.5 7 7 2.5-7 2.5-2.5 7-2.5-7-7-2.5 7-2.5z"/>
+            <path class="twinkle" d="M350 230 l2 5.5 5.5 2-5.5 2-2 5.5-2-5.5-5.5-2 5.5-2z"/>
+            <path class="twinkle-delay" d="M74 265 l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z"/>
+          </g>
+
+          <!-- Floating Dreamy Cloud Castle Island -->
+          <g class="cloud-drift-1" filter="url(#softShadow)">
+            <!-- Castle towers behind cloud -->
+            <rect x="176" y="138" width="24" height="48" rx="6" fill="#FFCCE0" stroke="#9C4268" stroke-width="2.2"/>
+            <polygon points="172,140 188,112 204,140" fill="#FF79AB" stroke="#9C4268" stroke-width="2.2" stroke-linejoin="round"/>
+            <rect x="230" y="138" width="24" height="48" rx="6" fill="#FFCCE0" stroke="#9C4268" stroke-width="2.2"/>
+            <polygon points="226,140 242,112 258,140" fill="#FF79AB" stroke="#9C4268" stroke-width="2.2" stroke-linejoin="round"/>
+            <rect x="195" y="124" width="40" height="62" rx="8" fill="#FFF3F8" stroke="#9C4268" stroke-width="2.4"/>
+            <polygon points="189,126 215,92 241,126" fill="#FFD452" stroke="#9C4268" stroke-width="2.4" stroke-linejoin="round"/>
+            <!-- Heart gate -->
+            <path d="M215 154 c-5-6-13-1-13 5 0 7 13 14 13 14s13-7 13-14c0-6-8-11-13-5z" fill="#FF6B9E"/>
+            <!-- Fluffy cloud cushion -->
+            <path d="M108 214 C96 214 88 203 92 191 C95 181 106 176 116 179 C123 166 139 160 153 166 C163 156 181 154 195 164 C208 153 230 154 242 166 C257 159 276 165 284 179 C297 177 310 185 313 197 C316 208 307 218 295 218 L112 218 Z" fill="url(#cloudGrad)" stroke="#E397B8" stroke-width="2.2"/>
+            <!-- Coming soon pill on cloud -->
+            <rect x="135" y="182" width="160" height="27" rx="13.5" fill="#FFF7FB" stroke="#D1749B" stroke-width="1.8"/>
+            
+          </g>
+
+          <!-- Background Fluffy Clouds -->
+          <g class="cloud-drift-2" opacity="0.88">
+            <path d="M12 292 C4 292 0 282 6 276 C12 270 21 271 26 274 C31 265 44 264 52 271 C60 269 70 274 71 283 C72 290 66 295 58 295 L14 295 Z" fill="#FFF9FC"/>
+            <path d="M352 278 C345 278 341 269 346 263 C351 258 359 258 364 261 C369 253 381 252 389 259 C397 257 406 262 407 270 C408 276 402 281 395 281 L354 281 Z" fill="#FFF9FC"/>
+          </g>
+
+          <!-- ================= LAYERED ROLLING HILLS ================= -->
+          <!-- Pink blossom ridge -->
+          <path d="M0 328 Q105 275 220 315 T430 302 L430 560 L0 560 Z" fill="url(#hillPink)"/>
+          <!-- Soft sunlit meadow hill -->
+          <path d="M0 448 Q125 390 250 432 T430 412 L430 820 L0 820 Z" fill="url(#hillPeach)"/>
+          <!-- Mid green hill -->
+          <path d="M0 735 Q140 675 275 724 T430 700 L430 1120 L0 1120 Z" fill="url(#hillMint)"/>
+          <!-- Foreground lush hill -->
+          <path d="M0 1070 Q135 1015 265 1068 T430 1040 L430 1460 L0 1460 Z" fill="url(#hillDeep)"/>
+
+          <!-- ================= SPARKLING MILK-BLUE CREEK & BRIDGE ================= -->
+          <path d="M-10 818 C95 790 170 860 265 845 C340 832 395 796 440 812 L440 864 C385 848 335 884 260 896 C165 910 88 844 -10 868 Z" fill="url(#creekGrad)" stroke="#8DD8F0" stroke-width="2.5"/>
+          <!-- Water sparkles -->
+          <path d="M42 838 Q62 832 82 838" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8"/>
+          <path d="M325 848 Q348 840 370 848" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8"/>
+          <circle cx="110" cy="852" r="3" fill="#FFF" opacity="0.85"/>
+          <circle cx="388" cy="832" r="2.5" fill="#FFF" opacity="0.85"/>
+
+          <!-- ================= HERO PEACH & STRAWBERRY BLOSSOM TREE (Zone 2) ================= -->
+          <g class="tree-sway" transform="translate(215, 515)" filter="url(#softShadow)">
+            <!-- Tree shadow on grass -->
+            <ellipse cx="0" cy="94" rx="88" ry="18" fill="#7FB86E" opacity="0.35"/>
+            <!-- Trunk & branches -->
+            <path d="M-24 92 C-16 58 -15 24 -22 -14 C-38 -28 -55 -35 -68 -48 L-52 -56 C-38 -44 -26 -37 -14 -28 L-8 -58 L12 -58 L16 -24 C30 -36 46 -44 60 -52 L68 -40 C50 -30 34 -20 22 -4 C16 26 18 62 30 92 Z" fill="url(#trunkGrad)" stroke="#7A4434" stroke-width="2.6" stroke-linejoin="round"/>
+            <!-- Lush leafy pink-and-green blossom crown -->
+            <circle cx="-68" cy="-42" r="46" fill="url(#canopyGreen)" stroke="#629D54" stroke-width="2.4"/>
+            <circle cx="68" cy="-38" r="46" fill="url(#canopyGreen)" stroke="#629D54" stroke-width="2.4"/>
+            <circle cx="-44" cy="-86" r="50" fill="url(#canopyPink)" stroke="#C65C8A" stroke-width="2.4"/>
+            <circle cx="46" cy="-84" r="50" fill="url(#canopyPink)" stroke="#C65C8A" stroke-width="2.4"/>
+            <circle cx="0" cy="-108" r="56" fill="url(#canopyPink)" stroke="#C65C8A" stroke-width="2.4"/>
+            <circle cx="0" cy="-54" r="48" fill="url(#canopyGreen)" stroke="#629D54" stroke-width="2.2"/>
+            <!-- Hanging cute peaches & strawberries -->
+            <g>
+              <circle cx="-46" cy="-78" r="10" fill="#FF7396" stroke="#6B2846" stroke-width="1.8"/>
+              <path d="M-46 -88 c4-5 9-3 8 2" fill="#7CD46A" stroke="#4D8A41" stroke-width="1.4"/>
+              <circle cx="-49" cy="-81" r="2.6" fill="#FFD1DE"/>
+
+              <circle cx="52" cy="-72" r="10" fill="#FF8C8C" stroke="#6B2846" stroke-width="1.8"/>
+              <path d="M52 -82 c4-5 9-3 8 2" fill="#7CD46A" stroke="#4D8A41" stroke-width="1.4"/>
+              <circle cx="49" cy="-75" r="2.6" fill="#FFD9D9"/>
+
+              <circle cx="8" cy="-112" r="9.5" fill="#FF6B99" stroke="#6B2846" stroke-width="1.8"/>
+              <circle cx="5" cy="-115" r="2.4" fill="#FFD1DE"/>
+
+              <circle cx="-72" cy="-36" r="8.5" fill="#FF7A9C" stroke="#6B2846" stroke-width="1.8"/>
+              <circle cx="72" cy="-30" r="8.5" fill="#FF7A9C" stroke="#6B2846" stroke-width="1.8"/>
+            </g>
+            <!-- Cute flowers on canopy -->
+            <g fill="#FFF7FB" stroke="#E07CA7" stroke-width="1.2">
+              <circle cx="-18" cy="-96" r="5.5"/><circle cx="-18" cy="-96" r="2" fill="#FFD447" stroke="none"/>
+              <circle cx="28" cy="-92" r="5.5"/><circle cx="28" cy="-92" r="2" fill="#FFD447" stroke="none"/>
+              <circle cx="-20" cy="-46" r="5"/><circle cx="-20" cy="-46" r="1.8" fill="#FFD447" stroke="none"/>
+              <circle cx="26" cy="-48" r="5"/><circle cx="26" cy="-48" r="1.8" fill="#FFD447" stroke="none"/>
+            </g>
+          </g>
+
+          <!-- ================= DECORATIVE SCENERY PROPS ================= -->
+          <!-- Left Sakura Tree (Zone 1) -->
+          <g class="tree-sway" transform="translate(52, 995)">
+            <rect x="-8" y="8" width="16" height="44" rx="6" fill="url(#trunkGrad)" stroke="#7A4434" stroke-width="2"/>
+            <circle cx="-18" cy="-6" r="24" fill="url(#canopyPink)" stroke="#C65C8A" stroke-width="2"/>
+            <circle cx="18" cy="-4" r="22" fill="url(#canopyPink)" stroke="#C65C8A" stroke-width="2"/>
+            <circle cx="0" cy="-24" r="27" fill="url(#canopyPink)" stroke="#C65C8A" stroke-width="2"/>
+          </g>
+
+          <!-- Right Candy Tree (Zone 1) -->
+          <g class="tree-sway" transform="translate(382, 1185)">
+            <rect x="-8" y="6" width="16" height="40" rx="6" fill="url(#trunkGrad)" stroke="#7A4434" stroke-width="2"/>
+            <circle cx="-16" cy="-6" r="22" fill="url(#canopyGreen)" stroke="#5F9A52" stroke-width="2"/>
+            <circle cx="16" cy="-4" r="22" fill="url(#canopyGreen)" stroke="#5F9A52" stroke-width="2"/>
+            <circle cx="0" cy="-22" r="26" fill="url(#canopyPink)" stroke="#C65C8A" stroke-width="2"/>
+          </g>
+
+          <!-- Cute Giant Strawberries & Lollipops along meadows -->
+          <!-- Lollipop left bottom -->
+          <g transform="translate(52, 1265)">
+            <rect x="-3" y="0" width="6" height="42" rx="3" fill="#FFF7F2" stroke="#9C4268" stroke-width="1.8"/>
+            <circle cx="0" cy="-12" r="18" fill="#FF79AA" stroke="#6B2846" stroke-width="2.2"/>
+            <path d="M-9 -12 A9 9 0 1 1 9 -12 A6 6 0 1 1 -3 -12" fill="none" stroke="#FFF4F8" stroke-width="3.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Giant Strawberry right middle -->
+          <g transform="translate(376, 945) rotate(8)">
+            <path d="M0 -18 C14 -18 20 -4 14 10 C9 20 3 24 0 24 C-3 24 -9 20 -14 10 C-20 -4 -14 -18 0 -18 Z" fill="#FF5D8F" stroke="#6B2846" stroke-width="2.2"/>
+            <path d="M-12 -16 Q-5 -24 0 -16 Q5 -24 12 -16 Q5 -11 0 -14 Q-5 -11 -12 -16 Z" fill="#7BD66A" stroke="#45823B" stroke-width="1.6"/>
+            <circle cx="-5" cy="-4" r="1.6" fill="#FFE680"/>
+            <circle cx="6" cy="-2" r="1.6" fill="#FFE680"/>
+            <circle cx="0" cy="6" r="1.6" fill="#FFE680"/>
+            <circle cx="-6" cy="9" r="1.4" fill="#FFE680"/>
+            <circle cx="5" cy="11" r="1.4" fill="#FFE680"/>
+          </g>
+
+          <!-- Cute Pink Cream Mushroom (left upper) -->
+          <g transform="translate(48, 668)">
+            <path d="M-9 20 L-7 2 L7 2 L9 20 Z" fill="#FFF5EA" stroke="#8C4866" stroke-width="2"/>
+            <path d="M-22 4 C-22 -14 22 -14 22 4 Z" fill="#FF84B2" stroke="#6B2846" stroke-width="2.2"/>
+            <circle cx="-8" cy="-4" r="3.5" fill="#FFF"/>
+            <circle cx="7" cy="-6" r="4" fill="#FFF"/>
+            <circle cx="1" cy="1" r="2.2" fill="#FFF"/>
+          </g>
+
+          <!-- Cute Flower Bushes scattered -->
+          <g opacity="0.92">
+            <g transform="translate(362, 650)">
+              <circle cx="-14" cy="6" r="14" fill="#8FD67B" stroke="#57964A" stroke-width="1.8"/>
+              <circle cx="12" cy="6" r="13" fill="#8FD67B" stroke="#57964A" stroke-width="1.8"/>
+              <circle cx="0" cy="-2" r="16" fill="#A6E392" stroke="#57964A" stroke-width="1.8"/>
+              <circle cx="-5" cy="-3" r="4" fill="#FF8AB7"/><circle cx="7" cy="4" r="3.5" fill="#FFE26A"/>
+            </g>
+            <g transform="translate(68, 435)">
+              <circle cx="-12" cy="5" r="12" fill="#FFC2DB" stroke="#D16D98" stroke-width="1.8"/>
+              <circle cx="10" cy="5" r="11" fill="#FFC2DB" stroke="#D16D98" stroke-width="1.8"/>
+              <circle cx="0" cy="-2" r="14" fill="#FFD9E9" stroke="#D16D98" stroke-width="1.8"/>
+            </g>
+            <g transform="translate(358, 385)">
+              <circle cx="-11" cy="5" r="11" fill="#FFC2DB" stroke="#D16D98" stroke-width="1.8"/>
+              <circle cx="10" cy="5" r="10" fill="#FFC2DB" stroke="#D16D98" stroke-width="1.8"/>
+              <circle cx="0" cy="-2" r="13" fill="#FFD9E9" stroke="#D16D98" stroke-width="1.8"/>
+            </g>
+          </g>
+
+          <!-- Tiny daisies scattered on grass -->
+          <g fill="#FFFFFF" stroke="#EE8CB5" stroke-width="1">
+            <circle cx="96" cy="1172" r="4.5"/><circle cx="96" cy="1172" r="1.8" fill="#FFD447" stroke="none"/>
+            <circle cx="330" cy="1080" r="4.5"/><circle cx="330" cy="1080" r="1.8" fill="#FFD447" stroke="none"/>
+            <circle cx="120" cy="915" r="4"/><circle cx="120" cy="915" r="1.6" fill="#FFD447" stroke="none"/>
+            <circle cx="315" cy="760" r="4.5"/><circle cx="315" cy="760" r="1.8" fill="#FFD447" stroke="none"/>
+            <circle cx="105" cy="560" r="4"/><circle cx="105" cy="560" r="1.6" fill="#FFD447" stroke="none"/>
+            <circle cx="348" cy="495" r="4.5"/><circle cx="348" cy="495" r="1.8" fill="#FFD447" stroke="none"/>
+          </g>
+
+          <!-- ================= WINDING CANDY COBBLESTONE PATH ================= -->
+          <!-- Full road drop shadow -->
+          <path id="fullRoadShadow"
+            d="M 110 1325
+               C 160 1315, 295 1295, 310 1235
+               C 325 1175, 130 1165, 115 1105
+               C 100 1045, 295 1035, 305 975
+               C 315 915, 165 895, 155 835
+               C 145 775, 315 765, 315 705
+               C 315 645, 115 640, 115 580
+               C 115 520, 310 515, 310 455
+               C 310 395, 120 395, 125 338
+               C 130 288, 215 275, 215 235"
+            fill="none" stroke="rgba(107, 40, 70, 0.16)" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" transform="translate(0, 6)"/>
+
+          <!-- Road outer berry border -->
+          <path id="fullRoadOutline"
+            d="M 110 1325
+               C 160 1315, 295 1295, 310 1235
+               C 325 1175, 130 1165, 115 1105
+               C 100 1045, 295 1035, 305 975
+               C 315 915, 165 895, 155 835
+               C 145 775, 315 765, 315 705
+               C 315 645, 115 640, 115 580
+               C 115 520, 310 515, 310 455
+               C 310 395, 120 395, 125 338
+               C 130 288, 215 275, 215 235"
+            fill="none" stroke="#CC6F95" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Road cream base -->
+          <path id="fullRoadPath"
+            d="M 110 1325
+               C 160 1315, 295 1295, 310 1235
+               C 325 1175, 130 1165, 115 1105
+               C 100 1045, 295 1035, 305 975
+               C 315 915, 165 895, 155 835
+               C 145 775, 315 765, 315 705
+               C 315 645, 115 640, 115 580
+               C 115 520, 310 515, 310 455
+               C 310 395, 120 395, 125 338
+               C 130 288, 215 275, 215 235"
+            fill="none" stroke="url(#roadBase)" stroke-width="35" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Unlocked Progress Pink Sugar Trail (animated dashoffset controlled via JS) -->
+          
+
+          <!-- Sugar pearl stepping stones along road center -->
+          <path
+            d="M 110 1325
+               C 160 1315, 295 1295, 310 1235
+               C 325 1175, 130 1165, 115 1105
+               C 100 1045, 295 1035, 305 975
+               C 315 915, 165 895, 155 835
+               C 145 775, 315 765, 315 705
+               C 315 645, 115 640, 115 580
+               C 115 520, 310 515, 310 455
+               C 310 395, 120 395, 125 338
+               C 130 288, 215 275, 215 235"
+            fill="none" stroke="#FFFFFF" stroke-width="4" stroke-dasharray="1 16" stroke-linecap="round" opacity="0.9"/>
+
+          <!-- Cute Cream Wooden Bridge crossing the Creek (around x=155, y=835) -->
+          <g transform="translate(155, 838) rotate(-8)">
+            <rect x="-34" y="-26" width="68" height="52" rx="10" fill="#FFE0C2" stroke="#8C4B38" stroke-width="2.5"/>
+            <line x1="-22" y1="-25" x2="-22" y2="25" stroke="#C87E62" stroke-width="2"/>
+            <line x1="-7" y1="-25" x2="-7" y2="25" stroke="#C87E62" stroke-width="2"/>
+            <line x1="8" y1="-25" x2="8" y2="25" stroke="#C87E62" stroke-width="2"/>
+            <line x1="22" y1="-25" x2="22" y2="25" stroke="#C87E62" stroke-width="2"/>
+            <!-- Pink candy rails -->
+            <rect x="-36" y="-30" width="72" height="9" rx="4.5" fill="#FF9BC2" stroke="#6B2846" stroke-width="2"/>
+            <rect x="-36" y="21" width="72" height="9" rx="4.5" fill="#FF9BC2" stroke="#6B2846" stroke-width="2"/>
+          </g>
+
+          <!-- Start Signpost near Level 1 -->
+          
+        </svg>

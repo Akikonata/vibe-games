@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="clouds-bottom" viewBox="0 0 1440 220" preserveAspectRatio="none"><defs><linearGradient id="goldStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff5a8"/><stop offset="100%" stop-color="#ffba32"/></linearGradient></defs>
+      <defs>
+        <linearGradient id="cloudBackGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffe7f2" stop-opacity="0.88" />
+          <stop offset="100%" stop-color="#ffd0e5" stop-opacity="0.95" />
+        </linearGradient>
+        <linearGradient id="cloudFrontGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
+          <stop offset="65%" stop-color="#fff0f7" stop-opacity="0.98" />
+          <stop offset="100%" stop-color="#ffd9eb" stop-opacity="1" />
+        </linearGradient>
+      </defs>
+      <!-- Back fluffy cloud bank -->
+      <path fill="url(#cloudBackGrad)" d="M0,155 Q70,80 165,120 Q245,55 355,115 Q450,70 555,125 Q660,75 760,120 Q870,60 980,115 Q1080,65 1190,110 Q1300,45 1440,105 L1440,220 L0,220 Z" />
+      <!-- Front bright white-pink cloud puffs -->
+      <path fill="url(#cloudFrontGrad)" d="M-20,175 Q60,95 160,140 Q230,90 325,148 Q420,108 520,162 Q635,118 730,168 Q840,112 950,158 Q1055,105 1165,152 Q1270,85 1375,135 Q1420,115 1460,145 L1460,220 L-20,220 Z" />
+    </svg>

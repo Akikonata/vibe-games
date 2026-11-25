@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480">
+  <defs>
+    <linearGradient id="vieW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6B3C22"/><stop offset="1" stop-color="#4A2511"/></linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#vieW)"/>
+  <!-- 维也纳拱形咖啡馆暖光窗 -->
+  <path d="M70 408 L70 156 A90 90 0 0 1 250 156 L250 408 Z" fill="#F2D5A8" opacity="0.35" stroke="#DFB06E" stroke-width="4"/>
+  <path d="M390 408 L390 156 A90 90 0 0 1 570 156 L570 408 Z" fill="#F2D5A8" opacity="0.35" stroke="#DFB06E" stroke-width="4"/>
+  <!-- 底部深色核桃木甜点台 -->
+  <rect x="0" y="408" width="640" height="72" fill="#8C4E22" stroke="#DFB06E" stroke-width="4"/>
+</svg>

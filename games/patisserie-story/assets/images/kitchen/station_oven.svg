@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" width="200" height="180">
+  <defs>
+    <linearGradient id="brick" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C0703F"/><stop offset="1" stop-color="#874220"/></linearGradient>
+    <linearGradient id="hearth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A2018"/><stop offset="1" stop-color="#1E110C"/></linearGradient>
+  </defs>
+  <rect x="64" y="4" width="72" height="22" rx="4" fill="#9E5530" stroke="#4A2511" stroke-width="3"/>
+  <rect x="14" y="22" width="172" height="140" rx="22" fill="url(#brick)" stroke="#4A2511" stroke-width="4"/>
+  <g stroke="#6E3318" stroke-width="2" opacity="0.55">
+    <line x1="16" y1="58" x2="184" y2="58"/><line x1="16" y1="94" x2="184" y2="94"/><line x1="16" y1="130" x2="184" y2="130"/>
+    <line x1="56" y1="22" x2="56" y2="58"/><line x1="144" y1="22" x2="144" y2="58"/><line x1="36" y1="130" x2="36" y2="162"/><line x1="164" y1="130" x2="164" y2="162"/>
+  </g>
+  <path d="M40 150 L40 92 A60 52 0 0 1 160 92 L160 150 Z" fill="#E8CBA6" stroke="#4A2511" stroke-width="4"/>
+  <path d="M52 150 L52 96 A48 42 0 0 1 148 96 L148 150 Z" fill="url(#hearth)" stroke="#2A140A" stroke-width="4"/>
+  <rect x="58" y="128" width="84" height="5" rx="2.5" fill="#5E4033"/>
+  <rect x="8" y="160" width="184" height="16" rx="7" fill="#DFBE96" stroke="#4A2511" stroke-width="3"/>
+  <circle cx="100" cy="40" r="9" fill="#F3C46B" stroke="#5E3015" stroke-width="2.5"/>
+</svg>

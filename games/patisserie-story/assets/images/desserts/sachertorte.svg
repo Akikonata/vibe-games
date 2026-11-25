@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <defs>
+    <linearGradient id="sacherGlaze" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5E3019"/>
+      <stop offset="45%" stop-color="#36170A"/>
+      <stop offset="100%" stop-color="#210C04"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="80" cy="136" rx="56" ry="10" fill="#3B1A0B" opacity="0.24"/>
+  <!-- 三角蛋糕切块黑巧顶面 -->
+  <polygon points="24,66 116,38 138,68 46,96" fill="url(#sacherGlaze)" stroke="#1C0A03" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 顶面镜面高光 -->
+  <path d="M46 66 L108 48" stroke="#A66B46" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+  <!-- 切面可可海绵与亮橙杏子果酱夹层 -->
+  <polygon points="46,96 138,68 138,112 46,134" fill="#4E2512" stroke="#1C0A03" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="46,112 138,86 138,94 46,120" fill="#F29526"/>
+  <!-- 左侧黑巧淋面外边 -->
+  <polygon points="24,66 46,96 46,134 24,104" fill="#2E1308" stroke="#1C0A03" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 金色巧克力印章 -->
+  <ellipse cx="86" cy="64" rx="14" ry="8" fill="#E8B054" stroke="#5E3015" stroke-width="2" transform="rotate(-14 86 64)"/>
+  <!-- 一旁无糖打发鲜奶油 -->
+  <path d="M22 126 C18 110, 36 102, 42 114 C48 124, 34 134, 22 126 Z" fill="#FFFDF8" stroke="#C8A882" stroke-width="2.2"/>
+</svg>

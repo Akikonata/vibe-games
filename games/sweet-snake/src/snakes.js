@@ -1,0 +1,118 @@
+// Unlockable cute snake skins shared by gameplay board and Snake Garden.
+const SNAKES = [
+  {
+    id: 'strawberry',
+    name: '草莓皇冠蛇',
+    price: 0,
+    tag: '初始伙伴',
+    skillName: '甜蜜开局',
+    skillDesc: '每关倒计时 +5 秒',
+    perk: { extraTime: 5 },
+    desc: '经典粉红小公主，戴着闪亮小皇冠',
+    bodyLight: '#ffc1db',
+    bodyMid: '#ff8fb8',
+    bodyDark: '#f25c93',
+    belly: '#ffe6f0',
+    cheek: '#ff528c',
+    accessory: 'crown',
+    accent: '#ffd859',
+    swatch: 'linear-gradient(135deg,#ffc1db,#ff6b9d)'
+  },
+  {
+    id: 'matcha',
+    name: '抹茶薄荷蛇',
+    price: 8000,
+    tag: '清新森林',
+    skillName: '清风缓步',
+    skillDesc: '移动速度柔和降低 10%',
+    perk: { slowFactor: 0.9 },
+    desc: '头顶嫩绿小芽，爱在草丛里打滚',
+    bodyLight: '#c4f5d4',
+    bodyMid: '#7fe0a5',
+    bodyDark: '#47b878',
+    belly: '#e9fff0',
+    cheek: '#ff8ea8',
+    accessory: 'leaf',
+    accent: '#59c968',
+    swatch: 'linear-gradient(135deg,#c4f5d4,#47b878)'
+  },
+  {
+    id: 'lemon',
+    name: '柠檬布丁蛇',
+    price: 12000,
+    tag: '元气甜心',
+    skillName: '幸运元气',
+    skillDesc: '大金币概率翻倍 + 倒计时 +3 秒',
+    perk: { bigCoinChance: 0.44, extraTime: 3 },
+    desc: '软绵绵的奶黄布丁，系着元气蝴蝶结',
+    bodyLight: '#fff0a6',
+    bodyMid: '#ffd866',
+    bodyDark: '#f2a93b',
+    belly: '#fffbe0',
+    cheek: '#ff7d6b',
+    accessory: 'bow',
+    accent: '#ff748c',
+    swatch: 'linear-gradient(135deg,#fff0a6,#f2a93b)'
+  },
+  {
+    id: 'blueberry',
+    name: '蓝莓星空蛇',
+    price: 18000,
+    tag: '梦幻星河',
+    skillName: '星光引力',
+    skillDesc: '持续道具 +2 秒，非目标减半增身',
+    perk: { itemBonusSec: 2, skipNonTargetGrowthChance: 0.5 },
+    desc: '薰衣草蓝紫渐变，闪耀着小星星发卡',
+    bodyLight: '#cbd4ff',
+    bodyMid: '#96a5ff',
+    bodyDark: '#6b77e5',
+    belly: '#eef1ff',
+    cheek: '#ff96c5',
+    accessory: 'star',
+    accent: '#ffe066',
+    swatch: 'linear-gradient(135deg,#cbd4ff,#6b77e5)'
+  },
+  {
+    id: 'peach',
+    name: '蜜桃奶油蛇',
+    price: 25000,
+    tag: '暖甜蜜桃',
+    skillName: '招财蜜桃',
+    skillDesc: '拾取金币 +50%，结算金币 +25%',
+    perk: { coinPickupMult: 1.5, timeCoinMult: 1.25 },
+    desc: '水润蜜桃配色，戴着甜甜小爱心',
+    bodyLight: '#ffd8c4',
+    bodyMid: '#ffa88d',
+    bodyDark: '#f27461',
+    belly: '#fff1e8',
+    cheek: '#ff5c77',
+    accessory: 'heart',
+    accent: '#ff6699',
+    swatch: 'linear-gradient(135deg,#ffd8c4,#f27461)'
+  },
+  {
+    id: 'rainbow',
+    name: '彩虹糖霜蛇',
+    price: 36000,
+    tag: '稀有典藏',
+    skillName: '彩虹加护',
+    skillDesc: '免 1 次撞路障 + 金币 +20%',
+    perk: { obstacleShield: 1, coinPickupMult: 1.2, timeCoinMult: 1.2 },
+    desc: '马卡龙彩虹身躯，花园里的梦幻明星',
+    bodyLight: '#ffb8d8',
+    bodyMid: '#ff8fb8',
+    bodyDark: '#b388ff',
+    belly: '#fff6fc',
+    cheek: '#ff6090',
+    accessory: 'rainbow',
+    accent: '#ffe066',
+    rainbow: ['#ff8fb8', '#ffd372', '#8ce6a8', '#86ccf9', '#c59cff'],
+    swatch: 'linear-gradient(135deg,#ff8fb8,#ffd372,#8ce6a8,#86ccf9,#c59cff)'
+  }
+];
+
+function getSnake(id) {
+  return SNAKES.find(s => s.id === id) || SNAKES[0];
+}
+
+export { SNAKES, getSnake };

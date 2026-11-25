@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460" width="640" height="460">
+  <defs>
+    <linearGradient id="woodTable" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E6C7A2"/>
+      <stop offset="100%" stop-color="#C89B6C"/>
+    </linearGradient>
+    <linearGradient id="copperOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8A260"/>
+      <stop offset="50%" stop-color="#B86228"/>
+      <stop offset="100%" stop-color="#6E3310"/>
+    </linearGradient>
+    <radialGradient id="copperInner" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#F7DFB8"/>
+      <stop offset="100%" stop-color="#D49A62"/>
+    </radialGradient>
+    <radialGradient id="caramelPool" cx="42%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#FFD978"/>
+      <stop offset="55%" stop-color="#DE7F22"/>
+      <stop offset="100%" stop-color="#8C380E"/>
+    </radialGradient>
+    <radialGradient id="pastryCrust" cx="42%" cy="35%" r="62%">
+      <stop offset="0%" stop-color="#FFF2C6"/>
+      <stop offset="55%" stop-color="#E8A94E"/>
+      <stop offset="100%" stop-color="#B86B22"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 欧式橡木烘焙厨房台面背景 -->
+  <rect x="0" y="0" width="640" height="460" fill="url(#woodTable)"/>
+  <g stroke="#B38354" stroke-width="2" opacity="0.45">
+    <line x1="0" y1="84" x2="640" y2="84"/>
+    <line x1="0" y1="184" x2="640" y2="184"/>
+    <line x1="0" y1="284" x2="640" y2="284"/>
+    <line x1="0" y1="384" x2="640" y2="384"/>
+  </g>
+
+  <!-- 台面装饰：新鲜红苹果、肉桂棒与迷迭香 -->
+  <g transform="translate(76, 372)">
+    <circle cx="0" cy="0" r="30" fill="#D44D3E" stroke="#6E1E16" stroke-width="3"/>
+    <ellipse cx="-10" cy="-10" rx="8" ry="5" fill="#F79B8E" opacity="0.65" transform="rotate(-25 -10 -10)"/>
+    <path d="M0 -28 Q4 -42 10 -44" fill="none" stroke="#5E3015" stroke-width="3.5" stroke-linecap="round"/>
+    <ellipse cx="14" cy="-34" rx="11" ry="5" fill="#6F965A" stroke="#3B5430" stroke-width="2" transform="rotate(-20 14 -34)"/>
+  </g>
+  <g transform="translate(546, 366) rotate(-18)">
+    <rect x="-32" y="-7" width="64" height="14" rx="7" fill="#8C481E" stroke="#4A210B" stroke-width="2.6"/>
+    <rect x="-26" y="10" width="64" height="14" rx="7" fill="#A35A2A" stroke="#4A210B" stroke-width="2.6"/>
+  </g>
+
+  <!-- 顶部工艺阶段铜牌 -->
+  <rect x="176" y="18" width="288" height="40" rx="20" fill="#4A2511" stroke="#DFB06E" stroke-width="3"/>
+  <text x="320" y="44" text-anchor="middle" fill="#FFF4DC" font-size="18" font-weight="700"
+        font-family="-apple-system, 'PingFang SC', sans-serif">步骤 2/4 · 码放新鲜红苹果瓣</text>
+
+  
+        <!-- 铸铁灶具支架 -->
+        <ellipse cx="320" cy="274" rx="164" ry="110" fill="#3B1E10" opacity="0.35"/>
+        
+        <g opacity="0.88">
+          <ellipse cx="320" cy="368" rx="110" ry="16" fill="#FF9838" opacity="0.32"/>
+          <path d="M242 368 Q254 342 268 356 Q280 334 294 368 Z" fill="#F27A24"/>
+          <path d="M294 368 Q312 332 328 352 Q342 336 356 368 Z" fill="#FF9E3D"/>
+          <path d="M352 368 Q366 340 380 356 Q392 344 402 368 Z" fill="#F27A24"/>
+          <path d="M304 368 Q320 344 338 368 Z" fill="#FFE28A"/>
+        </g>
+        <!-- 铜锅长手柄 -->
+        <path d="M454 224 L596 190 C608 188, 614 206, 602 212 L460 250 Z"
+              fill="#6E3B1E" stroke="#3B1A0B" stroke-width="4" stroke-linejoin="round"/>
+        <circle cx="586" cy="202" r="6" fill="#DFB06E"/>
+        <!-- 锤纹法式铜锅主体 -->
+        <ellipse cx="320" cy="254" rx="156" ry="110" fill="url(#copperOuter)" stroke="#4A210D" stroke-width="5"/>
+        <ellipse cx="320" cy="240" rx="146" ry="100" fill="url(#copperInner)" stroke="#753912" stroke-width="4"/>
+        
+  <ellipse cx="320" cy="240" rx="134" ry="90" fill="url(#caramelPool)"/>
+  <!-- 焦糖泡泡 -->
+  <g fill="#FFEBA8" opacity="0.7">
+    <circle cx="236" cy="224" r="6"/><circle cx="404" cy="252" r="7"/><circle cx="368" cy="186" r="5"/>
+  </g>
+        <g transform="translate(378.0, 236.0) rotate(90)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#FCEAC2" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+        <g transform="translate(361.0, 265.7) rotate(135)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#F2CE8A" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+        <g transform="translate(320.0, 278.0) rotate(180)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#FCEAC2" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+        <g transform="translate(279.0, 265.7) rotate(225)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#F2CE8A" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+        <g transform="translate(262.0, 236.0) rotate(270)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#FCEAC2" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+        <g transform="translate(279.0, 206.3) rotate(315)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#F2CE8A" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+        <g transform="translate(320.0, 194.0) rotate(360)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#FCEAC2" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+        <g transform="translate(361.0, 206.3) rotate(405)">
+          <path d="M-24 6 C-22 -18, 22 -18, 24 6 C14 14, -14 14, -24 6 Z"
+                fill="#F2CE8A" stroke="#A8743B" stroke-width="2.6"/>
+          <path d="M-12 -4 Q0 -11 12 -4" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+        </g>
+    <circle cx="320" cy="236" r="24" fill="#FCEAC2" stroke="#A8743B" stroke-width="2.6"/>
+    <path d="M312 232 Q320 222 328 232" fill="none" stroke="#FFF8DC" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+</svg>

@@ -1,0 +1,402 @@
+/* pages/map/map.css - 真正的欧风手绘交互式场景地图 */
+.page-map .map-shell {
+  min-height: 100vh;
+}
+
+.page-map .map-wrap {
+  padding-top: 4px;
+}
+
+.page-map .map-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 9px;
+}
+
+.page-map .explore-pill {
+  background: linear-gradient(180deg, #E2EEDD, #C8DFBE);
+  color: #35582E;
+  border: 1.5px solid #8CA880;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 499.5px;
+}
+
+/* 复古焦糖木框地图画板 */
+.page-map .map-board {
+  background: linear-gradient(180deg, #8C4E22, #5E3015);
+  border-radius: 14px;
+  padding: 7px;
+  border: 2px solid #DFB06E;
+  box-shadow:
+    0 7px 14px rgba(74, 40, 22, 0.24),
+    inset 0 1px 0 rgba(255, 236, 200, 0.4);
+  margin-bottom: 11px;
+}
+
+.page-map .map-canvas {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #DFB06E;
+  background: #DFC8A6;
+}
+
+.page-map .map-bg-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 暖焦糖羊皮纸氛围滤镜 */
+.page-map .map-warm-tint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 244, 224, 0.08) 40%, rgba(94, 48, 21, 0.28) 100%);
+  pointer-events: none;
+}
+
+.page-map .compass-badge {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  background: rgba(74, 40, 22, 0.82);
+  color: #F6D8A0;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 499.5px;
+  border: 1px solid #DFB06E;
+  z-index: 2;
+}
+
+/* 地图上的交互建筑坐标点 */
+.page-map .building-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 4;
+  transition: transform 0.15s ease;
+}
+
+.page-map .building-pin.is-selected {
+  transform: translate(-50%, -56%) scale(1.08);
+  z-index: 8;
+}
+
+.page-map .pin-roof {
+  width: 36px;
+  height: 9px;
+  background: linear-gradient(180deg, #B56125, #7A3B14);
+  border-radius: 18px 18px 3px 3px;
+  border: 1px solid #F5CE93;
+  margin-bottom: -3px;
+  z-index: 2;
+}
+
+.page-map .is-clear .pin-roof {
+  background: linear-gradient(180deg, #749C62, #4C6E3E);
+}
+
+.page-map .is-fog .pin-roof {
+  background: #9E8E80;
+  border-color: #D8CFC6;
+}
+
+.page-map .pin-house {
+  width: 37px;
+  height: 35px;
+  border-radius: 7px 7px 11px 11px;
+  background: linear-gradient(180deg, #FFFBF4 0%, #F1DFC7 100%);
+  border: 2px solid #8C4E22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 7px rgba(52, 24, 10, 0.36);
+}
+
+.page-map .is-fog .pin-house {
+  background: rgba(242, 236, 230, 0.88);
+  border-color: #9A8B7E;
+  opacity: 0.82;
+}
+
+.page-map .pin-icon {
+  font-size: 19px;
+}
+
+.page-map .pin-plate {
+  margin-top: -3px;
+  background: #4A2511;
+  border: 1px solid #E5B97C;
+  border-radius: 499.5px;
+  padding: 1.5px 7px;
+  box-shadow: 0 2px 4px rgba(42, 18, 6, 0.35);
+}
+
+.page-map .is-fog .pin-plate {
+  background: rgba(88, 76, 66, 0.88);
+  border-color: #C7BCB0;
+}
+
+.page-map .pin-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #FFF7E8;
+  white-space: nowrap;
+}
+
+.page-map .fog-cloud {
+  position: absolute;
+  top: -11px;
+  background: rgba(255, 252, 248, 0.92);
+  border: 1px solid #C8BEB4;
+  border-radius: 499.5px;
+  padding: 1px 5px;
+  font-size: 9px;
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.page-map .pin-alert {
+  position: absolute;
+  top: -6px;
+  right: -3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #D9532F;
+  color: #FFF;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #FFFBF4;
+  z-index: 6;
+}
+
+.page-map .map-legend {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 6px;
+}
+
+.page-map .legend-item {
+  font-size: 10.5px;
+  color: #F7DFB8;
+  font-weight: 600;
+}
+
+.page-map .hint-card {
+  padding: 11px 13px;
+}
+
+.page-map .hint-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5E341A;
+  margin-bottom: 3px;
+}
+
+.page-map .hint-desc {
+  font-size: 11.5px;
+  color: #70492F;
+  line-height: 1.55;
+}
+
+/* 底部滑出场景详情抽屉 */
+.page-map .sheet-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(52, 26, 12, 0.56);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  z-index: 99;
+}
+
+.page-map .sheet-panel {
+  width: 100%;
+  margin-bottom: 0;
+  max-height: 76vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-map .sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.page-map .sheet-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-map .sheet-arch-icon {
+  width: 45px;
+  height: 49px;
+  border-radius: 22.5px 22.5px 8px 8px;
+  background: #FFFDF8;
+  border: 2px solid #C89662;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.page-map .sheet-npc-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-map .sheet-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-map .sheet-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-map .sheet-sub {
+  font-size: 11px;
+  color: #8C4E22;
+  font-weight: 600;
+}
+
+.page-map .sheet-close {
+  font-size: 18px;
+  color: #7D5438;
+  padding: 3px 7px;
+}
+
+.page-map .sheet-desc {
+  font-size: 11.5px;
+  color: #6B4A32;
+  line-height: 1.55;
+  margin-bottom: 9px;
+}
+
+.page-map .locked-box,
+.page-map .teaser-box {
+  background: #F6E9D7;
+  border: 1.5px dashed #C89662;
+  border-radius: 10px;
+  padding: 14px 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.page-map .locked-icon {
+  font-size: 24px;
+}
+
+.page-map .locked-text,
+.page-map .teaser-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #5E341A;
+}
+
+.page-map .locked-req,
+.page-map .teaser-text {
+  font-size: 11.5px;
+  color: #7A5438;
+  line-height: 1.5;
+}
+
+.page-map .sheet-levels {
+  max-height: 44vh;
+}
+
+.page-map .scene-level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  background: #FFFDF8;
+  border: 1.5px solid #D9B387;
+  border-radius: 10px;
+  padding: 8px 9px;
+  margin-bottom: 7px;
+}
+
+.page-map .scene-level-row.done {
+  border-color: #8CA880;
+  background: #F4F9F1;
+}
+
+.page-map .scene-level-row.locked {
+  opacity: 0.58;
+  background: #F3E9DC;
+}
+
+.page-map .lvl-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-map .lvl-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4A2816;
+}
+
+.page-map .lvl-meta {
+  font-size: 10.5px;
+  color: #7D5438;
+}
+
+/* 迷你饼干风进入按钮 */
+.page-map .lvl-biscuit-go {
+  background: linear-gradient(180deg, #E5A655, #B56125);
+  color: #FFFBF4;
+  border: 1px solid #F5CE93;
+  border-radius: 499.5px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 0 #783D19;
+  flex-shrink: 0;
+}
+
+.page-map .scene-level-row.done .lvl-biscuit-go {
+  background: linear-gradient(180deg, #86A975, #587A4A);
+  border-color: #C4DFB6;
+  box-shadow: 0 2px 0 #3E5933;
+}
+
+.page-map .scene-level-row.locked .lvl-biscuit-go {
+  background: #B8A99A;
+  border-color: #D8CFC6;
+  box-shadow: none;
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 500" width="640" height="500">
+  <defs>
+    <linearGradient id="wallS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EFE0CE"/><stop offset="1" stop-color="#DFC4A6"/></linearGradient>
+    <linearGradient id="marbleS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FAF4EC"/><stop offset="1" stop-color="#E5D6C4"/></linearGradient>
+  </defs>
+  <rect width="640" height="390" fill="url(#wallS)"/>
+  <!-- 背景欧式拱窗 -->
+  <path d="M160 390 L160 176 A160 140 0 0 1 480 176 L480 390 Z" fill="#FFF8EE" opacity="0.6" stroke="#C89B6C" stroke-width="5"/>
+  <line x1="320" y1="36" x2="320" y2="390" stroke="#D9B68C" stroke-width="3" opacity="0.6"/>
+  <line x1="160" y1="210" x2="480" y2="210" stroke="#D9B68C" stroke-width="3" opacity="0.6"/>
+  <!-- 两侧常春藤花盆 -->
+  <g fill="#6B8E58" stroke="#3B5430" stroke-width="2">
+    <ellipse cx="64" cy="340" rx="22" ry="12"/><ellipse cx="48" cy="324" rx="16" ry="10"/><ellipse cx="80" cy="324" rx="16" ry="10"/>
+    <ellipse cx="576" cy="340" rx="22" ry="12"/><ellipse cx="560" cy="324" rx="16" ry="10"/><ellipse cx="592" cy="324" rx="16" ry="10"/>
+  </g>
+  <path d="M44 348 L84 348 L78 390 L50 390 Z" fill="#B5653B" stroke="#5E3015" stroke-width="3"/>
+  <path d="M556 348 L596 348 L590 390 L562 390 Z" fill="#B5653B" stroke="#5E3015" stroke-width="3"/>
+  <!-- 大理石烘焙台面 -->
+  <rect x="0" y="388" width="640" height="112" fill="url(#marbleS)"/>
+  <line x1="0" y1="388" x2="640" y2="388" stroke="#9E6838" stroke-width="5"/>
+</svg>

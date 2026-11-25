@@ -1,0 +1,369 @@
+/* app.css - 焦糖古典欧风甜点屋（焦糖色系 × 甜点建筑浮雕 × 常春藤绿植） */
+body {
+  background-color: #F4E6D4;
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(255, 248, 236, 0.7) 0%, transparent 55%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(168, 108, 60, 0.05) 0px,
+      rgba(168, 108, 60, 0.05) 18px,
+      transparent 18px,
+      transparent 36px
+    );
+  color: #4A2816;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+  min-height: 100%;
+}
+
+div,
+.scrollarea {
+  box-sizing: border-box;
+}
+
+.page-wrap {
+  padding: 10px 13px 38px;
+}
+
+/* ==========================================
+   1. 焦糖条纹欧式遮阳棚 + 融化焦糖檐口 + 绿植藤蔓
+   ========================================== */
+.caramel-canopy {
+  position: relative;
+  width: 100%;
+  margin-bottom: 9px;
+}
+
+.awning-bar {
+  width: 100%;
+  height: 22px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #8C4920 0px,
+    #8C4920 24px,
+    #FBF0DF 24px,
+    #FBF0DF 48px
+  );
+  border-bottom: 4px solid #5E3015;
+  box-shadow:
+    inset 0 -4px 6px rgba(58, 28, 10, 0.25),
+    0 5px 9px rgba(74, 40, 22, 0.22);
+}
+
+/* 融化焦糖波浪檐口（甜点 × 建筑屋檐结合） */
+.caramel-drip-edge {
+  width: 100%;
+  height: 11px;
+  background-image: radial-gradient(circle at 12px 0, #A85B2A 9px, #783D19 10px, transparent 11px);
+  background-size: 24px 11px;
+  filter: drop-shadow(0 2px 2px rgba(74, 40, 22, 0.22));
+}
+
+/* 屋檐两侧垂吊常春藤绿植 */
+.canopy-vine-left,
+.canopy-vine-right {
+  position: absolute;
+  top: 13px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.canopy-vine-left {
+  left: 7px;
+}
+
+.canopy-vine-right {
+  right: 7px;
+}
+
+.leaf-pill {
+  width: 12px;
+  height: 8px;
+  background: linear-gradient(135deg, #7BA16A, #4B6E41);
+  border-radius: 10px 1px 10px 1px;
+  border: 1px solid #3B5833;
+  box-shadow: 0 1.5px 3px rgba(45, 70, 38, 0.25);
+}
+
+.leaf-pill.alt {
+  border-radius: 1px 10px 1px 10px;
+  background: linear-gradient(135deg, #91B87D, #5A7F4D);
+  transform: translateY(4px);
+}
+
+/* ==========================================
+   2. 立体焦糖浮雕卡片（带顶部高光与底部厚木底座）
+   ========================================== */
+.card {
+  background: linear-gradient(180deg, #FFFBF4 0%, #F9EFE2 100%);
+  border-radius: 13px;
+  padding: 14px;
+  margin-bottom: 14px;
+  border: 1.5px solid #D4A97A;
+  border-bottom: 5px solid #B58150;
+  box-shadow:
+    inset 0 1.5px 0 #FFFFFF,
+    inset 0 0 0 3px #F7EAD8,
+    0 7px 14px rgba(74, 40, 22, 0.14);
+  position: relative;
+}
+
+/* ==========================================
+   3. 欧式焦糖浮雕缎带标题 & 立体焦糖按钮
+   ========================================== */
+.ribbon-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(180deg, #B56934 0%, #87461C 100%);
+  color: #FFF8EC;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 7px;
+  border: 1px solid #E5B97C;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 210, 0.45),
+    0 3px 0 #5C2E11,
+    0 5px 8px rgba(74, 40, 22, 0.22);
+  letter-spacing: 1px;
+}
+
+/* 立体烤焦糖糖浆按钮 */
+.btn-primary {
+  background: linear-gradient(180deg, #D98E45 0%, #B36024 55%, #944A18 100%);
+  color: #FFFBF4;
+  border-radius: 499.5px;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 11px 18px;
+  text-align: center;
+  border: 1.5px solid #F5CE93;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 244, 218, 0.45),
+    0 4.5px 0 #663010,
+    0 7px 11px rgba(74, 40, 22, 0.28);
+  letter-spacing: 1px;
+}
+
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2.5px 0 #663010;
+}
+
+.btn-secondary {
+  background: linear-gradient(180deg, #FFFBF4 0%, #F1DFC7 100%);
+  color: #6B3A1B;
+  border: 1.5px solid #CCA070;
+  border-radius: 499.5px;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 9px 16px;
+  text-align: center;
+  box-shadow:
+    inset 0 1px 0 #FFFFFF,
+    0 3.5px 0 #A87A4D;
+}
+
+/* 统一焦糖与植物绿徽章 */
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 499.5px;
+  font-weight: 700;
+}
+
+.tag-main {
+  background: linear-gradient(180deg, #F6DEC0, #E8C396);
+  color: #6E3816;
+  border: 1px solid #C89258;
+}
+
+.tag-side {
+  background: linear-gradient(180deg, #E2EEDD, #C8DFBE);
+  color: #35582E;
+  border: 1px solid #8DAE80;
+}
+
+/* 古典金色植物分割线 */
+.gold-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #B8823E;
+  font-size: 11px;
+  margin: 9px 0;
+}
+
+.gold-line {
+  flex: 1;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, #CFA068, transparent);
+}
+
+
+/* ==========================================
+   Pure HTML5 Web Shell & Navigation Frame
+   ========================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(145deg, #ead7c0 0%, #dfc4a3 100%);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100%;
+  height: 100dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: #F4E6D4;
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(255, 248, 236, 0.7) 0%, transparent 55%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(168, 108, 60, 0.05) 0px,
+      rgba(168, 108, 60, 0.05) 18px,
+      transparent 18px,
+      transparent 36px
+    );
+  box-shadow: 0 0 54px rgba(74, 40, 22, 0.28);
+  transform: translateZ(0);
+}
+
+#app-nav {
+  flex-shrink: 0;
+  height: 44px;
+  background: #5E351D;
+  color: #FFFBF4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 2px solid #8C4E22;
+  z-index: 60;
+}
+
+#app-nav.is-hidden {
+  display: none;
+}
+
+.nav-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 248, 236, 0.16);
+  border: 1px solid rgba(223, 176, 110, 0.55);
+  color: #FFF8EC;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.nav-back-btn:hover {
+  background: rgba(255, 248, 236, 0.28);
+}
+
+.nav-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+.nav-spacer {
+  min-width: 64px;
+  text-align: right;
+}
+
+#page-root {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#page-root::-webkit-scrollbar,
+.scrollarea::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollarea {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Fill parent cleanly inside #page-root instead of overflowing 100vh when nav is visible */
+.page-home .home-shell,
+.page-map .map-shell,
+.page-story .rpg-stage,
+.page-start .start-shell,
+.page-intro .comic-shell {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+img {
+  display: block;
+  -webkit-user-drag: none;
+}
+
+img.mode-fill { object-fit: cover; }
+img.mode-fit { object-fit: contain; }
+img.mode-widthfix { width: 100%; height: auto; }
+
+.btn-primary,
+.btn-secondary,
+[data-action] {
+  cursor: pointer;
+}
+
+.portal-corner-pill {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: rgba(58, 28, 10, 0.78);
+  border: 1.5px solid rgba(223, 176, 110, 0.75);
+  color: #FFF7E8;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+}
+
+.portal-corner-pill:hover {
+  background: rgba(94, 48, 21, 0.92);
+}
