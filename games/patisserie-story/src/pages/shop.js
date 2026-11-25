@@ -1,6 +1,6 @@
 // src/pages/shop.js
 // 星月糖屋轻度胡闹厨房（Overcooked-Lite）营业系统 + 装潢设备升级
-// 营业中采用持久 DOM 增量补丁更新，杜绝高频计时刷新吞掉点击事件
+// 营业中采用持久 DOM 增量补丁更新，全交互语义化 button，支持暂停/切屏自动暂停/练习引导/详细结算诊断
 
 import { RECIPES } from '../data/recipes.js';
 import { SHOP_UPGRADES, computeShopBonuses } from '../data/shop_upgrades.js';
@@ -33,17 +33,64 @@ const RECIPE_TO_LEVEL = {
   saint_honore: 'main_6'
 };
 
+const SHORT_RECIPE_NAMES = {
+  madeleine: '玛德琳',
+  tarte_tatin: '苹果塔',
+  mille_feuille: '千层酥',
+  macaron: '马卡龙',
+  canele: '可露丽',
+  tiramisu: '提拉米苏',
+  mont_blanc: '蒙布朗',
+  basque_cheesecake: '巴斯克',
+  sachertorte: '萨赫',
+  opera: '歌剧院',
+  saint_honore: '圣多诺黑'
+};
+
+function getShortRecipeName(recipe) {
+  if (!recipe) return '';
+  return SHORT_RECIPE_NAMES[recipe.id] || (recipe.name || '').slice(0, 4);
+}
+
+function buildSummaryAdvice({ served, lost, burnt, undelivered, isPractice }) {
+  if (isPractice) {
+    if (served > 0) return '已经跑通出餐动线啦！现在可以点「挂出营业牌」正式开张赚金币。';
+    return '练习模式随时可重玩，建议先试做一份玛德琳（烤炉→顾客）和一份千层酥（烤炉→裱花→顾客）。';
+  }
+  if (served === 0) {
+    if (burnt > 0) {
+      return '本轮有甜点在烤炉放太久烤糊了：看到「✨ 可取餐」或「🔥 快烤糊」提示时立即点击烤炉取出即可。';
+    }
+    if (undelivered > 0) {
+      return '甜点已开始制作但未完成交付：留意底部托盘的「下一步」提示（千层酥烤完还要点左下【裱花台】），变成品后再点对应顾客上菜。';
+    }
+    if (lost > 0) {
+      return '顾客等太久离座了：开局直接点中央【大竹篮】可智能拿首位顾客要的面糊，优先出第一单能稳住节奏。';
+    }
+    return '先点「练习引导（不消耗天数）」熟悉取料→烘烤→裱花→上菜，再正式开张会更顺手！';
+  }
+  if (burnt > 0) {
+    return '已经成功出餐啦！烤好后及时取出（满手也可直接点熟炉顺手换锅），减少烤糊能让单日营收更高。';
+  }
+  if (lost > 0) {
+    return '出餐很稳！可以同时用两座烤炉并行烘烤，减少顾客等待流失、拿到更高连击小费。';
+  }
+  return '零失误流畅出餐！保持这个节奏，很快就能攒够金币升级糖屋装潢啦！';
+}
+
 export function mountShopPage(root) {
   let kitchen = null;
   let bonuses = null;
   let destroyed = false;
   let kitchenMounted = false;
+  let helpModalOpen = false;
 
   // 营业中局部缓存，避免无变化节点重复重写
   let seatSigs = ['', '', ''];
   let handsSig = '';
   let stationSigs = {};
   let holdSig = '';
+  let pauseSig = '';
 
   const pageProxy = {
     data: {
@@ -55,6 +102,10 @@ export function mountShopPage(root) {
       unlockedRecipes: [],
       menuRecipes: [],
       isOpen: false,
+      isPractice: false,
+      isPaused: false,
+      pauseManual: false,
+      pauseHidden: false,
       shiftTimeLeft: 45,
       shiftCoins: 0,
       shiftRep: 0,
@@ -64,6 +115,7 @@ export function mountShopPage(root) {
       stations: [],
       heldItem: null,
       holdItem: null,
+      inTutorial: false,
       highlightTarget: '',
       serviceMsg: '挑选 1~3 道招牌甜点，挂牌开门进入厨房营业！',
       daySummary: null,
@@ -121,6 +173,7 @@ export function mountShopPage(root) {
     handsSig = '';
     stationSigs = {};
     holdSig = '';
+    pauseSig = '';
 
     const PROP_IMG = {
       oven: 'assets/images/kitchen/prop_oven.png',
@@ -135,82 +188,95 @@ export function mountShopPage(root) {
       decor_1: 'pos-decor'
     };
 
-    // 如果今日上架 1 道甜点，直接点大竹篮就能拿；2~3 道则在竹篮口挂上圆润甜点吊牌任选
     const singleMenu = d.menuRecipes.length === 1 ? d.menuRecipes[0] : null;
     const pantryMarkup = singleMenu
-      ? `<div class="scene-prop pos-pantry is-pantry-item" data-action="pickRaw" data-id="${singleMenu.id}">
-           <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="原料篮" />
-           <div class="pantry-badge-pill">
-             <img class="pantry-mini-dessert mode-fit" src="${singleMenu.iconImg}" alt="" />
-             <span>原料篮</span>
-           </div>
+      ? `<div class="scene-prop pos-pantry is-pantry-single">
+           <button type="button" class="pantry-basket-btn is-pantry-item" data-action="pickRaw" data-id="${singleMenu.id}" aria-label="原料篮：拿取${singleMenu.name}">
+             <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="" />
+             <span class="pantry-badge-pill">
+               <img class="pantry-mini-dessert mode-fit" src="${singleMenu.iconImg}" alt="" />
+               <span>${getShortRecipeName(singleMenu)}</span>
+             </span>
+           </button>
          </div>`
       : `<div class="scene-prop pos-pantry is-pantry-multi">
-           <img class="prop-sprite sprite-pantry is-pantry-item mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="原料篮" data-action="pickSmartRaw" />
-           <div class="pantry-picks">
+           <button type="button" class="pantry-basket-btn is-pantry-item" data-action="pickSmartRaw" aria-label="大竹篮智能取料：自动拿首位等待顾客点的甜点">
+             <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="" />
+             <span class="pantry-smart-tag">🧺 智能取料</span>
+           </button>
+           <div class="pantry-picks" role="group" aria-label="指定甜点取料">
              ${d.menuRecipes.map(m => `
-               <div class="pantry-pick-orb is-pantry-item" data-action="pickRaw" data-id="${m.id}" title="${m.name}">
-                 <img class="pantry-orb-img mode-fit" src="${m.iconImg}" alt="${m.name}" />
-               </div>
+               <button type="button" class="pantry-pick-orb is-pantry-item" data-action="pickRaw" data-id="${m.id}" aria-label="指定取料：${m.name}" aria-pressed="false">
+                 <img class="pantry-orb-img mode-fit" src="${m.iconImg}" alt="" />
+                 <span class="pantry-orb-name">${getShortRecipeName(m)}</span>
+               </button>
              `).join('')}
            </div>
          </div>`;
 
     const stationsMarkup = d.stations.map(st => `
-      <div id="k-st-${st.id}" class="scene-prop ${STATION_POS[st.id] || ''} state-idle" data-action="tapStation" data-id="${st.id}">
-        <img class="prop-sprite sprite-${st.type} mode-fit" src="${PROP_IMG[st.type]}" alt="${st.name}" />
+      <button type="button" id="k-st-${st.id}" class="scene-prop ${STATION_POS[st.id] || ''} state-idle" data-action="tapStation" data-id="${st.id}" aria-label="${st.shortName} · 空闲">
+        <img class="prop-sprite sprite-${st.type} mode-fit" src="${PROP_IMG[st.type]}" alt="" />
         <div id="k-st-ov-${st.id}" class="prop-overlay"></div>
-      </div>
+        <span class="prop-name-tag">${st.shortName}</span>
+      </button>
     `).join('');
 
     root.innerHTML = `
       <div class="kitchen-scene">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/kitchen_scene_bg.jpg" alt="星月糖屋后厨" />
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/kitchen_scene_bg.jpg" alt="" />
 
-        <!-- 顶部悬浮半透明营收 HUD + 随时可看 ? 玩法说明 -->
+        <!-- 顶部悬浮半透明营收 HUD + 暂停/帮助语义按钮 -->
         <div class="scene-hud">
-          <span id="k-time" class="hud-time">⏱ ${d.shiftTimeLeft}s</span>
+          <span id="k-time" class="hud-time">${d.isPractice ? '🎓 练习' : `⏱ ${d.shiftTimeLeft}s`}</span>
           <span id="k-coins" class="hud-coins">🪙 +${d.shiftCoins}</span>
           <span id="k-served" class="hud-served">出餐 ${d.shiftServed} · x${d.shiftCombo}</span>
-          <div class="help-fab-btn" data-action="openHelp" title="玩法说明">?</div>
+          <div class="hud-actions">
+            <button type="button" id="k-pause-btn" class="hud-icon-btn" data-action="togglePause" aria-label="暂停营业" title="暂停 / 继续">⏸</button>
+            <button type="button" class="hud-icon-btn" data-action="openHelp" aria-label="玩法说明" title="玩法说明">?</button>
+          </div>
         </div>
 
-        <!-- 新手 4 步交互引导浮条与手指箭头 -->
+        <!-- 新手/练习顶部浮条与手指箭头 -->
         <div id="k-tut-coach"></div>
-        <div id="k-tut-finger" class="tut-finger-pointer" style="display:none;">👇</div>
+        <div id="k-tut-finger" class="tut-finger-pointer" aria-hidden="true" style="display:none;">👇</div>
 
         <!-- 吧台后方：3 位二次元立绘顾客直接站立点单 -->
         <div class="scene-customers">
-          ${[0, 1, 2].map(id => `<div id="k-seat-${id}" class="scene-customer" data-action="tapSeat" data-id="${id}"></div>`).join('')}
+          ${[0, 1, 2].map(id => `<button type="button" id="k-seat-${id}" class="scene-customer is-empty" data-action="tapSeat" data-id="${id}" aria-label="空座位" disabled></button>`).join('')}
         </div>
 
-        <!-- 吧台沿上的轻盈单行提示条 -->
-        <div id="k-tip" class="scene-tip-pill">${d.serviceMsg}</div>
+        <!-- 吧台沿上的轻盈提示条 -->
+        <div id="k-tip" class="scene-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
 
-        <!-- 大理石与橡木实景工作台：全部纯图片化道具，零按钮框 -->
+        <!-- 大理石与橡木实景工作台 -->
         <div class="scene-workbench">
           ${stationsMarkup}
           ${pantryMarkup}
 
           <!-- 底部左：大理石暂存碟 -->
-          <div id="k-hold" class="scene-prop pos-hold" data-action="tapHold" title="暂存台">
+          <button type="button" id="k-hold" class="scene-prop pos-hold" data-action="tapHold" aria-label="大理石暂存台：空闲" title="暂存台">
             <div class="hold-saucer">
               <img id="k-hold-img" class="hold-food-img mode-fit" style="display:none;" alt="" />
-              <span id="k-hold-lbl" class="hold-mini-tag">暂存</span>
+              <span id="k-hold-lbl" class="hold-mini-tag">暂存台</span>
             </div>
-          </div>
+          </button>
 
           <!-- 底部中：可可手中托盘实景状态 -->
-          <div class="scene-coco-tray">
+          <div class="scene-coco-tray" aria-live="polite">
             <img class="tray-coco-avatar mode-fill" src="assets/images/coco_avatar.png" alt="可可" />
             <div id="k-hands" class="tray-held-slot"></div>
           </div>
 
           <!-- 底部右：复古回收铜桶 -->
-          <div id="k-trash" class="scene-prop pos-trash" data-action="tapTrash" title="丢弃">
-            <img class="prop-sprite sprite-trash mode-fit" src="assets/images/kitchen/prop_copper_bin.png" alt="回收铜桶" />
-          </div>
+          <button type="button" id="k-trash" class="scene-prop pos-trash" data-action="tapTrash" aria-label="回收铜桶：丢弃手中物品" title="丢弃">
+            <img class="prop-sprite sprite-trash mode-fit" src="assets/images/kitchen/prop_copper_bin.png" alt="" />
+            <span class="prop-mini-label">回收桶</span>
+          </button>
         </div>
+
+        <!-- 暂停蒙层 -->
+        <div id="k-pause-mask"></div>
       </div>
     `;
     kitchenMounted = true;
@@ -218,7 +284,11 @@ export function mountShopPage(root) {
 
   function patchKitchenDom(d) {
     const timeEl = root.querySelector('#k-time');
-    if (timeEl) timeEl.textContent = `⏱ ${d.shiftTimeLeft}s`;
+    if (timeEl) {
+      timeEl.textContent = d.isPractice
+        ? '🎓 练习'
+        : (d.inTutorial ? `🎓 ${d.shiftTimeLeft}s` : `⏱ ${d.shiftTimeLeft}s`);
+    }
     const coinsEl = root.querySelector('#k-coins');
     if (coinsEl) coinsEl.textContent = `🪙 +${d.shiftCoins}`;
     const servedEl = root.querySelector('#k-served');
@@ -226,19 +296,29 @@ export function mountShopPage(root) {
     const tipEl = root.querySelector('#k-tip');
     if (tipEl && tipEl.textContent !== d.serviceMsg) tipEl.textContent = d.serviceMsg;
 
+    const pauseBtn = root.querySelector('#k-pause-btn');
+    if (pauseBtn) {
+      pauseBtn.textContent = d.isPaused ? '▶' : '⏸';
+      pauseBtn.setAttribute('aria-label', d.isPaused ? '继续营业' : '暂停营业');
+    }
+
     // 1. 增量更新前厅 3 位立绘顾客
     (d.seats || []).forEach((s, idx) => {
       const slot = root.querySelector(`#k-seat-${s.id}`);
       if (!slot) return;
-      slot.className = `scene-customer ${s.occupied ? 'is-occupied' : 'is-empty'} ${d.highlightTarget === 'seat_' + s.id ? 'is-scene-glow' : ''}`;
-      const sig = s.occupied ? `1:${s.npcId}:${s.wantedId}` : '0';
+      const isGlow = d.highlightTarget === 'seat_' + s.id;
+      slot.className = `scene-customer ${s.occupied ? 'is-occupied' : 'is-empty'} ${isGlow ? 'is-scene-glow' : ''}`;
+      slot.disabled = !s.occupied;
+      slot.setAttribute('aria-label', s.occupied ? `顾客${s.name}：想要${s.wantedName}${isGlow ? '，点击上菜' : ''}` : '空座位');
+      const sig = s.occupied ? `1:${s.npcId}:${s.wantedId}:${isGlow ? 1 : 0}` : '0';
       if (seatSigs[idx] !== sig) {
         seatSigs[idx] = sig;
         slot.innerHTML = s.occupied
           ? `<div class="cust-bubble">
                <img class="cust-want-img mode-fit" src="${s.wantedIcon}" alt="" />
-               <div class="cust-patience"><div class="cust-patience-fill" style="width:${s.patience}%;"></div></div>
+               <div class="cust-patience"><div class="cust-patience-fill ${s.patience < 35 ? 'low' : ''}" style="width:${Math.max(0, Math.round(s.patience))}%;"></div></div>
              </div>
+             ${isGlow ? '<span class="cust-serve-tag">🍰 点此上菜</span>' : ''}
              <img class="cust-portrait mode-widthfix" src="${s.portrait}" alt="${s.name}" />`
           : '';
       } else if (s.occupied) {
@@ -250,70 +330,105 @@ export function mountShopPage(root) {
       }
     });
 
-    // 2. 增量更新可可手中物品（明确显示甜点名称与下一步去向，绝不迷路）
+    // 2. 增量更新可可手中托盘（明确显示菜名、半成品与“下一步：裱花/装饰/烤炉”）
     const h = d.heldItem;
-    const STEP_NAMES = { oven: '👉放烤炉', cream: '👉去裱花台', decor: '👉去装饰台' };
+    const STEP_NAMES = { oven: '下一步：烤炉', cream: '下一步：裱花', decor: '下一步：装饰' };
     const nextStepText = h
-      ? (h.isBurnt ? '💨丢回收桶' : (h.isFinished ? '✨点客人上菜' : (STEP_NAMES[h.steps[h.stepIndex]] || '加工中')))
+      ? (h.isBurnt
+        ? '已烤糊 · 点回收桶'
+        : (h.isFinished
+          ? '成品 · 点顾客上菜'
+          : (STEP_NAMES[h.steps[h.stepIndex]] || '加工中')))
       : '';
-    const nextHandsSig = h ? `${h.recipeId}:${h.displayImg}:${nextStepText}:${h.isFinished}:${h.isBurnt}` : 'empty';
+    const stageSuffix = h && !h.isFinished && !h.isBurnt && h.stepIndex > 0 ? ' (半成品)' : '';
+    const nextHandsSig = h ? `${h.recipeId}:${h.displayImg}:${nextStepText}:${stageSuffix}:${h.isFinished}:${h.isBurnt}` : 'empty';
     if (handsSig !== nextHandsSig) {
       handsSig = nextHandsSig;
       const handsEl = root.querySelector('#k-hands');
       if (handsEl) {
         handsEl.innerHTML = h
           ? `<img class="tray-food-img mode-fit" src="${h.displayImg}" alt="" />
-             <div style="display:flex;flex-direction:column;gap:2px;">
-               <span style="font-size:11px;font-weight:800;color:#4A2511;">${h.recipeName}</span>
-               <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''}">${nextStepText}</span>
+             <div class="tray-text-col">
+               <span class="tray-recipe-name">${getShortRecipeName({ id: h.recipeId, name: h.recipeName })}${stageSuffix}</span>
+               <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''} ${h.stepIndex > 0 && !h.isFinished && !h.isBurnt ? 'semi' : ''}">${nextStepText}</span>
              </div>`
-          : '<span class="tray-empty-txt">空手 · 点原料篮拿面糊</span>';
+          : '<span class="tray-empty-txt">空手 · 点原料篮取料</span>';
       }
     }
 
-    // 3. 增量更新 4 个实景工位道具
+    // 3. 增量更新 4 个实景工位道具（空闲 / 制作中 / 可取餐 / 快烤糊 / 已烤糊 + 下一步高亮文字）
     const STATION_POS = { oven_1: 'pos-oven-1', oven_2: 'pos-oven-2', cream_1: 'pos-cream', decor_1: 'pos-decor' };
+    const NEXT_STATION_HINT = { oven: '👉 下一步：烘烤', cream: '👉 下一步：裱花', decor: '👉 下一步：装饰' };
     (d.stations || []).forEach(st => {
       const cell = root.querySelector(`#k-st-${st.id}`);
       const ov = root.querySelector(`#k-st-ov-${st.id}`);
       if (!cell || !ov) return;
-      cell.className = `scene-prop ${STATION_POS[st.id] || ''} state-${st.state} ${d.highlightTarget === st.id ? 'is-scene-glow' : ''}`;
-      const sig = st.item ? `${st.state}:${st.item.recipeId}:${st.item.displayImg}` : 'idle';
+      const isGlow = d.highlightTarget === st.id || d.highlightTarget === st.type;
+      const stateClass = st.nearBurn ? 'state-near-burn' : `state-${st.state}`;
+      cell.className = `scene-prop ${STATION_POS[st.id] || ''} ${stateClass} ${isGlow ? 'is-scene-glow' : ''}`;
+
+      const stateLabel = st.state === 'idle'
+        ? '空闲'
+        : (st.state === 'working'
+          ? `制作中${st.progress}%`
+          : (st.nearBurn ? '快烤糊，立即取餐' : (st.state === 'ready' ? '可取餐' : '已烤糊，点击清渣')));
+      cell.setAttribute('aria-label', `${st.shortName} · ${stateLabel}`);
+
+      const sig = st.item
+        ? `${st.state}:${st.nearBurn ? 1 : 0}:${st.item.recipeId}:${st.item.displayImg}:${isGlow ? 1 : 0}`
+        : `idle:${isGlow ? 1 : 0}`;
       if (stationSigs[st.id] !== sig) {
         stationSigs[st.id] = sig;
         if (!st.item) {
-          ov.innerHTML = '';
+          ov.innerHTML = isGlow
+            ? `<span class="prop-pill guide-next">${NEXT_STATION_HINT[st.type] || '👉 放这里'}</span>`
+            : '<span class="prop-state-tag idle">空闲</span>';
         } else if (st.state === 'working') {
           ov.innerHTML = `
             <img class="prop-dish-img mode-fit" src="${st.item.displayImg}" alt="" />
             <div class="prop-prog-track"><div class="prop-prog-fill" style="width:${st.progress}%;"></div></div>
+            <span class="prop-state-tag working">制作中 <b class="prog-num">${st.progress}%</b></span>
+          `;
+        } else if (st.state === 'ready' && st.nearBurn) {
+          ov.innerHTML = `
+            <img class="prop-dish-img ready-pop mode-fit" src="${st.item.displayImg}" alt="" />
+            <span class="prop-pill near-burn">🔥 快烤糊!</span>
           `;
         } else if (st.state === 'ready') {
           ov.innerHTML = `
             <img class="prop-dish-img ready-pop mode-fit" src="${st.item.displayImg}" alt="" />
-            <span class="prop-pill ready">✨ 取餐</span>
+            <span class="prop-pill ready">✨ 可取餐</span>
           `;
         } else {
           ov.innerHTML = `
             <img class="prop-dish-img burnt-tint mode-fit" src="${st.item.displayImg}" alt="" />
-            <span class="prop-pill burnt">💨 糊了</span>
+            <span class="prop-pill burnt">💨 已烤糊</span>
           `;
         }
       } else if (st.state === 'working') {
         const fill = ov.querySelector('.prop-prog-fill');
         if (fill) fill.style.width = `${st.progress}%`;
+        const num = ov.querySelector('.prog-num');
+        if (num) num.textContent = `${st.progress}%`;
       }
     });
 
-    // 4. 更新原料篮、暂存碟、铜桶发光提示
+    // 4. 更新原料篮发光 + 三枚甜点按钮选中态（严禁位移或遮挡）
     const pantryGlow = d.highlightTarget === 'pantry';
     root.querySelectorAll('.is-pantry-item').forEach(el => {
       el.classList.toggle('is-scene-glow', pantryGlow);
     });
+    root.querySelectorAll('.pantry-pick-orb').forEach(orb => {
+      const selected = !!(d.heldItem && d.heldItem.recipeId === orb.dataset.id);
+      orb.classList.toggle('is-selected', selected);
+      orb.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
 
+    // 5. 更新暂存台与回收铜桶
     const holdEl = root.querySelector('#k-hold');
     if (holdEl) {
       holdEl.classList.toggle('is-scene-glow', d.highlightTarget === 'hold');
+      holdEl.setAttribute('aria-label', d.holdItem ? `暂存台：放着${d.holdItem.recipeName}，点击取回或交换` : '大理石暂存台：空闲');
       const nextHoldSig = d.holdItem ? `${d.holdItem.recipeId}:${d.holdItem.displayImg}` : 'empty';
       if (holdSig !== nextHoldSig) {
         holdSig = nextHoldSig;
@@ -333,34 +448,45 @@ export function mountShopPage(root) {
     const trashEl = root.querySelector('#k-trash');
     if (trashEl) trashEl.classList.toggle('is-scene-glow', d.highlightTarget === 'trash');
 
-    // 5. 更新首单 4 步交互式新手引导条与跳动手指箭头
+    // 6. 更新首单教学 / 练习模式顶部浮条与手指箭头
     const coachEl = root.querySelector('#k-tut-coach');
     const fingerEl = root.querySelector('#k-tut-finger');
     if (coachEl && fingerEl) {
-      if (d.inTutorial) {
+      if (d.isPractice) {
+        coachEl.innerHTML = `
+          <div class="tut-coach-banner practice-banner">
+            <span class="tut-coach-text">🎓 练习(不扣天数)</span>
+            <div class="practice-banner-btns">
+              <button type="button" class="tut-coach-skip" data-action="startRealFromPractice">正式营业</button>
+              <button type="button" class="tut-coach-skip alt" data-action="exitPractice">结束</button>
+            </div>
+          </div>
+        `;
+        fingerEl.style.display = 'none';
+      } else if (d.inTutorial) {
         const GUIDE_POS = {
-          pantry:  { x: 50, y: 63, text: '① 点击中央【竹编原料篮】，拿起一碗生面糊！' },
-          oven_1:  { x: 26, y: 44, text: '② 点击左侧发光的【红砖烤炉】，放进去烘烤！' },
-          oven_2:  { x: 74, y: 44, text: '② 点击发光的【红砖烤炉】，放进去烘烤！' },
-          cream_1: { x: 20, y: 66, text: '② 点击左下【奶油裱花台】进行裱花加工！' },
-          decor_1: { x: 80, y: 66, text: '② 点击右下【糖粉装饰台】进行撒粉装饰！' },
-          seat_0:  { x: 18, y: 20, text: '④ 做好啦！点击发光的【顾客】上菜收金币！' },
-          seat_1:  { x: 50, y: 20, text: '④ 做好啦！点击发光的【顾客】上菜收金币！' },
-          seat_2:  { x: 82, y: 20, text: '④ 做好啦！点击发光的【顾客】上菜收金币！' }
+          pantry:  { x: 50, y: 61, text: '① 点中央【大竹篮】或篮下甜点按钮拿生面糊！' },
+          oven_1:  { x: 26, y: 43, text: '② 点发光的【烤炉 1】放入烘烤！' },
+          oven_2:  { x: 74, y: 43, text: '② 点发光的【烤炉 2】放入烘烤！' },
+          cream_1: { x: 18, y: 62, text: '③ 半成品请点左下【裱花台】继续裱花！' },
+          decor_1: { x: 82, y: 62, text: '③ 半成品请点右下【装饰台】撒糖粉！' },
+          seat_0:  { x: 18, y: 20, text: '④ 成品啦！点发光的【顾客】上菜收金币！' },
+          seat_1:  { x: 50, y: 20, text: '④ 成品啦！点发光的【顾客】上菜收金币！' },
+          seat_2:  { x: 82, y: 20, text: '④ 成品啦！点发光的【顾客】上菜收金币！' }
         };
         const working = (d.stations || []).find(s => s.state === 'working');
         const ready = (d.stations || []).find(s => s.state === 'ready');
         let g = GUIDE_POS[d.highlightTarget];
-        if (!g && working) g = { x: 26, y: 44, text: '⏳ 正在自动烘烤中，马上就出炉啦！' };
+        if (!g && working) g = { x: 26, y: 43, text: '⏳ 正在自动制作中，马上就好！' };
         if (ready && !d.heldItem) {
-          const p = GUIDE_POS[ready.id] || { x: 26, y: 44 };
-          g = { x: p.x, y: p.y, text: '③ 烤好发光啦！点烤炉取出成品甜点！' };
+          const p = GUIDE_POS[ready.id] || { x: 26, y: 43 };
+          g = { x: p.x, y: p.y, text: `③ 【${ready.shortName}】可取餐！点击取出` };
         }
         if (g) {
           coachEl.innerHTML = `
             <div class="tut-coach-banner" style="top:52px;">
               <span class="tut-coach-text">🎓 ${g.text}</span>
-              <span class="tut-coach-skip" data-action="skipKitchenTut">跳过</span>
+              <button type="button" class="tut-coach-skip" data-action="skipKitchenTut">跳过</button>
             </div>
           `;
           fingerEl.style.display = working && !ready ? 'none' : 'block';
@@ -370,6 +496,28 @@ export function mountShopPage(root) {
       } else {
         coachEl.innerHTML = '';
         fingerEl.style.display = 'none';
+      }
+    }
+
+    // 7. 暂停蒙层（切出页面或点击暂停时显示，打开帮助说明时不重复叠加）
+    const nextPauseSig = d.pauseManual && !helpModalOpen ? `1:${d.pauseHidden ? 1 : 0}:${d.isPractice ? 1 : 0}` : '0';
+    if (pauseSig !== nextPauseSig) {
+      pauseSig = nextPauseSig;
+      const maskEl = root.querySelector('#k-pause-mask');
+      if (maskEl) {
+        maskEl.innerHTML = d.pauseManual && !helpModalOpen
+          ? `<div class="pause-mask" role="dialog" aria-modal="true" aria-label="营业已暂停">
+               <div class="card pause-card">
+                 <div class="pause-title">⏸ ${d.isPractice ? '练习已暂停' : '营业已暂停'}</div>
+                 <p class="pause-desc">${d.pauseHidden ? '检测到页面切出，已自动冻结倒计时、顾客耐心与烤炉计时。' : '营业倒计时、顾客耐心与烤炉计时均已冻结，随时可继续。'}</p>
+                 <div class="pause-actions">
+                   <button type="button" class="btn-primary" data-action="resumeShift">▶ 继续${d.isPractice ? '练习' : '营业'}</button>
+                   <button type="button" class="btn-secondary" data-action="openHelp">📖 查看玩法说明</button>
+                   <button type="button" class="btn-ghost" data-action="${d.isPractice ? 'exitPractice' : 'endShiftEarly'}">${d.isPractice ? '退出练习（不扣天数）' : '提前打烊结算'}</button>
+                 </div>
+               </div>
+             </div>`
+          : '';
       }
     }
   }
@@ -398,9 +546,9 @@ export function mountShopPage(root) {
           <div class="stat-chip"><span class="stat-label">🪙 焦糖金币</span><span class="stat-val">${d.coins}</span></div>
           <div class="stat-chip"><span class="stat-label">⭐ 糖屋口碑</span><span class="stat-val">${d.reputation}</span></div>
         </div>
-        <div class="tab-bar">
-          <div class="tab-btn ${d.activeTab === 'counter' ? 'active' : ''}" data-action="tab" data-tab="counter">☕ 厨房营业</div>
-          <div class="tab-btn ${d.activeTab === 'upgrades' ? 'active' : ''}" data-action="tab" data-tab="upgrades">🪵 装潢升级</div>
+        <div class="tab-bar" role="tablist">
+          <button type="button" role="tab" aria-selected="${d.activeTab === 'counter'}" class="tab-btn ${d.activeTab === 'counter' ? 'active' : ''}" data-action="tab" data-tab="counter">☕ 厨房营业</button>
+          <button type="button" role="tab" aria-selected="${d.activeTab === 'upgrades'}" class="tab-btn ${d.activeTab === 'upgrades' ? 'active' : ''}" data-action="tab" data-tab="upgrades">🪵 装潢升级</button>
         </div>
       </div>
     `;
@@ -415,14 +563,17 @@ export function mountShopPage(root) {
           </div>
           ${d.unlockedRecipes.length > 0
             ? `<div class="menu-grid">${d.unlockedRecipes.map(r => `
-                <div class="menu-item ${r.selected ? 'is-picked' : ''}" data-action="toggleMenu" data-id="${r.id}">
+                <button type="button" class="menu-item ${r.selected ? 'is-picked' : ''}" data-action="toggleMenu" data-id="${r.id}" aria-pressed="${r.selected}">
                   <img class="menu-icon mode-fit" src="${r.iconImg}" alt="" />
                   <span class="menu-name">${r.name}</span>
                   <span class="menu-flow">${r.flowText}</span>
                   <span class="menu-price">🪙 ${r.price}</span>
-                </div>`).join('')}</div>`
+                </button>`).join('')}</div>`
             : '<div class="empty-tip">柜台还没有可售卖的甜点哦！快去完成序章解锁第一道玛德琳吧～</div>'}
-          <div class="btn-primary open-btn" data-action="startBusiness">🔔 挂出营业牌 · 进入厨房迎客</div>
+          <div class="prep-cta-group">
+            <button type="button" class="btn-primary open-btn" data-action="startBusiness">🔔 挂出营业牌 · 进入厨房迎客</button>
+            <button type="button" class="btn-secondary practice-btn" data-action="startPractice">🎓 练习引导（不消耗天数）</button>
+          </div>
         </div>
       `;
     } else {
@@ -438,23 +589,29 @@ export function mountShopPage(root) {
                 </div>
               </div>
               ${u.owned
-                ? '<div class="upg-btn owned">已安装</div>'
-                : `<div class="upg-btn ${u.canAfford ? '' : 'disabled'}" data-action="buyUpgrade" data-id="${u.id}">🪙 ${u.cost}</div>`}
+                ? '<span class="upg-btn owned">已安装</span>'
+                : `<button type="button" class="upg-btn ${u.canAfford ? '' : 'disabled'}" data-action="buyUpgrade" data-id="${u.id}">🪙 ${u.cost}</button>`}
             </div>`).join('')}
         </div>
       `;
     }
 
-    const summaryHtml = d.daySummary
-      ? `<div class="summary-mask" data-action="closeSummary">
+    const s = d.daySummary;
+    const summaryHtml = s
+      ? `<div class="summary-mask" data-action="closeSummary" role="dialog" aria-modal="true" aria-label="营业结算">
           <div class="card summary-card" data-stop="true">
-            <div class="ribbon-title">🌙 第 ${d.daySummary.day} 天 · 打烊结算</div>
+            <div class="ribbon-title">${s.isPractice ? '🎓 练习结束 · 不消耗天数' : `🌙 第 ${s.day} 天 · 打烊结算`}</div>
             <div class="summary-rows">
-              <div class="sum-row"><span>今日成功出餐</span><span class="sum-val">${d.daySummary.served} 份</span></div>
-              <div class="sum-row"><span>营业焦糖金币</span><span class="sum-val">+${d.daySummary.coins} 🪙</span></div>
-              <div class="sum-row"><span>新增店铺口碑</span><span class="sum-val">+${d.daySummary.rep} ⭐</span></div>
+              <div class="sum-row"><span>今日成功出餐</span><span class="sum-val">${s.served} 份</span></div>
+              <div class="sum-row"><span>${s.isPractice ? '练习金币（不入账）' : '营业焦糖金币'}</span><span class="sum-val">${s.isPractice ? '0' : `+${s.coins}`} 🪙</span></div>
+              <div class="sum-row"><span>${s.isPractice ? '练习口碑（不入账）' : '新增店铺口碑'}</span><span class="sum-val">${s.isPractice ? '0' : `+${s.rep}`} ⭐</span></div>
+              <div class="sum-divider"></div>
+              <div class="sum-row sub"><span>流失顾客</span><span class="sum-val ${s.lost > 0 ? 'warn' : ''}">${s.lost} 位</span></div>
+              <div class="sum-row sub"><span>烤糊次数</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
+              <div class="sum-row sub"><span>打烊未交付</span><span class="sum-val ${s.undelivered > 0 ? 'warn' : ''}">${s.undelivered} 份</span></div>
             </div>
-            <div class="btn-primary" data-action="closeSummary">收下营收 · 迎接明天</div>
+            <div class="summary-advice">💡 ${s.advice}</div>
+            <button type="button" class="btn-primary summary-close-btn" data-action="closeSummary">${s.isPractice ? '返回营业准备' : '收下营收 · 迎接明天'}</button>
           </div>
         </div>`
       : '';
@@ -479,14 +636,16 @@ export function mountShopPage(root) {
     if (sc && prevScroll > 0) sc.scrollTop = prevScroll;
   }
 
-  function launchKitchenShift({ tutorialMode = false } = {}) {
+  function launchKitchenShift({ tutorialMode = false, practiceMode = false } = {}) {
     if (kitchen) kitchen.stop();
     kitchenMounted = false;
+    helpModalOpen = false;
     const currentDay = pageProxy.data.day;
     kitchen = createKitchenEngine(pageProxy, {
       menuRecipes: pageProxy.data.menuRecipes,
       bonuses,
       tutorialMode,
+      practiceMode,
       onTutorialDone: () => {
         markTutorialSeen('kitchen');
         showToast('🎉 营业上手啦！正式开张 45 秒！', 1600);
@@ -497,15 +656,37 @@ export function mountShopPage(root) {
         spawnFloatText(scene, {
           xPct: xMap[seatId] || 50,
           yPct: 22,
-          text: `+${earned} 🪙 💗`,
+          text: practiceMode ? '🎓 出餐成功!' : `+${earned} 🪙 💗`,
           kind: 'gold'
         });
       },
-      onShiftEnd: ({ earnedCoins, earnedRep, servedCount }) => {
-        recordBusinessDay({ earnedCoins, earnedRep });
+      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, lostCustomers, burntCount, undeliveredCount, isPractice }) => {
+        if (!isPractice) {
+          recordBusinessDay({ earnedCoins, earnedRep });
+        }
+        const advice = buildSummaryAdvice({
+          served: servedCount,
+          lost: lostCustomers,
+          burnt: burntCount,
+          undelivered: undeliveredCount,
+          isPractice
+        });
         pageProxy.setData({
           isOpen: false,
-          daySummary: { day: currentDay, served: servedCount, coins: earnedCoins, rep: earnedRep }
+          isPractice: false,
+          isPaused: false,
+          pauseManual: false,
+          daySummary: {
+            day: currentDay,
+            served: servedCount,
+            coins: isPractice ? 0 : earnedCoins,
+            rep: isPractice ? 0 : earnedRep,
+            lost: lostCustomers,
+            burnt: burntCount,
+            undelivered: undeliveredCount,
+            isPractice,
+            advice
+          }
         }, () => refreshShop());
       }
     });
@@ -519,14 +700,27 @@ export function mountShopPage(root) {
       slot.id = 'k-help-modal';
       root.appendChild(slot);
     }
-    if (!isFirstTime && kitchen) kitchen.pause();
+    helpModalOpen = true;
+    if (!isFirstTime && kitchen) kitchen.pause('help');
     slot.innerHTML = createTutorialCardHtml('kitchen', { isFirstTime });
+    if (pageProxy.data.isOpen) patchKitchenDom(pageProxy.data);
   }
 
   function closeHelpModal() {
+    helpModalOpen = false;
     const slot = root.querySelector('#k-help-modal');
     if (slot) slot.innerHTML = '';
+    if (pageProxy.data.isOpen && kitchen) {
+      kitchen.resume('help');
+      patchKitchenDom(pageProxy.data);
+    }
   }
+
+  const onVisibilityChange = () => {
+    if (document.hidden && pageProxy.data.isOpen && kitchen && !pageProxy.data.isPaused) {
+      kitchen.pause('hidden');
+    }
+  };
 
   const onClick = (e) => {
     const tutTarget = e.target.closest('[data-tut-action]');
@@ -535,15 +729,13 @@ export function mountShopPage(root) {
       if (ta === 'start') {
         const wasOpen = pageProxy.data.isOpen;
         closeHelpModal();
-        if (wasOpen) kitchen?.resume();
-        else launchKitchenShift({ tutorialMode: true });
+        if (!wasOpen) launchKitchenShift({ tutorialMode: true, practiceMode: false });
       } else if (ta === 'skip') {
         markTutorialSeen('kitchen');
         closeHelpModal();
-        launchKitchenShift({ tutorialMode: false });
+        launchKitchenShift({ tutorialMode: false, practiceMode: false });
       } else if (ta === 'backdrop' && pageProxy.data.isOpen) {
         closeHelpModal();
-        kitchen?.resume();
       }
       return;
     }
@@ -554,6 +746,18 @@ export function mountShopPage(root) {
 
     if (action === 'openHelp') {
       showHelpModal(false);
+    } else if (action === 'togglePause') {
+      if (!kitchen) return;
+      if (pageProxy.data.pauseManual) kitchen.resumeAll();
+      else kitchen.pause('manual');
+    } else if (action === 'resumeShift') {
+      kitchen?.resumeAll();
+    } else if (action === 'endShiftEarly') {
+      kitchen?.finishShift();
+    } else if (action === 'exitPractice') {
+      kitchen?.finishShift();
+    } else if (action === 'startRealFromPractice') {
+      launchKitchenShift({ tutorialMode: false, practiceMode: false });
     } else if (action === 'skipKitchenTut') {
       kitchen?.skipTutorial();
     } else if (action === 'tab') {
@@ -580,21 +784,27 @@ export function mountShopPage(root) {
       if (!hasSeenTutorial('kitchen')) {
         showHelpModal(true);
       } else {
-        launchKitchenShift({ tutorialMode: false });
+        launchKitchenShift({ tutorialMode: false, practiceMode: false });
       }
+    } else if (action === 'startPractice') {
+      if (pageProxy.data.menuRecipes.length === 0) {
+        showToast('请先通过序章解锁玛德琳再进入练习！');
+        return;
+      }
+      launchKitchenShift({ tutorialMode: false, practiceMode: true });
     } else if (action === 'pickSmartRaw') {
       const before = pageProxy.data.heldItem;
       const waitingSeat = (pageProxy.data.seats || []).find(s => s.occupied);
       const targetId = (waitingSeat && waitingSeat.wantedId) || (pageProxy.data.menuRecipes[0] && pageProxy.data.menuRecipes[0].id);
       if (targetId) kitchen?.pickRaw(targetId);
       if (!before && pageProxy.data.heldItem) {
-        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${pageProxy.data.heldItem.recipeName}`, kind: 'cream' });
+        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 64, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
       }
     } else if (action === 'pickRaw') {
       const before = pageProxy.data.heldItem;
       kitchen?.pickRaw(target.dataset.id);
       if (!before && pageProxy.data.heldItem) {
-        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${pageProxy.data.heldItem.recipeName}`, kind: 'cream' });
+        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 64, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
       }
     } else if (action === 'tapStation') {
       kitchen?.tapStation(target.dataset.id);
@@ -616,10 +826,12 @@ export function mountShopPage(root) {
   };
 
   root.addEventListener('click', onClick);
+  document.addEventListener('visibilitychange', onVisibilityChange);
   refreshShop();
   return () => {
     destroyed = true;
     kitchen?.stop?.();
     root.removeEventListener('click', onClick);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
   };
 }

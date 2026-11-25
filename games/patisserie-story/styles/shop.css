@@ -829,6 +829,24 @@
   pointer-events: none;
 }
 
+/* 语义化 button 全局复位与键盘焦点态（营业页所有互动区） */
+.page-shop button {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.page-shop button:focus-visible {
+  outline: 2.5px solid #FFE07D;
+  outline-offset: 2px;
+}
+
 .page-shop .scene-prop {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -841,8 +859,8 @@
   transition: transform 0.14s ease, filter 0.18s ease;
 }
 
-.page-shop .scene-prop:active {
-  transform: translate(-50%, -50%) scale(0.93);
+.page-shop button.scene-prop:active {
+  transform: translate(-50%, -50%) scale(0.95);
 }
 
 .page-shop .prop-sprite {
@@ -850,24 +868,94 @@
   filter: drop-shadow(0 8px 10px rgba(58, 28, 10, 0.36));
 }
 
-.page-shop .pos-oven-1 { left: 26%; top: 53%; }
-.page-shop .pos-oven-2 { left: 74%; top: 53%; }
-.page-shop .sprite-oven { width: 146px; height: 146px; }
+.page-shop .pos-oven-1 { left: 25%; top: 51.5%; }
+.page-shop .pos-oven-2 { left: 75%; top: 51.5%; }
+.page-shop .sprite-oven { width: clamp(114px, 34vw, 138px); height: clamp(114px, 34vw, 138px); }
 
-.page-shop .pos-cream { left: 20%; top: 75%; }
-.page-shop .sprite-cream { width: 118px; height: 118px; }
+.page-shop .pos-cream { left: 17%; top: 71.5%; }
+.page-shop .sprite-cream { width: clamp(86px, 26vw, 106px); height: clamp(86px, 26vw, 106px); }
 
-.page-shop .pos-pantry { left: 50%; top: 70%; z-index: 14; }
-.page-shop .sprite-pantry { width: 124px; height: 124px; position: relative; z-index: 1; }
+.page-shop .pos-pantry { left: 50%; top: 69.5%; z-index: 14; cursor: default; }
+.page-shop .sprite-pantry { width: clamp(92px, 27vw, 114px); height: clamp(92px, 27vw, 114px); position: relative; z-index: 1; }
 
-.page-shop .pos-decor { left: 80%; top: 75%; }
-.page-shop .sprite-decor { width: 120px; height: 120px; }
+.page-shop .pos-decor { left: 83%; top: 71.5%; }
+.page-shop .sprite-decor { width: clamp(88px, 26vw, 108px); height: clamp(88px, 26vw, 108px); }
 
-.page-shop .pos-hold { left: 15%; top: 91%; }
-.page-shop .pos-trash { left: 87%; top: 90%; }
-.page-shop .sprite-trash { width: 76px; height: 76px; }
+.page-shop .pos-hold { left: 12%; top: 91%; }
+.page-shop .pos-trash { left: 88%; top: 90.5%; }
+.page-shop .sprite-trash { width: clamp(54px, 16vw, 68px); height: clamp(54px, 16vw, 68px); }
 
-/* 道具内部加工进度与成品状态叠加 */
+/* 顶部 HUD 暂停/帮助按钮组 */
+.page-shop .hud-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.page-shop .hud-icon-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 245, 224, 0.2);
+  border: 1.5px solid rgba(255, 224, 156, 0.85);
+  color: #FFF7E8;
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.page-shop .hud-icon-btn:hover {
+  background: rgba(255, 245, 224, 0.34);
+}
+
+/* 顾客上菜引导标签 */
+.page-shop .cust-serve-tag {
+  position: relative;
+  z-index: 14;
+  margin-bottom: -8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #3E7D34;
+  border: 1.5px solid #FFF7E0;
+  color: #FFF;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(24, 52, 18, 0.38);
+}
+
+/* 道具固定短名称 + 4 态标签 */
+.page-shop .prop-name-tag {
+  position: relative;
+  z-index: 4;
+  margin-top: -10px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(66, 34, 14, 0.86);
+  border: 1px solid rgba(235, 194, 134, 0.85);
+  color: #FFF8EA;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(32, 12, 4, 0.28);
+}
+
+.page-shop .prop-mini-label {
+  margin-top: -4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(66, 34, 14, 0.84);
+  color: #FFF7E8;
+  font-size: 9.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .page-shop .prop-overlay {
   position: absolute;
   inset: 0;
@@ -876,12 +964,32 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  gap: 4px;
+  gap: 3px;
+}
+
+.page-shop .prop-state-tag {
+  padding: 1.5px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(24, 10, 4, 0.26);
+}
+
+.page-shop .prop-state-tag.idle {
+  background: rgba(255, 250, 240, 0.88);
+  border: 1px solid rgba(168, 114, 62, 0.72);
+  color: #6B3E1C;
+}
+
+.page-shop .prop-state-tag.working {
+  background: rgba(66, 34, 14, 0.88);
+  color: #FFE599;
 }
 
 .page-shop .prop-dish-img {
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
   filter: drop-shadow(0 4px 6px rgba(36, 16, 6, 0.5));
 }
 
@@ -894,8 +1002,8 @@
 }
 
 .page-shop .prop-prog-track {
-  width: 68px;
-  height: 8px;
+  width: 62px;
+  height: 7px;
   border-radius: 999px;
   background: rgba(42, 18, 6, 0.78);
   border: 1.5px solid #FFF4DC;
@@ -908,28 +1016,61 @@
 }
 
 .page-shop .prop-pill {
-  padding: 2px 10px;
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   color: #FFF;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.34);
 }
 
-.page-shop .prop-pill.ready { background: #4E8A44; }
-.page-shop .prop-pill.burnt { background: #C43B2B; }
+.page-shop .prop-pill.ready { background: #3E8336; }
+.page-shop .prop-pill.near-burn {
+  background: #D94E1F;
+  border: 1.5px solid #FFE680;
+  animation: warnFlash 0.45s ease-in-out infinite alternate;
+}
+.page-shop .prop-pill.burnt { background: #A8281D; }
+.page-shop .prop-pill.guide-next {
+  background: #C95B14;
+  border: 1.5px solid #FFF3B0;
+}
 
-/* 原料篮甜点标识 */
+/* 原料篮与 3 枚指定甜点按钮（独立成行、绝不位移或被竹篮遮挡） */
+.page-shop .pantry-basket-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.page-shop .pantry-smart-tag {
+  position: relative;
+  z-index: 2;
+  margin-top: -12px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(66, 34, 14, 0.88);
+  border: 1px solid #E5B97C;
+  color: #FFF7E8;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .page-shop .pantry-badge-pill {
   position: relative;
   z-index: 3;
-  margin-top: -14px;
+  margin-top: -10px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 2px 10px 2px 5px;
   border-radius: 999px;
-  background: rgba(255, 251, 244, 0.94);
+  background: rgba(255, 251, 244, 0.96);
   border: 1.5px solid #B5753C;
   font-size: 11px;
   font-weight: 800;
@@ -944,109 +1085,317 @@
 
 .page-shop .pantry-picks {
   position: relative;
-  z-index: 5;
-  margin-top: 2px;
+  z-index: 6;
+  margin-top: 4px;
   display: flex;
-  gap: 8px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
 }
 
 .page-shop .pantry-pick-orb {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  width: clamp(48px, 14vw, 56px);
+  padding: 4px 2px 3px;
+  border-radius: 12px;
   background: rgba(255, 251, 244, 0.96);
   border: 2px solid #B5753C;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(42, 18, 6, 0.32);
+  gap: 1px;
+  box-shadow: 0 3px 7px rgba(42, 18, 6, 0.28);
   cursor: pointer;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease;
+}
+
+.page-shop .pantry-pick-orb:active {
+  background: #FCEBD2;
+}
+
+.page-shop .pantry-pick-orb.is-selected {
+  background: #FFF3D4;
+  border-color: #D96B16;
+  box-shadow: 0 0 0 2.5px rgba(245, 148, 36, 0.55), 0 4px 10px rgba(42, 18, 6, 0.3);
 }
 
 .page-shop .pantry-orb-img {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+}
+
+.page-shop .pantry-orb-name {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #4A2511;
+  line-height: 1.1;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* 底部暂存碟 & 可可手中托盘 */
 .page-shop .hold-saucer {
-  width: 64px;
-  height: 64px;
+  width: clamp(54px, 15vw, 62px);
+  height: clamp(54px, 15vw, 62px);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 252, 246, 0.92) 60%, rgba(224, 200, 170, 0.92) 100%);
+  background: radial-gradient(circle, rgba(255, 252, 246, 0.94) 60%, rgba(224, 200, 170, 0.94) 100%);
   border: 2.5px solid #B58150;
-  box-shadow: 0 6px 12px rgba(42, 18, 6, 0.35);
+  box-shadow: 0 5px 10px rgba(42, 18, 6, 0.34);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .page-shop .hold-food-img {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
 }
 
 .page-shop .hold-mini-tag {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
-  color: #8C5C38;
+  color: #7A4B28;
 }
 
 .page-shop .scene-coco-tray {
   position: absolute;
   left: 50%;
-  bottom: 10px;
+  bottom: 8px;
   transform: translateX(-50%);
   z-index: 18;
+  max-width: calc(100% - 140px);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 14px 5px 6px;
+  gap: 8px;
+  padding: 4px 11px 4px 5px;
   border-radius: 999px;
-  background: rgba(255, 251, 244, 0.92);
+  background: rgba(255, 251, 244, 0.95);
   border: 2px solid #B5753C;
   box-shadow: 0 6px 16px rgba(42, 18, 6, 0.35);
   pointer-events: none;
 }
 
 .page-shop .tray-coco-avatar {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: 2px solid #8C4E22;
+  flex-shrink: 0;
 }
 
 .page-shop .tray-held-slot {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-width: 72px;
+  min-width: 0;
+}
+
+.page-shop .tray-text-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.page-shop .tray-recipe-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #4A2511;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .page-shop .tray-food-img {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
 }
 
 .page-shop .tray-status-dot {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 2px 8px;
+  padding: 1.5px 7px;
   border-radius: 999px;
   background: #F4E0C4;
   color: #6E3A18;
+  white-space: nowrap;
+}
+
+.page-shop .tray-status-dot.semi {
+  background: #FFE5B4;
+  color: #9A3F08;
+  border: 1px solid #E58C2A;
 }
 
 .page-shop .tray-status-dot.ready { background: #DCECD5; color: #2D5A27; }
 .page-shop .tray-status-dot.burnt { background: #FADBD8; color: #A93226; }
 
 .page-shop .tray-empty-txt {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #8C5E3C;
+  color: #7D4E2E;
+  white-space: nowrap;
 }
 
-/* 高对比度金橙双层发光引导动画（在浅色大理石台面上依然一眼可见） */
+/* 准备页按钮组 + 练习模式条 + 暂停蒙层 + 增强结算诊断 */
+.page-shop .prep-cta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.page-shop .prep-cta-group .open-btn,
+.page-shop .prep-cta-group .practice-btn {
+  width: 100%;
+}
+
+.page-shop .practice-btn {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: #FFF7E8;
+  border: 1.5px solid #C89662;
+  color: #6E3B18;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.page-shop .practice-banner {
+  top: 44px;
+  padding: 3px 10px;
+  gap: 8px;
+  max-width: 94%;
+  width: auto;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.page-shop .practice-banner .tut-coach-text {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.page-shop .practice-banner .tut-coach-skip {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #FFD966;
+  color: #4A210B;
+  white-space: nowrap;
+}
+
+.page-shop .practice-banner .tut-coach-skip.alt {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFF7E8;
+  border: 1px solid rgba(255, 224, 156, 0.65);
+}
+
+.page-shop .practice-banner-btns {
+  display: inline-flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.page-shop .tut-coach-skip.alt {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.page-shop .pause-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: rgba(34, 16, 6, 0.62);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.page-shop .pause-card {
+  width: 100%;
+  max-width: 310px;
+  padding: 18px 16px;
+  text-align: center;
+}
+
+.page-shop .pause-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #4A2511;
+  margin-bottom: 6px;
+}
+
+.page-shop .pause-desc {
+  font-size: 12.5px;
+  color: #754A2E;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.page-shop .pause-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-shop .pause-actions .btn-primary,
+.page-shop .pause-actions .btn-secondary,
+.page-shop .pause-actions .btn-ghost {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.page-shop .pause-actions .btn-secondary {
+  background: #FFF6E5;
+  border: 1.5px solid #C89662;
+  color: #6B3917;
+}
+
+.page-shop .pause-actions .btn-ghost {
+  background: transparent;
+  color: #8C5C3C;
+  font-size: 12px;
+}
+
+.page-shop .sum-divider {
+  height: 1px;
+  background: #E8D5BC;
+  margin: 4px 0;
+}
+
+.page-shop .sum-row.sub {
+  font-size: 12px;
+  color: #7D5438;
+}
+
+.page-shop .sum-val.warn {
+  color: #C43B2B;
+}
+
+.page-shop .summary-advice {
+  margin: 10px 0 12px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #FFF6E2;
+  border: 1px solid #DFB57C;
+  color: #5E3416;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.page-shop .summary-close-btn {
+  width: 100%;
+}
+
+/* 高对比度金橙双层发光引导动画（圆球不改位移/层叠） */
 .page-shop .is-scene-glow {
   filter: drop-shadow(0 0 12px rgba(255, 162, 24, 0.98)) drop-shadow(0 0 4px rgba(255, 244, 180, 0.98));
   animation: scenePulse 0.8s ease-in-out infinite alternate;
@@ -1054,18 +1403,32 @@
 
 @keyframes scenePulse {
   0% { filter: drop-shadow(0 0 8px rgba(235, 128, 16, 0.92)); transform: translate(-50%, -50%) scale(1); }
-  100% { filter: drop-shadow(0 0 20px rgba(255, 184, 36, 1)) brightness(1.08); transform: translate(-50%, -50%) scale(1.05); }
+  100% { filter: drop-shadow(0 0 20px rgba(255, 184, 36, 1)) brightness(1.08); transform: translate(-50%, -50%) scale(1.04); }
 }
 
 .page-shop .scene-customer.is-scene-glow,
-.page-shop .pantry-pick-orb.is-scene-glow,
-.page-shop .sprite-pantry.is-scene-glow {
+.page-shop .pantry-basket-btn.is-scene-glow {
   animation: scenePulseFlat 0.8s ease-in-out infinite alternate;
+}
+
+.page-shop .pantry-pick-orb.is-scene-glow {
+  filter: none;
+  animation: orbGlow 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes orbGlow {
+  0% { border-color: #D97A1E; box-shadow: 0 0 0 2px rgba(255, 178, 48, 0.45), 0 3px 7px rgba(42, 18, 6, 0.28); }
+  100% { border-color: #F28B1D; box-shadow: 0 0 0 4px rgba(255, 186, 56, 0.72), 0 4px 12px rgba(217, 108, 16, 0.45); }
 }
 
 @keyframes scenePulseFlat {
   0% { filter: drop-shadow(0 0 8px rgba(235, 128, 16, 0.92)); transform: scale(1); }
-  100% { filter: drop-shadow(0 0 18px rgba(255, 184, 36, 1)) brightness(1.08); transform: scale(1.06); }
+  100% { filter: drop-shadow(0 0 18px rgba(255, 184, 36, 1)) brightness(1.08); transform: scale(1.04); }
+}
+
+@keyframes warnFlash {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
 }
 
 @keyframes sceneBounce {
