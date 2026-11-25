@@ -33,10 +33,10 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
   let finishTimer = null;
   let destroyed = false;
   let tutCoachActive = false;
-  let twoLaneTutPendingUnlock = false;
   let manualPaused = false;
   let startedOnce = false;
   let pendingWinSummary = null;
+  let rewardCommitted = false;
   const tutKey = (engineMode === 'multi_pan' && type === 'whisk_dash') ? 'whisk_dash' : engineMode;
 
   const pageProxy = {
@@ -54,16 +54,17 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       ovenScore: 0, ovenTimeLeft: 35, ovenSceneImg: 'assets/images/scenes/oven_stage_0.svg', actionLabel: '', feedback: '',
       // 2. Stacker
       stackConfig: null, stackLayers: [], stackLayerHeight: 42, activeLayerIndex: 0, activeLayer: null,
-      activePhase: 'swing', swingX: 20, swingDir: 1, dropY: 42, dropVy: 0, score: 0, combo: 0, lives: 3,
+      activePhase: 'swing', targetX: 50, swingX: 20, swingDir: 1, dropY: 42, dropVy: 0, score: 0, combo: 0, lives: 3,
       judgeText: '', judgeKind: '', stackFailed: false,
       // 3. Rhythm
       rhythmConfig: null, rhythmNotes: [], rhythmScore: 0, rhythmCombo: 0, rhythmHits: 0, rhythmMisses: 0,
-      rhythmDone: 0, rhythmTotal: 9, rhythmJudge: '', rhythmJudgeKind: '',
+      rhythmDone: 0, rhythmTotal: 9, rhythmPractice: false, rhythmCountdown: 0, rhythmJudge: '', rhythmJudgeKind: '',
       // 4. Multi-Pan
-      panConfig: null, pans: [], panScore: 0, panServed: 0, panBurnt: 0, panTimeLeft: 30, panTip: '',
+      panConfig: null, pans: [], panScore: 0, panServed: 0, panBurnt: 0, panRescued: 0, panPractice: false, panPracticeServed: 0, panTimeLeft: 34, panTip: '',
       // 5. Catch
       catchConfig: null, catchBasketX: 50, catchItems: [], catchScore: 0, catchCollected: 0,
-      catchMissed: 0, catchTarget: 8, catchLives: 3, catchTimeLeft: 26, catchTip: ''
+      catchMissed: 0, catchTarget: 8, catchMinPass: 4, catchLives: 3, catchTimeLeft: 28, catchTip: '',
+      failRuleText: ''
     },
     setData(patch, cb) {
       if (destroyed) return;
@@ -74,10 +75,12 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
   };
 
   function onComplete(rank = 'B', score = 0, details = null) {
+    if (rewardCommitted) return;
+    rewardCommitted = true;
     const meta = RANK_META[rank] || RANK_META.B;
     completeLevel(level.id, rank, score);
     showToast(meta.toast, 1100);
-    if (engineMode === 'multi_pan' && details) {
+    if (details) {
       pendingWinSummary = { rank, score, details };
       pageProxy.setData({ gameFailed: false });
       renderWinModal();
@@ -98,28 +101,45 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       return;
     }
     const { rank, score, details } = pendingWinSummary;
-    const cfg = pageProxy.data.panConfig || MULTI_PAN_CONFIGS[type] || MULTI_PAN_CONFIGS.pan_flip;
+    const meta = RANK_META[rank] || RANK_META.B;
+    let statRows = `<div><span>总得分</span><strong>${score} / ${details.maxScore} (${details.ratioPct}%)</strong></div>`;
+    if (details.mode === 'multi_pan') {
+      const cfg = pageProxy.data.panConfig || MULTI_PAN_CONFIGS[type] || MULTI_PAN_CONFIGS.pan_flip;
+      statRows += `<div><span>${cfg.actionVerb}份数</span><strong>${details.served} / ${details.target} 份</strong></div>`;
+      statRows += `<div><span>烧焦次数</span><strong>${details.burnt} / ${details.maxBurnt} 次</strong></div>`;
+      statRows += `<div><span>快糊抢救</span><strong>${details.rescued || 0} 次（不扣容错）</strong></div>`;
+    } else if (details.mode === 'rhythm') {
+      statRows += `<div><span>节拍命中</span><strong>${details.hits} / ${details.target} 拍</strong></div>`;
+      statRows += `<div><span>漏拍次数</span><strong>${details.misses} 次</strong></div>`;
+    } else if (details.mode === 'catch') {
+      statRows += `<div><span>收集份数</span><strong>${details.collected} / ${details.target} 份（≥${details.minNeed}份过关）</strong></div>`;
+      statRows += `<div><span>剩余生命</span><strong>${details.lives} / 3 心</strong></div>`;
+    } else if (details.mode === 'stacker') {
+      statRows += `<div><span>完成层数</span><strong>${details.served} / ${details.target} 层</strong></div>`;
+      statRows += `<div><span>剩余生命</span><strong>${details.lives} / 3 心</strong></div>`;
+    } else if (details.mode === 'oven') {
+      statRows += `<div><span>控温命中</span><strong>${details.served} / ${details.target} 次</strong></div>`;
+      statRows += `<div><span>失误次数</span><strong>${details.mistakes || 0} 次</strong></div>`;
+    }
+
     const reasonsHtml = details.downgradeReasons && details.downgradeReasons.length > 0
       ? `<div class="rank-downgrade-box">
            <strong>${rank === 'B' ? '未达 A 级原因：' : '距 S 级差一步：'}</strong>
            ${details.downgradeReasons.map(r => `<div>• ${r}</div>`).join('')}
          </div>`
-      : `<div class="rank-downgrade-box is-s">🌟 零烧焦且达成 90%+ 得分率，解锁 S 级传奇评价！</div>`;
+      : `<div class="rank-downgrade-box is-s">🌟 零失误且达成 90%+ 得分率，解锁 S 级传奇评价！</div>`;
+
     slot.innerHTML = `
       <div class="fail-modal-mask" role="dialog" aria-modal="true" aria-label="本关通关结算">
         <div class="card fail-modal-card">
-          <span class="fail-modal-title">🎉 ${rank} 级通关！</span>
-          <div class="mg-result-stats">
-            <div><span>总得分</span><strong>${score} / ${details.maxScore} (${details.ratioPct}%)</strong></div>
-            <div><span>${cfg.actionVerb}份数</span><strong>${details.served} / ${details.target} 份</strong></div>
-            <div><span>烧焦次数</span><strong>${details.burnt} / ${details.maxBurnt} 次</strong></div>
-            ${type === 'whisk_dash' ? `<div><span>快糊抢救</span><strong>${details.rescued || 0} 次（不扣容错）</strong></div>` : ''}
-          </div>
+          <span class="fail-modal-title">🎉 ${meta.label}</span>
+          <div class="mg-result-stats">${statRows}</div>
           ${reasonsHtml}
-          <div class="fail-modal-hint">规则：B级过关(≥${details.minNeed}份、≥40%分、烧焦&lt;${details.maxBurnt}) · A级(满${details.target}份、≥72%分、烧焦≤1) · S级(满${details.target}份、≥90%分、0烧焦)</div>
+          <div class="fail-modal-hint">${details.ruleText || ''}</div>
           <div style="display:flex;flex-direction:column;gap:8px;width:100%;">
             <button type="button" class="btn-primary fail-retry-btn" data-action="proceedStory">✨ 进入剧情结算</button>
             <button type="button" class="btn-secondary fail-retry-btn" data-action="retry">↻ 再挑战更高评级</button>
+            <button type="button" class="btn-secondary fail-retry-btn" data-action="goHome">🏠 返回星月糖屋</button>
           </div>
         </div>
       </div>
@@ -137,11 +157,15 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       <div class="fail-modal-mask" role="dialog" aria-modal="true" aria-label="挑战已暂停">
         <div class="card fail-modal-card">
           <span class="fail-modal-title">⏸ 挑战已暂停</span>
-          <span class="fail-modal-reason">${hiddenPause ? '页面切出已自动暂停，倒计时与火候均已冻结。' : '倒计时与烤位火候均已冻结，随时可继续。'}</span>
+          <span class="fail-modal-reason">${hiddenPause ? '页面切出已自动暂停，计时、生命与分数均已冻结。' : '计时、生命与分数均已冻结，随时可恢复。'}</span>
           <div style="display:flex;flex-direction:column;gap:8px;width:100%;">
             <button type="button" class="btn-primary fail-retry-btn" data-action="resumeGame">▶ 继续挑战</button>
-            <button type="button" class="btn-secondary fail-retry-btn" data-action="replayTutorial">🎓 重玩互动教学</button>
+            <button type="button" class="btn-secondary fail-retry-btn" data-action="replayTutorial">🎓 重玩教学练习</button>
             <button type="button" class="btn-secondary fail-retry-btn" data-action="retry">↻ 重新开始本关</button>
+            <div style="display:flex;gap:8px;width:100%;">
+              <button type="button" class="btn-secondary fail-retry-btn" style="flex:1;" data-action="goMap">🗺️ 地图</button>
+              <button type="button" class="btn-secondary fail-retry-btn" style="flex:1;" data-action="goHome">🏠 糖屋</button>
+            </div>
           </div>
         </div>
       </div>
@@ -153,7 +177,8 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       gameFailed: true,
       failTitle: info.title || '💥 制作失败啦！',
       failReason: info.reason || '差一点就成功了，调整节奏再来一轮吧！',
-      failScore: info.score || 0
+      failScore: info.score || 0,
+      failRuleText: info.ruleText || ''
     });
   }
 
@@ -189,7 +214,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
           <img class="arena-bg-img mode-fill" src="assets/images/minigames/bg_stacker.svg" alt="" />
           <div class="crane-rail"></div>
           <div id="mg-cord" class="crane-cord"></div>
-          <div class="center-guide"></div>
+          <div id="mg-center-guide" class="center-guide" style="left:50%;"></div>
           <div id="mg-active-layer" class="pastry-block is-active"></div>
           <div id="mg-landed-layers"></div>
           <div class="serving-plate"></div>
@@ -218,10 +243,10 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
         <div id="mg-judge" class="judge-bar"></div>
         <div class="rhythm-keys">
           ${cfg.laneLabels.map((lbl, idx) => `
-            <div class="rhythm-key-btn" data-action="rhythmHit" data-lane="${idx}">
+            <button type="button" class="rhythm-key-btn" data-action="rhythmHit" data-lane="${idx}">
               <img class="key-mini-img mode-fit" src="${cfg.noteImg}" alt="" />
-              <span>${lbl}</span>
-            </div>
+              <span><kbd class="burner-keycap">${idx + 1}</kbd> ${lbl}</span>
+            </button>
           `).join('')}
         </div>
       </div>
@@ -296,7 +321,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
                 <img class="pill-icon mode-fit" src="${recipe.iconImg}" alt="" />
                 <span>${recipe.name}</span>
               </div>
-              ${engineMode === 'multi_pan' ? '<button type="button" class="help-fab-btn" style="background:#8C4920;border-color:#DFB06E;" data-action="togglePause" aria-label="暂停或继续" title="暂停 / 重玩教学">⏸</button>' : ''}
+              <button type="button" class="help-fab-btn" style="background:#8C4920;border-color:#DFB06E;" data-action="togglePause" aria-label="暂停或继续" title="暂停 / 重玩教学">⏸</button>
               <button type="button" class="help-fab-btn" style="background:#8C4920;border-color:#DFB06E;" data-action="openHelp" aria-label="玩法说明" title="玩法说明">?</button>
             </div>
           </div>
@@ -354,46 +379,45 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
 
   function enterInteractiveCoach() {
     tutCoachActive = true;
-    twoLaneTutPendingUnlock = false;
     manualPaused = false;
     pendingWinSummary = null;
+    rewardCommitted = false;
     renderPauseModal();
     renderWinModal();
-    if (engineMode === 'multi_pan' && type === 'whisk_dash') {
+
+    if (engineMode === 'multi_pan') {
+      // 无惩罚两路动态练习（完成 2 份后自动重置计时/分数并解锁第 3 路进入正式挑战）
+      tutCoachActive = false;
+      markTutorialSeen(tutKey);
+      setCoach(null);
       engine.start({ twoLaneTutorial: true });
-      twoLaneTutPendingUnlock = true;
-    } else {
-      engine.start();
+      startedOnce = true;
+      showToast('🎓 先用 2 个工位无惩罚练习 2 份，完成后自动重置计时正式开局！', 1800);
+      return;
     }
+
+    if (engineMode === 'rhythm') {
+      // 慢速动态 2 拍练习（命中 2 拍后自动 3-2-1 进入正式挑战）
+      tutCoachActive = false;
+      markTutorialSeen(tutKey);
+      setCoach(null);
+      engine.start({ practice: true, skipCountdown: true });
+      startedOnce = true;
+      showToast('🎓 先慢速练习命中 2 拍（不扣分），随后正式发拍！', 1800);
+      return;
+    }
+
+    engine.start();
     startedOnce = true;
 
     if (engineMode === 'oven') {
       engine.setPaused(true);
       pageProxy.setData({ pointerPos: 50, currentTemp: 180 });
-      setCoach('指针正在金色 180°C 正中心，点一下烤炉试试！', 50, 56);
-    } else if (engineMode === 'multi_pan') {
-      engine.setPaused(true);
-      const cfg = pageProxy.data.panConfig;
-      const centerHeat = Math.round((cfg.readyMin + cfg.readyMax) / 2);
-      const pans = pageProxy.data.pans.map(p => (p.id === 1
-        ? { ...p, heat: centerHeat, state: 'ready', isPerfect: true, label: cfg.perfectLabel || cfg.readyLabel, spriteImg: `assets/images/minigames/${cfg.spritePrefix}_ready.svg` }
-        : p));
-      pageProxy.setData({ pans });
-      setCoach(
-        type === 'whisk_dash'
-          ? '教学先开 2 个烤位！烤位 #2 到达完美流心区，点它或按键盘【2】出炉！'
-          : '中间铜锅变金黄发光啦！立刻点它（或按 2）翻面出锅！',
-        50,
-        54
-      );
+      setCoach('练习步骤（不计失误）：指针在 180°C 正中心，点烤炉试试！', 50, 56);
     } else if (engineMode === 'stacker') {
       engine.setPaused(true);
-      pageProxy.setData({ swingX: 50, activePhase: 'swing' });
-      setCoach('食材已对齐正中虚线，点击屏幕放下第一层！', 50, 44);
-    } else if (engineMode === 'rhythm') {
-      engine.setPaused(true);
-      pageProxy.setData({ rhythmNotes: [{ id: 9001, lane: 1, y: 76 }] });
-      setCoach('音符正好落进中间器皿圈里，立刻点击中间轨道！', 50, 68);
+      pageProxy.setData({ swingX: 50, targetX: 50, activePhase: 'swing' });
+      setCoach('练习步骤：食材已对齐虚线落点，点屏幕放下第一层！', 50, 44);
     } else if (engineMode === 'catch') {
       engine.setPaused(true);
       const good = pageProxy.data.catchConfig.goodItems[0];
@@ -401,7 +425,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
         catchBasketX: 28,
         catchItems: [{ id: 9001, x: 72, y: 66, vy: 0, img: good.img, label: good.label, pts: 100, isBad: false }]
       });
-      setCoach('按住画面向右拖动礼盒（或点右侧）接住这颗甜点！', 72, 68);
+      setCoach('练习步骤：向右拖动礼盒（或点右侧）接住这颗甜点！', 72, 68);
     }
   }
 
@@ -439,6 +463,8 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
           <span class="heart ${d.lives >= 3 ? 'on' : ''}">♥</span>
         </div>
       `;
+      const guideLine = root.querySelector('#mg-center-guide');
+      if (guideLine) guideLine.style.left = `${typeof d.targetX === 'number' ? d.targetX : 50}%`;
       const cord = root.querySelector('#mg-cord');
       if (d.activeLayer && d.activePhase === 'swing') {
         cord.style.display = 'block';
@@ -472,11 +498,13 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       btn.style.display = !d.gameFailed && d.activePhase !== 'done' ? 'block' : 'none';
       btn.textContent = d.activeLayer ? `松手放下：${d.activeLayer.name}` : '堆叠完成！';
     } else if (engineMode === 'rhythm') {
-      hud.innerHTML = `
-        <span class="hud-score">得分 ${d.rhythmScore}</span>
-        <span class="hud-layers">节拍 ${d.rhythmDone} / ${d.rhythmTotal}</span>
-        <span class="hud-score">连击 x${d.rhythmCombo}</span>
-      `;
+      hud.innerHTML = d.rhythmPractice
+        ? `<span class="hud-score">🎓 慢速练习</span><span class="hud-layers">命中 2 拍正式开局</span><button type="button" class="tut-coach-skip" data-action="skipPractice">跳过练习</button>`
+        : `
+          <span class="hud-score">得分 ${d.rhythmScore}</span>
+          <span class="hud-layers">${d.rhythmCountdown > 0 ? `准备 ${d.rhythmCountdown}` : `节拍 ${d.rhythmDone}/${d.rhythmTotal}`}</span>
+          <span class="hud-score">连击 x${d.rhythmCombo}</span>
+        `;
       const noteImg = d.rhythmConfig ? d.rhythmConfig.noteImg : '';
       root.querySelector('#mg-rhythm-notes').innerHTML = (d.rhythmNotes || []).map(n => `
         <div class="rhythm-note" style="left:${n.lane * 33.33 + 16.66}%;top:${n.y}%;">
@@ -492,12 +520,18 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       const maxBurnt = cfg.maxBurnt || 4;
       const remainLife = Math.max(0, maxBurnt - (d.panBurnt || 0));
       const lifeCls = remainLife <= 1 ? 'life-low' : (remainLife === 2 ? 'life-mid' : 'life-ok');
-      hud.innerHTML = `
-        <span class="hud-score">得分 ${d.panScore}</span>
-        <span class="hud-layers">${cfg.actionVerb} ${d.panServed}/${target}</span>
-        <span class="hud-life ${lifeCls}">容错 ${remainLife}/${maxBurnt}</span>
-        <span class="hud-score">⏱ ${d.panTimeLeft}s</span>
-      `;
+      hud.innerHTML = d.panPractice
+        ? `
+          <span class="hud-score">🎓 两${cfg.unitName}练习</span>
+          <span class="hud-layers">${d.panPracticeServed || 0}/2 份（不扣分）</span>
+          <button type="button" class="tut-coach-skip" data-action="skipPractice">直接正式开局</button>
+        `
+        : `
+          <span class="hud-score">得分 ${d.panScore}</span>
+          <span class="hud-layers">${cfg.actionVerb} ${d.panServed}/${target}</span>
+          <span class="hud-life ${lifeCls}">容错 ${remainLife}/${maxBurnt}</span>
+          <span class="hud-score">⏱ ${d.panTimeLeft}s</span>
+        `;
       (d.pans || []).forEach(p => {
         const slot = root.querySelector(`#mg-pan-${p.id}`);
         if (!slot) return;
@@ -515,7 +549,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     } else {
       hud.innerHTML = `
         <span class="hud-score">得分 ${d.catchScore}</span>
-        <span class="hud-layers">${d.catchCollected}/${d.catchTarget} · ⏱${d.catchTimeLeft}s</span>
+        <span class="hud-layers">${d.catchCollected}/${d.catchTarget}(≥${d.catchMinPass || 4}过) · ⏱${d.catchTimeLeft}s</span>
         <div class="hud-lives">
           <span class="heart ${d.catchLives >= 1 ? 'on' : ''}">♥</span>
           <span class="heart ${d.catchLives >= 2 ? 'on' : ''}">♥</span>
@@ -534,17 +568,21 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     if (d.gameFailed !== lastFailState) {
       lastFailState = d.gameFailed;
       if (d.gameFailed) pendingWinSummary = null;
-      const ruleHint = engineMode === 'multi_pan'
-        ? '规则：B级过关(≥3份、≥40%分且烧焦<4) · A级(满6份、≥72%分且烧焦≤1) · S级(满6份、≥90%分且0烧焦)'
-        : '达成基础目标获 B 级即可过关！72% 获 A 级，90% 且零失误解锁 S 级传奇剧情！';
+      const ruleHint = d.failRuleText || '规则：达成最低份数与基础得分获 B 级过关；满额且 ≥72% 且失误可控获 A 级；≥90% 且零失误获 S 级！';
       root.querySelector('#mg-fail-slot').innerHTML = d.gameFailed
         ? `<div class="fail-modal-mask" role="dialog" aria-modal="true" aria-label="制作失败">
             <div class="card fail-modal-card">
               <span class="fail-modal-title">${d.failTitle}</span>
               <span class="fail-modal-reason">${d.failReason}</span>
               <div class="fail-modal-hint">${ruleHint}</div>
-              <button type="button" class="btn-primary fail-retry-btn" data-action="retry">↻ 立即重新挑战</button>
-              ${engineMode === 'multi_pan' ? '<button type="button" class="btn-secondary fail-retry-btn" style="margin-top:8px;" data-action="replayTutorial">🎓 重玩两烤位教学</button>' : ''}
+              <div style="display:flex;flex-direction:column;gap:8px;width:100%;">
+                <button type="button" class="btn-primary fail-retry-btn" data-action="retry">↻ 立即重新挑战</button>
+                <button type="button" class="btn-secondary fail-retry-btn" data-action="replayTutorial">🎓 进入教学练习（不扣分）</button>
+                <div style="display:flex;gap:8px;width:100%;">
+                  <button type="button" class="btn-secondary fail-retry-btn" style="flex:1;" data-action="goMap">🗺️ 返回地图</button>
+                  <button type="button" class="btn-secondary fail-retry-btn" style="flex:1;" data-action="goHome">🏠 返回糖屋</button>
+                </div>
+              </div>
             </div>
           </div>`
         : '';
@@ -622,22 +660,22 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
 
   function handleTapPan(id) {
     const cfg = pageProxy.data.panConfig || MULTI_PAN_CONFIGS[type] || MULTI_PAN_CONFIGS.pan_flip;
-    if (tutCoachActive) {
-      if (id !== 1) return;
-      spawnFloatText(fxBox(), { xPct: 50, yPct: 45, text: `🌟 完美${cfg.actionVerb} +100`, kind: 'gold' });
-      finishInteractiveCoach(
-        type === 'whisk_dash'
-          ? '🎉 很好！先用 2 个烤位再出炉 1 份，随后解锁第 3 烤位！'
-          : '🎉 翻锅学会啦！三口锅正式开火！'
-      );
-      engine.tapPan?.(id);
-      return;
-    }
     if (manualPaused || pendingWinSummary) return;
+    const wasPractice = pageProxy.data.panPractice;
     const prevServed = pageProxy.data.panServed;
+    const prevPracticeServed = pageProxy.data.panPracticeServed || 0;
     const prevScore = pageProxy.data.panScore;
     engine.tapPan?.(id);
     const xPct = [18, 50, 82][id] || 50;
+    if (wasPractice) {
+      if (!pageProxy.data.panPractice) {
+        spawnFloatText(fxBox(), { xPct, yPct: 42, text: '🔥 正式开局!', kind: 'gold' });
+        showToast('🎉 两路练习完成！计时与得分已重置，三路正式开局！', 1600);
+      } else if ((pageProxy.data.panPracticeServed || 0) > prevPracticeServed) {
+        spawnFloatText(fxBox(), { xPct, yPct: 42, text: `🎓 练习 ${pageProxy.data.panPracticeServed}/2`, kind: 'gold' });
+      }
+      return;
+    }
     if (pageProxy.data.panServed > prevServed) {
       const gained = pageProxy.data.panScore - prevScore;
       spawnFloatText(fxBox(), {
@@ -646,11 +684,6 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
         text: gained >= 100 ? `🌟 完美 +${gained}` : (gained >= 75 ? `✨ ${cfg.actionVerb} +${gained}` : `🛟 抢救 +${gained}`),
         kind: gained >= 75 ? 'gold' : 'cream'
       });
-      if (twoLaneTutPendingUnlock && pageProxy.data.panServed >= 2) {
-        twoLaneTutPendingUnlock = false;
-        engine.unlockThirdLane?.();
-        showToast('🔥 烤位 #3 已解锁！三烤位齐开！', 1400);
-      }
     } else if (pageProxy.data.panScore < prevScore) {
       spawnFloatText(fxBox(), { xPct, yPct: 48, text: '⏳ 再等等 -10', kind: 'cream' });
     }
@@ -703,12 +736,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       } else if (ta === 'skip') {
         markTutorialSeen(tutKey);
         closeTutCard();
-        twoLaneTutPendingUnlock = false;
-        if (engineMode === 'multi_pan' && type === 'whisk_dash') {
-          engine.start({ twoLaneTutorial: false });
-        } else {
-          engine.setPaused?.(false);
-        }
+        engine.start();
       } else if (ta === 'backdrop' && hasSeenTutorial(tutKey)) {
         closeTutCard();
         if (!manualPaused) engine.setPaused?.(false);
@@ -736,30 +764,37 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     } else if (action === 'replayTutorial') {
       manualPaused = false;
       pendingWinSummary = null;
+      rewardCommitted = false;
       pageProxy.setData({ gameFailed: false });
       renderPauseModal(false);
       renderWinModal();
       enterInteractiveCoach();
+    } else if (action === 'skipPractice') {
+      rewardCommitted = false;
+      if (engineMode === 'multi_pan') engine.start({ twoLaneTutorial: false });
+      else if (engineMode === 'rhythm') engine.start({ practice: false, skipCountdown: false });
+      showToast('正式挑战开始！', 1200);
     } else if (action === 'proceedStory') {
       if (pendingWinSummary && !destroyed) {
         const { rank, score } = pendingWinSummary;
         pendingWinSummary = null;
         navigate('story', { levelId: level.id, phase: 'outro', rank, score }, { replace: true });
       }
+    } else if (action === 'goMap') {
+      engine?.stop?.();
+      navigate('map', {}, { replace: true });
+    } else if (action === 'goHome') {
+      engine?.stop?.();
+      navigate('home', {}, { replace: true });
     } else if (action === 'skipCoach') {
-      twoLaneTutPendingUnlock = false;
-      finishInteractiveCoach('已跳过教学，三烤位正式开始！');
-      if (engineMode === 'multi_pan' && type === 'whisk_dash') {
-        engine.unlockThirdLane?.();
-      } else if (engineMode === 'rhythm' || engineMode === 'catch') {
-        engine.start();
-      }
+      finishInteractiveCoach('已跳过教学，正式开始！');
+      engine.start();
     } else if (action === 'retry') {
       lastLandedCount = -1;
       tutCoachActive = false;
-      twoLaneTutPendingUnlock = false;
       manualPaused = false;
       pendingWinSummary = null;
+      rewardCommitted = false;
       setCoach(null);
       renderPauseModal(false);
       renderWinModal();
@@ -781,7 +816,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
   };
 
   const onVisibilityChange = () => {
-    if (document.hidden && engineMode === 'multi_pan' && !pageProxy.data.gameFailed && !pendingWinSummary && !tutCoachActive && !manualPaused) {
+    if (document.hidden && !pageProxy.data.gameFailed && !pendingWinSummary && !tutCoachActive && !manualPaused) {
       manualPaused = true;
       engine.setPaused?.(true);
       renderPauseModal(true);
@@ -791,7 +826,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
   const onKeyDown = (e) => {
     if (pageProxy.data.gameFailed || pendingWinSummary || root.querySelector('.tut-modal-mask')) return;
     const k = e.key.toLowerCase();
-    if (engineMode === 'multi_pan' && (e.key === 'Escape' || k === 'p')) {
+    if (e.key === 'Escape' || k === 'p') {
       e.preventDefault();
       manualPaused = !manualPaused;
       engine.setPaused?.(manualPaused);

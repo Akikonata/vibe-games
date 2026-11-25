@@ -35,8 +35,8 @@ const LEVELS = [
     npcId: 'lillian',
     recipeId: 'macaron',
     minigameType: 'orbit_match',
-    minigameTitle: '糖霜轨道收集（祖玛式）',
-    targetDesc: '按顺序配比杏仁蛋白壳与鲜果夹心，完成马卡龙礼盒',
+    minigameTitle: '果园马卡龙 · 鲜果接盘收集',
+    targetDesc: '左右移动礼盒接住鲜果马卡龙、躲开烤裂壳（≥4份且≥320分过关，8份满额冲A/S）',
     prerequisiteIds: ['main_1'],
     introDialogue: [
       { speaker: 'lillian', emotion: 'surprised', text: '可可！你来得太及时了，今年梯田的树莓、开心果和柠檬大丰收，可我正愁找不到好搭档呢！' },
@@ -142,8 +142,8 @@ const LEVELS = [
     npcId: 'emily',
     recipeId: 'mont_blanc',
     minigameType: 'spiral_draw',
-    minigameTitle: '螺旋裱花轨迹挑战',
-    targetDesc: '沿着山峰螺旋挤出均匀的栗子泥丝带并撒上糖粉雪',
+    minigameTitle: '蒙布朗 · 三轨节拍裱花',
+    targetDesc: '音符落入底部瓷环时按 1/2/3 或点击轨道挤出栗子泥丝带（≥5拍过关）',
     prerequisiteIds: ['main_3'],
     introDialogue: [
       { speaker: 'emily', emotion: 'normal', text: '可可你看，我烧制了一整套“秋日银杏骨瓷盘”，却一直找不到能撑起它留白构图的甜点。' },
@@ -164,7 +164,7 @@ const LEVELS = [
     recipeId: 'basque_cheesecake',
     minigameType: 'whisk_dash',
     minigameTitle: '230°C 巴斯克高温出炉',
-    targetDesc: '盯紧三烤位焦糖火候，金色区点击出炉（B级过关：≥3份且焦糊<4；A级：≥72%分、满6份且焦糊≤1；S级：≥90%分、满6份且0焦糊）',
+    targetDesc: '盯紧三烤位焦糖火候，金色区点击出炉（B级过关：≥3份、≥240分且焦糊<4；A级：满6份、≥432分且焦糊≤1；S级：满6份、≥540分且0焦糊）',
     prerequisiteIds: ['main_3'],
     introDialogue: [
       { speaker: 'coco', emotion: 'surprised', text: '暴风雨封锁了旧港，进口香草和可可全数延误……可今晚还有客人预约！' },
@@ -184,8 +184,8 @@ const LEVELS = [
     npcId: 'casper',
     recipeId: 'sachertorte',
     minigameType: 'balance_scale',
-    minigameTitle: '苦甜风味天平配比',
-    targetDesc: '精准调和黑巧克力的厚重与杏子果酱的微酸平衡',
+    minigameTitle: '萨赫蛋糕 · 黑巧杏子严选收集',
+    targetDesc: '左右移动托盘接住黑可可与鲜杏子、躲开粗盐块（≥4份且≥320分过关，8份满额）',
     prerequisiteIds: ['main_4'],
     introDialogue: [
       { speaker: 'casper', emotion: 'happy', text: '天晴了！远洋商船带来了顶级黑可可豆。听说维也纳人喜欢用杏子果酱来解腻，你敢试试吗？' },
@@ -205,8 +205,8 @@ const LEVELS = [
     npcId: 'silver_spoon',
     recipeId: 'opera',
     minigameType: 'memory_layers',
-    minigameTitle: '七层结构记忆复刻',
-    targetDesc: '记住并快速复刻 7 层歌剧院蛋糕的精密结构',
+    minigameTitle: '歌剧院 · 七层手工精准叠层',
+    targetDesc: '对准动态虚线落点，依次叠好 7 层咖啡海绵与黑巧甘纳许（叠完且生命>0过关）',
     prerequisiteIds: ['main_4'],
     introDialogue: [
       { speaker: 'silver_spoon', emotion: 'serious', text: '我们“银匙机械烘焙”每天能产出三千块标准蛋糕。你们这种小作坊，拿什么和效率竞争？' },
@@ -226,8 +226,8 @@ const LEVELS = [
     npcId: 'theo',
     recipeId: 'saint_honore',
     minigameType: 'festival_relay',
-    minigameTitle: '美食节多工序接力',
-    targetDesc: '调动全镇供应商食材，完成礼堂级圣奥诺雷泡芙塔',
+    minigameTitle: '美食节 · 圣奥诺雷泡芙塔堆叠',
+    targetDesc: '对准动态虚线稳稳叠起 6 层焦糖泡芙塔，迎战百年美食节大典！',
     prerequisiteIds: ['main_5'],
     introDialogue: [
       { speaker: 'lillian', emotion: 'happy', text: '可可！清晨现摘的浆果和香草荚送到了！' },

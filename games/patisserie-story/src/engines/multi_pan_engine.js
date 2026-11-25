@@ -1,6 +1,6 @@
 // engines/multi_pan_engine.js
 // 真实 3 锅/3 烤位同时时间管理厨房引擎（用于：main_2 翻转苹果塔 / main_4 巴斯克高温出炉）
-// 参数按关卡配置完全隔离：pan_flip 保持既有节奏，whisk_dash 使用独立调优参数与抢救/冷却/两烤位教学机制
+// 参数按关卡独立配置；支持无惩罚两路教学练习 -> 显式重置后进入三路正式挑战
 
 import { evaluateByRatio } from './rank_evaluator.js';
 
@@ -9,31 +9,31 @@ const MULTI_PAN_CONFIGS = {
     title: '三口铜锅 · 焦糖苹果时间管理',
     unitName: '铜锅',
     actionVerb: '出锅',
-    cookingLabel: '熬煮升温中',
+    cookingLabel: '焦糖熬煮中',
     soonLabel: '🔥 即将出锅',
     readyLabel: '✨ 点我出锅!',
-    perfectLabel: '✨ 点我出锅!',
-    warningLabel: '⚠️ 快糊了!',
-    cooldownLabel: '清理中',
+    perfectLabel: '🌟 琥珀焦糖!',
+    warningLabel: '🛟 快糊了·抢救',
+    cooldownLabel: '❄️ 清理冷却',
     bgImg: 'assets/images/minigames/bg_stovetop.svg',
     spritePrefix: 'pan_tatin',
     targetServings: 6,
     maxBurnt: 4,
-    timeLimit: 32,
+    timeLimit: 34,
     tickMs: 85,
-    heatRates: [2.2, 2.7, 3.1],
-    randomSpread: 0.6,
-    exactFloatHeat: false,
-    startOffsets: [8, 34, 18],
-    readyMin: 62,
-    readyMax: 86,
-    perfectRadius: 6,
-    soonLead: 0,
-    rescueScore: 25,
-    rescueBurnsLife: true,
-    burnPenaltyScore: 30,
-    burnCooldownTicks: 0,
-    tutorialTwoLanes: false
+    heatRates: [1.26, 1.44, 1.62],
+    randomSpread: 0.20,
+    exactFloatHeat: true,
+    startOffsets: [14, 34, 0],
+    readyMin: 56,
+    readyMax: 88,
+    perfectRadius: 4.5,
+    soonLead: 12,
+    rescueScore: 35,
+    rescueBurnsLife: false,
+    burnPenaltyScore: 25,
+    burnCooldownTicks: 22,
+    tutorialTwoLanes: true
   },
   whisk_dash: {
     title: '230°C 三烤位 · 巴斯克高温出炉',
@@ -67,6 +67,17 @@ const MULTI_PAN_CONFIGS = {
   }
 };
 
+function getMultiPanRuleText(cfg) {
+  const target = cfg.targetServings || 6;
+  const maxScore = target * 100;
+  const minNeed = Math.ceil(target * 0.5);
+  const bMinScore = Math.ceil(maxScore * 0.40);
+  const aMinScore = Math.ceil(maxScore * 0.72);
+  const sMinScore = Math.ceil(maxScore * 0.90);
+  const maxBurnt = cfg.maxBurnt || 4;
+  return `规则：B级过关(≥${minNeed}份、≥${bMinScore}分且烧焦<${maxBurnt}) · A级(满${target}份、≥${aMinScore}分且烧焦≤1) · S级(满${target}份、≥${sMinScore}分且0烧焦)`;
+}
+
 function evaluateMultiPanRank({ score, served, burnt, cfg }) {
   const target = cfg.targetServings;
   const maxScore = target * 100;
@@ -82,13 +93,14 @@ function evaluateMultiPanRank({ score, served, burnt, cfg }) {
   });
 
   const ratioPct = Math.round(res.ratio * 100);
+  const bMinScore = Math.ceil(maxScore * 0.40);
   const aMinScore = Math.ceil(maxScore * 0.72);
   const sMinScore = Math.ceil(maxScore * 0.90);
   const downgradeReasons = [];
 
   if (res.passed && res.rank === 'B') {
     if (res.score < aMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），未达 A 级 72%（${aMinScore} 分）`);
-    if (served < target) downgradeReasons.push(`出炉 ${served}/${target} 份，未满 A 级要求的 ${target} 份`);
+    if (served < target) downgradeReasons.push(`${cfg.actionVerb} ${served}/${target} 份，未满 A 级要求的 ${target} 份`);
     if (burnt > 1) downgradeReasons.push(`烧焦 ${burnt} 次，超过 A 级允许的 ≤ 1 次`);
   } else if (res.passed && res.rank === 'A') {
     if (res.score < sMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），距 S 级 90%（${sMinScore} 分）差 ${sMinScore - res.score} 分`);
@@ -102,11 +114,13 @@ function evaluateMultiPanRank({ score, served, burnt, cfg }) {
     target,
     minNeed,
     maxBurnt,
+    bMinScore,
     aMinScore,
     sMinScore,
     served,
     burnt,
-    downgradeReasons
+    downgradeReasons,
+    ruleText: getMultiPanRuleText(cfg)
   };
 }
 
@@ -121,6 +135,8 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
   let ticks = 0;
   let paused = false;
   let ended = false;
+  let practiceMode = false;
+  let practiceServed = 0;
   let activeLaneCount = 3;
 
   function stop() {
@@ -141,7 +157,7 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
         isPerfect: false,
         state: 'locked',
         spriteImg: `assets/images/minigames/${cfg.spritePrefix}_cooking.svg`,
-        label: '🔒 教学待解锁'
+        label: '🔒 练习待解锁'
       };
     }
     if (cooldown > 0) {
@@ -164,7 +180,7 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
       cooldown: 0,
       locked: false,
       isPerfect: false,
-      state: 'cooking', // 'cooking' | 'soon' | 'ready' | 'burnt' | 'cooldown' | 'locked'
+      state: 'cooking',
       spriteImg: `assets/images/minigames/${cfg.spritePrefix}_cooking.svg`,
       label: cfg.cookingLabel
     };
@@ -174,8 +190,11 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
     stop();
     ticks = 0;
     ended = false;
-    activeLaneCount = twoLaneTutorial && cfg.tutorialTwoLanes ? 2 : 3;
-    const offsets = cfg.startOffsets || [8, 34, 18];
+    paused = false;
+    practiceMode = !!(twoLaneTutorial && cfg.tutorialTwoLanes);
+    practiceServed = 0;
+    activeLaneCount = practiceMode ? 2 : 3;
+    const offsets = cfg.startOffsets || [14, 34, 0];
     const pans = [
       makePan(0, offsets[0]),
       makePan(1, offsets[1]),
@@ -190,40 +209,39 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
       panRescued: 0,
       panMaxBurnt: maxBurnt,
       panActiveLanes: activeLaneCount,
+      panPractice: practiceMode,
+      panPracticeServed: 0,
       panTimeLeft: cfg.timeLimit,
-      panTip: type === 'whisk_dash'
-        ? `盯紧烤位！金色区点击或按 1/2/3 出炉，中心流心 +100，剩余容错 ${maxBurnt}/${maxBurnt}`
-        : `盯紧 3 口锅！进入金色火候区立刻点击翻面，烤糊 ${maxBurnt} 次会失败哦！`,
+      panTip: practiceMode
+        ? `🎓 两${cfg.unitName}无惩罚练习（完成 2 份后重置计时正式开局！）`
+        : `盯紧 3 个${cfg.unitName}！金区点击或按 1/2/3 ${cfg.actionVerb}，剩余容错 ${maxBurnt}/${maxBurnt}`,
       gameFailed: false
     }, () => {
       startLoop();
     });
   }
 
+  function startFormalFromPractice() {
+    start({ twoLaneTutorial: false });
+  }
+
   function unlockThirdLane() {
-    if (activeLaneCount >= 3) return;
-    activeLaneCount = 3;
-    const pans = (page.data.pans || []).map(p => (p.id === 2 ? makePan(2, 6) : p));
-    page.setData({
-      pans,
-      panActiveLanes: 3,
-      panTip: `🔥 烤位 #3 已解锁！三烤位齐开，按 1 / 2 / 3 快速出炉！`
-    });
+    startFormalFromPractice();
   }
 
   function stepTick() {
     if (paused || ended) return;
-    ticks += 1;
-    const timeLeft = Math.max(0, cfg.timeLimit - Math.floor((ticks * tickMs) / 1000));
+    if (!practiceMode) ticks += 1;
+    const timeLeft = practiceMode
+      ? cfg.timeLimit
+      : Math.max(0, cfg.timeLimit - Math.floor((ticks * tickMs) / 1000));
     let { panScore, panBurnt, panTip } = page.data;
 
     const pans = page.data.pans.map((p, idx) => {
       if (p.locked) return p;
       if (p.state === 'cooldown') {
         const nextCd = (p.cooldown || 1) - 1;
-        if (nextCd <= 0) {
-          return makePan(p.id, 0);
-        }
+        if (nextCd <= 0) return makePan(p.id, 0);
         return Object.assign({}, p, { cooldown: nextCd });
       }
 
@@ -236,10 +254,14 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
       let spriteState = 'cooking';
 
       if (nextHeatRaw >= 100) {
+        if (practiceMode) {
+          panTip = `🎓 练习中不扣容错！${p.name}已重新升温，进入金区点它试试`;
+          return makePan(p.id, 12);
+        }
         panBurnt += 1;
-        panScore = Math.max(0, panScore - (cfg.burnPenaltyScore || 30));
+        panScore = Math.max(0, panScore - (cfg.burnPenaltyScore || 25));
         const remain = Math.max(0, maxBurnt - panBurnt);
-        panTip = `💥 ${p.name} 烧焦冒烟啦！-${cfg.burnPenaltyScore || 30} 分（剩余容错 ${remain}/${maxBurnt}）`;
+        panTip = `💥 ${p.name} 烧焦冒烟啦！-${cfg.burnPenaltyScore || 25} 分（剩余容错 ${remain}/${maxBurnt}）`;
         if (cfg.burnCooldownTicks > 0) {
           return makePan(p.id, 0, { cooldown: cfg.burnCooldownTicks });
         }
@@ -270,16 +292,17 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
 
     page.setData({ pans, panScore, panBurnt, panTimeLeft: timeLeft, panTip });
 
-    if (panBurnt >= maxBurnt) {
+    if (!practiceMode && panBurnt >= maxBurnt) {
       triggerFail({
-        title: type === 'whisk_dash' ? '💨 巴斯克烤焦次数用尽！' : '💨 厨房浓烟滚滚！',
-        reason: `真正烧焦达到 ${maxBurnt} 次，容错已耗尽！提示：「快糊了」时点出炉抢救不扣容错，进入金区按 1/2/3 即可出炉。`,
-        score: panScore
+        title: `💨 ${cfg.unitName}烧焦次数用尽！`,
+        reason: `真正烧焦达到 ${maxBurnt} 次，容错已耗尽！「快糊了」时抢救不扣容错，进入金区按 1/2/3 即可${cfg.actionVerb}。`,
+        score: panScore,
+        ruleText: getMultiPanRuleText(cfg)
       });
       return;
     }
 
-    if (timeLeft <= 0) {
+    if (!practiceMode && timeLeft <= 0) {
       finish();
     }
   }
@@ -302,8 +325,25 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
     const idx = pans.findIndex(p => p.id === panId);
     if (idx === -1) return;
     const p = pans[idx];
-
     if (p.locked || p.state === 'cooldown') return;
+
+    if (practiceMode) {
+      if (p.state === 'ready' || p.state === 'burnt') {
+        practiceServed += 1;
+        pans[idx] = makePan(p.id, 10);
+        page.setData({
+          pans,
+          panPracticeServed: practiceServed,
+          panTip: `🎓 练习完成 ${practiceServed}/2 份！${practiceServed >= 2 ? '即将重置计时进入三路正式挑战！' : '再出一份就正式开局！'}`
+        });
+        if (practiceServed >= 2) {
+          startFormalFromPractice();
+        }
+      } else {
+        page.setData({ panTip: `🎓 练习中：等 ${p.name} 进入金色区再点（不扣分）` });
+      }
+      return;
+    }
 
     let { panScore, panServed, panBurnt, panRescued = 0, panTip } = page.data;
 
@@ -318,7 +358,7 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
         : `👍 ${p.name} 顺利${cfg.actionVerb} +${add}`;
       pans[idx] = makePan(p.id, 4);
     } else if (p.state === 'burnt') {
-      const add = cfg.rescueScore || 25;
+      const add = cfg.rescueScore || 35;
       panScore += add;
       panServed += 1;
       panRescued += 1;
@@ -338,9 +378,10 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
 
     if (panBurnt >= maxBurnt) {
       triggerFail({
-        title: '💨 烤糊次数达到上限！',
-        reason: `有 ${maxBurnt} 份都烤焦了，等进入金色火候区再点${cfg.actionVerb}吧！`,
-        score: panScore
+        title: '💨 烧焦次数达到上限！',
+        reason: `真正烧焦已达 ${maxBurnt} 次，等进入金色火候区再点${cfg.actionVerb}吧！`,
+        score: panScore,
+        ruleText: getMultiPanRuleText(cfg)
       });
       return;
     }
@@ -365,14 +406,19 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
     if (!summary.passed) {
       if (onFail) {
         onFail({
-          title: `⏱ 时间到，${cfg.actionVerb}数量不足！`,
-          reason: `本轮${cfg.actionVerb} ${panServed}/${cfg.targetServings} 份（得分 ${summary.score}/${summary.maxScore}，需 ≥${summary.minNeed} 份且 ≥240 分过关），看准金色区再来一次！`,
+          title: `⏱ 时间到，${cfg.actionVerb}数量或得分不足！`,
+          reason: `本轮${cfg.actionVerb} ${panServed}/${cfg.targetServings} 份（得分 ${summary.score}/${summary.maxScore}，过关需 ≥${summary.minNeed} 份且 ≥${summary.bMinScore} 分）。`,
           score: summary.score,
+          ruleText: summary.ruleText,
           summary
         });
       }
     } else {
-      onComplete(summary.rank, summary.score, { ...summary, rescued: panRescued });
+      onComplete(summary.rank, summary.score, {
+        ...summary,
+        rescued: panRescued,
+        mode: 'multi_pan'
+      });
     }
   }
 
@@ -382,13 +428,16 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
     tapPan,
     stepTick,
     unlockThirdLane,
+    startFormalFromPractice,
     setPaused(v) { paused = !!v; },
-    isPaused() { return paused; }
+    isPaused() { return paused; },
+    isPractice() { return practiceMode; }
   };
 }
 
 export {
   MULTI_PAN_CONFIGS,
+  getMultiPanRuleText,
   evaluateMultiPanRank,
   createMultiPanEngine
 };

@@ -1,13 +1,24 @@
 // engines/stacker_engine.js
 // 物理下落与精准对齐堆叠小游戏引擎（支持千层酥 / 提拉米苏 / 歌剧院 / 圣奥诺雷等）
+// 修复：动态 targetX 辅助线始终跟踪真实有效落点 + 滑落后短暂恢复缓冲 + 完整评级降级说明
 
 import { evaluateStackerResult } from './rank_evaluator.js';
 
 const ARENA_PLATE_TOP = 456;
 
+function getStackerRuleText(totalLayers) {
+  const maxScore = totalLayers * 100;
+  const bMin = Math.ceil(maxScore * 0.35);
+  const aMin = Math.ceil(maxScore * 0.72);
+  const sMin = Math.ceil(maxScore * 0.90);
+  return `规则：B级过关(叠完${totalLayers}层、≥${bMin}分且生命>0) · A级(≥${aMin}分且生命≥2) · S级(≥${sMin}分且满3心)`;
+}
+
 function createStackerEngine(page, stackConfig, onComplete, onFail) {
   let timer = null;
   let paused = false;
+  let ended = false;
+  let recoveryTicks = 0;
 
   function stop() {
     if (timer) {
@@ -18,6 +29,9 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
 
   function start() {
     stop();
+    paused = false;
+    ended = false;
+    recoveryTicks = 0;
     const layerHeight = stackConfig.layers.length >= 6 ? 36 : 42;
     page.setData({
       stackConfig,
@@ -26,6 +40,7 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
       activeLayerIndex: 0,
       activeLayer: stackConfig.layers[0],
       activePhase: 'swing',
+      targetX: 50,
       swingX: 20,
       swingDir: 1,
       dropY: 42,
@@ -33,7 +48,7 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
       score: 0,
       combo: 0,
       lives: 3,
-      judgeText: '看准正上方中心虚线，点击屏幕精准放下食材！',
+      judgeText: '对准虚线有效落点，点击或按空格稳稳放下！',
       judgeKind: '',
       stackFailed: false,
       gameFailed: false
@@ -42,52 +57,59 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
     });
   }
 
+  function stepTick() {
+    if (paused || ended) return;
+    if (recoveryTicks > 0) {
+      recoveryTicks -= 1;
+      return;
+    }
+    const {
+      activePhase,
+      activeLayerIndex,
+      stackLayers,
+      stackLayerHeight
+    } = page.data;
+
+    if (activePhase === 'swing') {
+      const speed = stackConfig.baseSpeed + activeLayerIndex * stackConfig.speedStep;
+      let { swingX, swingDir } = page.data;
+      swingX += swingDir * speed;
+      if (swingX >= 82) {
+        swingX = 82;
+        swingDir = -1;
+      } else if (swingX <= 18) {
+        swingX = 18;
+        swingDir = 1;
+      }
+      page.setData({ swingX, swingDir });
+    } else if (activePhase === 'drop') {
+      let { dropY, dropVy } = page.data;
+      dropVy += 7.5;
+      dropY += dropVy;
+      const targetLandingY = ARENA_PLATE_TOP - (stackLayers.length + 1) * stackLayerHeight;
+
+      if (dropY >= targetLandingY) {
+        dropY = targetLandingY;
+        page.setData({ dropY });
+        resolveLanding();
+      } else {
+        page.setData({ dropY, dropVy });
+      }
+    }
+  }
+
   function startLoop() {
     stop();
-    timer = setInterval(() => {
-      if (paused) return;
-      const {
-        activePhase,
-        activeLayerIndex,
-        stackLayers,
-        stackLayerHeight
-      } = page.data;
-
-      if (activePhase === 'swing') {
-        const speed = stackConfig.baseSpeed + activeLayerIndex * stackConfig.speedStep;
-        let { swingX, swingDir } = page.data;
-        swingX += swingDir * speed;
-        if (swingX >= 82) {
-          swingX = 82;
-          swingDir = -1;
-        } else if (swingX <= 18) {
-          swingX = 18;
-          swingDir = 1;
-        }
-        page.setData({ swingX, swingDir });
-      } else if (activePhase === 'drop') {
-        let { dropY, dropVy } = page.data;
-        dropVy += 7.5;
-        dropY += dropVy;
-        const targetLandingY = ARENA_PLATE_TOP - (stackLayers.length + 1) * stackLayerHeight;
-
-        if (dropY >= targetLandingY) {
-          dropY = targetLandingY;
-          page.setData({ dropY });
-          resolveLanding();
-        } else {
-          page.setData({ dropY, dropVy });
-        }
-      }
-    }, 33);
+    timer = setInterval(stepTick, 33);
   }
 
   function drop() {
-    if (page.data.gameFailed || page.data.activePhase !== 'swing') return;
+    if (page.data.gameFailed || paused || ended || recoveryTicks > 0 || page.data.activePhase !== 'swing') return;
     page.setData({ activePhase: 'drop', dropVy: 6 });
   }
 
   function resolveLanding() {
+    if (ended) return;
     const {
       swingX,
       stackLayers,
@@ -104,6 +126,7 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
     if (dx > 20) {
       const nextLives = lives - 1;
       if (nextLives <= 0) {
+        ended = true;
         stop();
         page.setData({
           lives: 0,
@@ -116,18 +139,24 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
         if (onFail) {
           onFail({
             title: '💥 甜点塔歪倒啦！',
-            reason: `当前得分 ${score} 分，对准中心线稳稳放下再来一次吧！`,
-            score
+            reason: `当前得分 ${score} 分，3 次机会已用完。虚线会实时标出上一层有效落点，对准虚线再松手！`,
+            score,
+            ruleText: getStackerRuleText(stackConfig.layers.length)
           });
         }
       } else {
+        // 滑落后短暂缓冲 0.53s 并复位摆动起点，避免惊慌连扣生命
+        recoveryTicks = 16;
         page.setData({
           lives: nextLives,
           combo: 0,
           activePhase: 'swing',
+          targetX,
+          swingX: targetX >= 50 ? 22 : 78,
+          swingDir: targetX >= 50 ? 1 : -1,
           dropY: 42,
           dropVy: 0,
-          judgeText: `💥 偏得太远滑落了！剩余机会 ${nextLives} 次`,
+          judgeText: `💥 偏出落点滑落了！稍作缓冲（剩余 ${nextLives}/3 心），对准虚线再放`,
           judgeKind: 'miss'
         });
       }
@@ -137,7 +166,7 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
     let addScore = 42;
     let nextCombo = 0;
     let judgeKind = 'good';
-    let judgeText = '👌 GOOD +42（略偏）';
+    let judgeText = '👌 GOOD +42（略偏，虚线已随落点更新）';
     let landedX = swingX;
 
     if (dx <= 4.5) {
@@ -158,27 +187,66 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
     const nextIndex = activeLayerIndex + 1;
 
     if (nextIndex >= stackConfig.layers.length) {
+      ended = true;
       stop();
+      const totalLayers = stackConfig.layers.length;
+      const maxScore = totalLayers * 100;
       const result = evaluateStackerResult({
         score: nextScore,
-        totalLayers: stackConfig.layers.length,
+        totalLayers,
         lives
       });
+      const ratioPct = Math.round(result.ratio * 100);
+      const aMinScore = Math.ceil(maxScore * 0.72);
+      const sMinScore = Math.ceil(maxScore * 0.90);
+      const downgradeReasons = [];
+      if (result.passed && result.rank === 'B') {
+        if (result.score < aMinScore) downgradeReasons.push(`得分 ${result.score}/${maxScore}（${ratioPct}%），未达 A 级 72%（${aMinScore} 分）`);
+        if (lives < 2) downgradeReasons.push(`剩余生命 ${lives}/3 心，A 级要求 ≥ 2 心`);
+      } else if (result.passed && result.rank === 'A') {
+        if (result.score < sMinScore) downgradeReasons.push(`得分 ${result.score}/${maxScore}（${ratioPct}%），距 S 级 90%（${sMinScore} 分）差 ${sMinScore - result.score} 分`);
+        if (lives < 3) downgradeReasons.push(`剩余生命 ${lives}/3 心，S 级要求满 3 心`);
+      }
+
       page.setData({
         stackLayers: newStack,
         score: nextScore,
         combo: nextCombo,
+        targetX: landedX,
         activePhase: 'done',
         activeLayer: null,
-        judgeText: `${result.meta.label} · 总得分 ${nextScore} 分`,
+        judgeText: `${result.meta ? result.meta.label : '完成'} · 总得分 ${nextScore} 分`,
         judgeKind: result.rank === 'S' ? 'perfect' : (result.rank === 'A' ? 'great' : 'good')
       });
-      onComplete(result.rank, nextScore);
+
+      if (!result.passed) {
+        if (onFail) {
+          onFail({
+            title: '💥 堆叠偏移过大，得分不足！',
+            reason: `总得分 ${result.score}/${maxScore}（${ratioPct}%），过关需 ≥35%（${Math.ceil(maxScore * 0.35)} 分）。`,
+            score: result.score,
+            ruleText: getStackerRuleText(totalLayers)
+          });
+        }
+      } else {
+        onComplete(result.rank, result.score, {
+          ...result,
+          maxScore,
+          ratioPct,
+          target: totalLayers,
+          served: totalLayers,
+          lives,
+          downgradeReasons,
+          ruleText: getStackerRuleText(totalLayers),
+          mode: 'stacker'
+        });
+      }
     } else {
       page.setData({
         stackLayers: newStack,
         score: nextScore,
         combo: nextCombo,
+        targetX: landedX,
         activeLayerIndex: nextIndex,
         activeLayer: stackConfig.layers[nextIndex],
         activePhase: 'swing',
@@ -192,9 +260,18 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
     }
   }
 
-  return { start, stop, drop, resolveLanding, setPaused(v) { paused = !!v; } };
+  return {
+    start,
+    stop,
+    drop,
+    stepTick,
+    resolveLanding,
+    setPaused(v) { paused = !!v; },
+    isPaused() { return paused; }
+  };
 }
 
 export {
+  getStackerRuleText,
   createStackerEngine
 };

@@ -1,18 +1,38 @@
 // src/pages/recipes.js
-// 复古食谱文化手账（主线/支线筛选 + 11 道经典欧洲甜点发展史与文化背景弹窗）
+// 复古食谱文化手账（主线/支线筛选 + 未解锁显示地点与可达入口 + 已解锁显示最佳评级/分数与重玩入口）
 
 import { RECIPES } from '../data/recipes.js';
-import { loadProgress } from '../utils/store.js';
+import { LEVELS } from '../data/levels.js';
+import { loadProgress, isLevelUnlocked } from '../utils/store.js';
 import { showToast } from '../../../../shared/web-ui.js';
 
-export function mountRecipesPage(root) {
+export function mountRecipesPage(root, _params, { navigate }) {
   let activeTab = 'all';
   let selectedId = null;
 
   function render() {
     const progress = loadProgress();
     const unlockedIds = progress.unlockedRecipeIds || [];
-    const allList = RECIPES.map(r => ({ ...r, unlocked: unlockedIds.includes(r.id) }));
+    const completedIds = progress.completedLevelIds || [];
+
+    const allList = RECIPES.map(r => {
+      const lvl = LEVELS.find(l => l.recipeId === r.id) || null;
+      const unlocked = unlockedIds.includes(r.id);
+      const canPlayLevel = lvl ? isLevelUnlocked(lvl, completedIds) : false;
+      const bestRank = lvl && progress.levelRanks ? progress.levelRanks[lvl.id] : null;
+      const bestScore = lvl && progress.levelScores ? progress.levelScores[lvl.id] : null;
+      return {
+        ...r,
+        unlocked,
+        levelId: lvl ? lvl.id : null,
+        levelLocation: lvl ? lvl.location : '星月糖屋',
+        levelTitle: lvl ? lvl.title : '',
+        canPlayLevel,
+        bestRank,
+        bestScore
+      };
+    });
+
     const filtered = activeTab === 'all'
       ? allList
       : allList.filter(r => r.chapterType === activeTab);
@@ -26,7 +46,9 @@ export function mountRecipesPage(root) {
             : '<span>🔒</span>'}
         </div>
         <span class="recipe-name">${item.unlocked ? item.name : '未解锁食谱'}</span>
-        <span class="recipe-origin">${item.unlocked ? item.origin : '完成对应关卡解锁'}</span>
+        <span class="recipe-origin">${item.unlocked
+          ? `${item.bestRank ? `最佳 ${item.bestRank}级` : item.origin}${item.bestScore ? ` · ${item.bestScore}分` : ''}`
+          : `📍 ${item.levelLocation}${item.canPlayLevel ? ' · 可挑战' : ''}`}</span>
         <span class="tag ${item.chapterType === 'main' ? 'tag-main' : 'tag-side'}">${item.chapterType === 'main' ? '主线' : '支线'}</span>
       </div>
     `).join('');
@@ -44,8 +66,9 @@ export function mountRecipesPage(root) {
             </div>
             <div class="modal-tagline">“${selected.tagline}”</div>
             <div class="modal-meta">
-              <span>🎮 解锁玩法：${selected.minigameLabel}</span>
-              <span>🏠 糖屋升级：${selected.shopReward}</span>
+              <span>🎮 对应玩法：${selected.minigameLabel}</span>
+              <span>🏆 最佳战绩：${selected.bestRank ? `${selected.bestRank} 级` : '已通关'}${selected.bestScore ? ` · ${selected.bestScore} 分` : ''}</span>
+              <span>🏠 糖屋解锁：${selected.shopReward}</span>
             </div>
             <div class="modal-scroll scrollarea">
               <div class="culture-section">
@@ -57,6 +80,7 @@ export function mountRecipesPage(root) {
                 <span class="culture-text">${selected.culture}</span>
               </div>
             </div>
+            ${selected.levelId ? `<button type="button" class="btn-primary" style="width:100%;margin-top:10px;" data-action="replayLevel" data-level="${selected.levelId}">↻ 重玩本关 · 刷新更高评级</button>` : ''}
           </div>
         </div>`
       : '';
@@ -76,7 +100,7 @@ export function mountRecipesPage(root) {
               <div class="ribbon-title">📕 复古食谱手账</div>
               <span class="book-count">已收集 ${unlockedIds.length} / ${RECIPES.length}</span>
             </div>
-            <span class="book-sub">翻开泛黄的羊皮纸，品读每一道甜点跨越时代的欧洲风土与历史故事</span>
+            <span class="book-sub">翻开泛黄的羊皮纸，品读经典甜点风土史，也可随时重玩关卡刷新最佳评级</span>
             <div class="tab-bar">
               <div class="tab-btn ${activeTab === 'all' ? 'active' : ''}" data-action="tab" data-tab="all">全部</div>
               <div class="tab-btn ${activeTab === 'main' ? 'active' : ''}" data-action="tab" data-tab="main">主线招牌</div>
@@ -99,12 +123,24 @@ export function mountRecipesPage(root) {
       render();
     } else if (action === 'select') {
       const progress = loadProgress();
-      if (!(progress.unlockedRecipeIds || []).includes(target.dataset.id)) {
-        showToast('尚未解锁，请先通过对应剧情关卡');
+      const id = target.dataset.id;
+      if (!(progress.unlockedRecipeIds || []).includes(id)) {
+        const lvl = LEVELS.find(l => l.recipeId === id);
+        if (lvl && isLevelUnlocked(lvl, progress.completedLevelIds || [])) {
+          showToast(`前往【${lvl.location}】挑战解锁！`, 1200);
+          navigate('story', { levelId: lvl.id });
+        } else if (lvl) {
+          showToast(`需先推进前置主线后在【${lvl.location}】解锁`);
+        } else {
+          showToast('尚未解锁，请先通过对应剧情关卡');
+        }
         return;
       }
-      selectedId = target.dataset.id;
+      selectedId = id;
       render();
+    } else if (action === 'replayLevel') {
+      const lvlId = target.dataset.level;
+      if (lvlId) navigate('minigame', { levelId: lvlId });
     } else if (action === 'closeModal') {
       selectedId = null;
       render();

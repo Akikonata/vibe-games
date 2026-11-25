@@ -16,8 +16,8 @@ const RANK_META = {
   },
   B: {
     code: 'B',
-    label: 'B 级 · 险胜微瑕',
-    toast: '🌿 B 级 · 勉强出炉',
+    label: 'B 级 · 合格出炉',
+    toast: '🌿 B 级 · 合格出炉！',
     badgeClass: 'rank-b'
   }
 };

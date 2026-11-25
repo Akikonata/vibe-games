@@ -116,7 +116,7 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
             </div>
 
             <div class="reward-actions">
-              <div class="btn-primary reward-btn" data-action="goHome">🏠 返回星月糖屋</div>
+              <div class="btn-primary reward-btn" data-action="goHome">${state.level.chapterType === 'main' && CUTSCENES[`${state.level.id}_end`] && !hasStoryFlag(`cutscene_${state.level.id}_end`) ? '📖 继续章节尾声' : '🏠 返回星月糖屋'}</div>
               ${state.rank !== 'S'
                 ? '<div class="btn-secondary reward-btn" data-action="retryForS">↻ 再挑战冲 S 级（解锁传奇剧情）</div>'
                 : '<div class="btn-secondary reward-btn" data-action="goRecipes">📕 翻阅复古食谱手账</div>'}

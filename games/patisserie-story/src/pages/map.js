@@ -101,7 +101,7 @@ export function mountMapPage(root, _params, { navigate }) {
         <div class="page-wrap map-wrap">
           <div class="map-topbar">
             <div class="ribbon-title">🧭 风铃湾手绘场景地图</div>
-            <div class="explore-pill">🌿 已探索 ${unlockedCount} / ${scenes.length}</div>
+            <div class="explore-pill">🗺️ 已解锁 ${unlockedCount} / ${scenes.length}</div>
           </div>
 
           <div class="map-board">

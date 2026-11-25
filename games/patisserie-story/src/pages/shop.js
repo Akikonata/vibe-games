@@ -173,8 +173,11 @@ export function mountShopPage(root) {
         const flow = getKitchenFlow(r.id);
         const lvlId = RECIPE_TO_LEVEL[r.id];
         const rank = (progress.levelRanks && progress.levelRanks[lvlId]) || 'A';
-        const price = Math.round(flow.basePrice * (RANK_PRICE_MULT[rank] || 1) * bonuses.priceMult);
-        return { ...r, price, flowText: flow.flowText, selected: progress.menuRecipeIds.includes(r.id) };
+        const rankMult = RANK_PRICE_MULT[rank] || 1;
+        const price = Math.round(flow.basePrice * rankMult * bonuses.priceMult);
+        const stepBadge = flow.steps.length >= 3 ? '三工序高溢价' : (flow.steps.length === 2 ? '双工序高价' : '单工序快出');
+        const priceBreakdown = `基${flow.basePrice}·${rank}×${rankMult.toFixed(2).replace(/\.00$/, '')}${bonuses.priceMult > 1 ? `·装潢×${bonuses.priceMult.toFixed(2).replace(/0$/, '')}` : ''}`;
+        return { ...r, price, basePrice: flow.basePrice, stepBadge, priceBreakdown, flowText: flow.flowText, selected: progress.menuRecipeIds.includes(r.id) };
       });
 
     let menuIds = progress.menuRecipeIds.filter(id => progress.unlockedRecipeIds.includes(id));
@@ -601,8 +604,9 @@ export function mountShopPage(root) {
                 <button type="button" class="menu-item ${r.selected ? 'is-picked' : ''}" data-action="toggleMenu" data-id="${r.id}" aria-pressed="${r.selected}">
                   <img class="menu-icon mode-fit" src="${r.iconImg}" alt="" />
                   <span class="menu-name">${r.name}</span>
-                  <span class="menu-flow">${r.flowText}</span>
+                  <span class="menu-flow">${r.flowText} · ${r.stepBadge || ''}</span>
                   <span class="menu-price">🪙 ${r.price}</span>
+                  <span style="font-size:9px;color:#8D6242;">${r.priceBreakdown || ''}</span>
                 </button>`).join('')}</div>`
             : '<div class="empty-tip">柜台还没有可售卖的甜点哦！快去完成序章解锁第一道玛德琳吧～</div>'}
           <div class="prep-cta-group">
@@ -638,8 +642,8 @@ export function mountShopPage(root) {
             <div class="ribbon-title">${s.isPractice ? '🎓 练习结束 · 不消耗天数' : `🌙 第 ${s.day} 天 · 打烊结算`}</div>
             <div class="summary-rows">
               <div class="sum-row"><span>今日成功出餐</span><span class="sum-val">${s.served} 份</span></div>
-              <div class="sum-row"><span>${s.isPractice ? '练习金币（不入账）' : '营业焦糖金币'}</span><span class="sum-val">${s.isPractice ? '0' : `+${s.coins}`} 🪙</span></div>
-              <div class="sum-row"><span>${s.isPractice ? '练习口碑（不入账）' : '新增店铺口碑'}</span><span class="sum-val">${s.isPractice ? '0' : `+${s.rep}`} ⭐</span></div>
+              <div class="sum-row"><span>${s.isPractice ? '练习模拟收益' : '营业焦糖金币'}</span><span class="sum-val">${s.isPractice ? `模拟 +${s.simCoins || 0} / 实际入账 0` : `+${s.coins}`} 🪙</span></div>
+              <div class="sum-row"><span>${s.isPractice ? '练习模拟口碑' : '新增店铺口碑'}</span><span class="sum-val">${s.isPractice ? `模拟 +${s.simRep || 0} / 实际入账 0` : `+${s.rep}`} ⭐</span></div>
               <div class="sum-divider"></div>
               <div class="sum-row sub"><span>流失顾客</span><span class="sum-val ${s.lost > 0 ? 'warn' : ''}">${s.lost} 位</span></div>
               <div class="sum-row sub"><span>烤糊次数</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
@@ -716,6 +720,8 @@ export function mountShopPage(root) {
             served: servedCount,
             coins: isPractice ? 0 : earnedCoins,
             rep: isPractice ? 0 : earnedRep,
+            simCoins: earnedCoins,
+            simRep: earnedRep,
             lost: lostCustomers,
             burnt: burntCount,
             undelivered: undeliveredCount,
