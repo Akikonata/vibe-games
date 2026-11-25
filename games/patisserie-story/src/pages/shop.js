@@ -87,23 +87,23 @@ export function mountShopPage(root, _params, { navigate } = {}) {
   let pauseSig = '';
 
   // 2.5D 可可多段寻路走位状态（跨区必须经由右侧柜台小门进出，绝不穿墙/穿玻璃柜！）
-  let cocoPos = { x: 50, y: 69, facing: 1 };
+  let cocoPos = { x: 50, y: 72, facing: 1 };
   let cocoWalkTimer = null;
   let cocoPathRunId = 0;
 
-  const GATE_SOUTH = { x: 87.5, y: 64 };
-  const GATE_NORTH = { x: 87.5, y: 40 };
+  const GATE_SOUTH = { x: 87.5, y: 68 };
+  const GATE_NORTH = { x: 87.5, y: 47 };
 
   const COCO_WAYPOINTS = {
-    seat_0: { x: 24, y: 38 },
-    seat_1: { x: 50, y: 38 },
-    seat_2: { x: 74, y: 38 },
-    disp_0: { x: 21, y: 63 },
-    disp_1: { x: 44, y: 63 },
-    disp_2: { x: 67, y: 63 },
-    oven_1: { x: 24, y: 74 },
-    oven_2: { x: 76, y: 74 },
-    batch:  { x: 50, y: 74 }
+    seat_0: { x: 24, y: 44 },
+    seat_1: { x: 50, y: 44 },
+    seat_2: { x: 74, y: 44 },
+    disp_0: { x: 21, y: 69 },
+    disp_1: { x: 44, y: 69 },
+    disp_2: { x: 67, y: 69 },
+    oven_1: { x: 24, y: 76 },
+    oven_2: { x: 76, y: 76 },
+    batch:  { x: 50, y: 76 }
   };
 
   function spawnStepBurst(container, xPct, yPct, emoji, kind = 'spark') {
@@ -128,8 +128,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     const runId = cocoPathRunId;
     clearTimeout(cocoWalkTimer);
 
-    const currDining = cocoPos.y < 52;
-    const destDining = wp.y < 52;
+    const currDining = cocoPos.y < 58;
+    const destDining = wp.y < 58;
     const queue = [];
 
     if (!currDining && destDining) {
@@ -168,8 +168,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       cocoPos.y = next.y;
 
       const segMs = Math.max(260, Math.min(780, Math.round(dist * 14)));
-      // 真实 2.5D Y轴深度排序：在餐区(y<52)时走在展示柜(z:14)后面，回到后厨(y>=52)时走在展示柜前面！
-      actor.style.zIndex = next.y < 52 ? '11' : '18';
+      // 真实 2.5D Y轴深度排序：在餐区(y<58)时走在齐腰展示柜(z:14)后面，回到后厨(y>=58)时走在展示柜前面！
+      actor.style.zIndex = next.y < 58 ? '11' : '18';
       actor.style.transitionDuration = `${segMs}ms`;
       actor.style.left = `${next.x}%`;
       actor.style.top = `${next.y}%`;
@@ -339,7 +339,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
 
     root.innerHTML = `
       <div class="kitchen-scene is-zoned-25d ${upgClasses}">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=3" alt="" />
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=4" alt="" />
         ${sceneUpgradesMarkup}
 
         <!-- 顶部悬浮半透明营收 HUD -->
@@ -368,7 +368,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         </div>
 
         <!-- 独立拆分的前景柜台层（z:14，与背景同尺寸 mode-fill 严丝合缝），实现可可跨区真实前后遮挡！ -->
-        <img class="counter-25d-fg mode-fill" src="assets/images/kitchen/prop_display_counter_fg.png?v=2" alt="" aria-hidden="true" />
+        <img class="counter-25d-fg mode-fill" src="assets/images/kitchen/prop_display_counter_fg.png?v=3" alt="" aria-hidden="true" />
 
         <!-- 区域 2：中腰玻璃甜点展示柜（预置库存 + 告急/售罄预警，直接摆在玻璃柜内） -->
         <div class="zone-display-case" role="group" aria-label="玻璃甜点展示柜库存">
@@ -379,7 +379,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         <div id="k-tip" class="zoned-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
 
         <!-- 2.5D Q版可可主厨（直挂场景根层，按 Y 坐标动态切换 z-index：餐区 z:11 在柜台后，后厨 z:18 在柜台前） -->
-        <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:69%;z-index:18;" aria-hidden="true">
+        <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:72%;z-index:18;" aria-hidden="true">
           <div class="coco-25d-shadow"></div>
           <div class="coco-25d-sprite-sheet"></div>
           <div id="k-coco-carry" class="coco-25d-carry"></div>
@@ -754,7 +754,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
             <span class="upg-preview-sub">购入后立即呈现在门面与营业内景</span>
           </div>
           <div class="upg-preview-stage ${ownedIds.map(id => `has-upg-${id}`).join(' ')}">
-            <img class="upg-preview-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=3" alt="糖屋装潢预览" />
+            <img class="upg-preview-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=4" alt="糖屋装潢预览" />
             ${hasOwned('crystal_lamp') ? `
               <div class="scene-upg-chandelier is-mini"><div class="chandelier-warm-wash"></div><img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_chandelier.png" alt="" /></div>
             ` : ''}
