@@ -1645,18 +1645,22 @@
 
 .page-shop .coco-25d-carry {
   position: absolute;
-  top: 63%;
-  left: 50%;
+  top: 49.5%;
+  left: 41.5%;
   transform: translate(-50%, -50%);
   z-index: 4;
   pointer-events: none;
 }
 
-/* 可可双手端着的木质镶金托盘 + 小巧甜点（落位腰际双手处，绝不遮脸！） */
+.page-shop .coco-25d-actor.face-left .coco-25d-carry {
+  left: 58.5%;
+}
+
+/* 可可双手掌心正上方托着的镶金托盘 + 甜点（随左右朝向自动镜像对齐双掌，不挡脸不掉膝盖） */
 .page-shop .coco-serving-tray {
   position: relative;
-  width: 40px;
-  height: 26px;
+  width: 36px;
+  height: 24px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1667,20 +1671,20 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 38px;
-  height: 13px;
+  width: 34px;
+  height: 11px;
   border-radius: 50%;
   background: radial-gradient(ellipse at 50% 42%, #FFFDF7 0%, #F4E8D4 58%, #B5753C 62%, #7D461C 100%);
   border: 1.5px solid #E5B97C;
-  box-shadow: 0 3px 5px rgba(38, 16, 4, 0.42);
+  box-shadow: 0 2px 4px rgba(38, 16, 4, 0.42);
 }
 
 .page-shop .coco-tray-dish {
   position: relative;
   z-index: 2;
-  width: 22px;
-  height: 22px;
-  margin-bottom: 5px;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 4px;
   filter: drop-shadow(0 2px 2px rgba(42, 18, 6, 0.36));
 }
 
