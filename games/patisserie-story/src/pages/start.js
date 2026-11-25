@@ -15,7 +15,7 @@ export function mountStartPage(root, _params, { navigate }) {
       <div class="start-vignette"></div>
 
       <div class="start-coco-wrap">
-        <img class="start-coco-img mode-widthfix" src="assets/images/portraits/coco_happy.svg" alt="可可" />
+        <img class="start-coco-img mode-widthfix" src="assets/images/portraits/coco.png" alt="可可" />
       </div>
 
       <div class="caramel-canopy start-canopy">

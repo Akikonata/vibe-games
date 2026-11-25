@@ -22,7 +22,7 @@ const CUTSCENES = {
         bg: 'assets/images/shop_facade.jpg',
         camClass: 'cam-zoom-in',
         sepia: true,
-        portrait: 'assets/images/portraits/madeleine_normal.svg',
+        portrait: 'assets/images/portraits/madeleine.png',
         castRow: [],
         caption: '随着玛德琳婆婆年迈退休，老店停业多年。镇上的果园、牧场、铁匠铺与旧港，也渐渐失去了曾经默契的甜蜜羁绊。'
       },
@@ -32,7 +32,7 @@ const CUTSCENES = {
         bg: 'assets/images/shop_facade.jpg',
         camClass: 'cam-pan-left',
         sepia: false,
-        portrait: 'assets/images/portraits/coco_happy.svg',
+        portrait: 'assets/images/portraits/coco.png',
         castRow: [],
         caption: '直到这一天，元气甜点学徒可可接过了老店的黄铜钥匙——立志在【百年风铃美食节】前，重新点燃星月糖屋的烤炉！'
       },
@@ -44,10 +44,10 @@ const CUTSCENES = {
         sepia: false,
         portrait: '',
         castRow: [
-          'assets/images/portraits/lillian_happy.svg',
-          'assets/images/portraits/gregory_normal.svg',
-          'assets/images/portraits/bart_happy.svg',
-          'assets/images/portraits/emily_normal.svg'
+          'assets/images/portraits/lillian.png',
+          'assets/images/portraits/gregory.png',
+          'assets/images/portraits/bart.png',
+          'assets/images/portraits/emily.png'
         ],
         caption: '拜访上下游供应商伙伴、闯关多样的烘焙小游戏、经营甜点屋并解锁百年食谱——属于你的甜点屋物语，就此启程！'
       }
@@ -64,7 +64,7 @@ const CUTSCENES = {
         bg: 'assets/images/shop_facade.jpg',
         camClass: 'cam-zoom-in',
         sepia: false,
-        portrait: 'assets/images/portraits/coco_happy.svg',
+        portrait: 'assets/images/portraits/coco.png',
         castRow: [],
         caption: '傍晚的微风吹过风铃湾，星月糖屋沉睡多年的铜烤炉终于冒出温暖炊烟，焦化黄油与柠檬香飘出石板街。'
       },
@@ -76,8 +76,8 @@ const CUTSCENES = {
         sepia: false,
         portrait: '',
         castRow: [
-          'assets/images/portraits/lillian_happy.svg',
-          'assets/images/portraits/gregory_normal.svg'
+          'assets/images/portraits/lillian.png',
+          'assets/images/portraits/gregory.png'
         ],
         caption: '山坡上的阳光果园与红砖铁匠铺纷纷亮起灯火——现在可以打开营业柜台接待街坊，也能去地图拜访第一位供应商啦！'
       }
@@ -94,7 +94,7 @@ const CUTSCENES = {
         bg: 'assets/images/shop_facade.jpg',
         camClass: 'cam-pan-left',
         sepia: false,
-        portrait: 'assets/images/portraits/madeleine_happy.svg',
+        portrait: 'assets/images/portraits/madeleine.png',
         castRow: [],
         caption: '一张崭新的《风铃湾手工烘焙营业许可》贴上了拱形玻璃门，翻转苹果塔的焦糖香气引来络绎不绝的街坊。'
       },
@@ -104,7 +104,7 @@ const CUTSCENES = {
         bg: 'assets/images/town_map_bg.jpg',
         camClass: 'cam-zoom-in',
         sepia: false,
-        portrait: 'assets/images/portraits/theo_serious.svg',
+        portrait: 'assets/images/portraits/theo.png',
         castRow: [],
         caption: '街角咖啡座上，《风铃湾周报》的毒舌专栏作家西奥多推了推半框眼镜：“老店翻红？明天试营业，我亲自去试一试。”'
       }
@@ -121,7 +121,7 @@ const CUTSCENES = {
         bg: 'assets/images/shop_facade.jpg',
         camClass: 'cam-zoom-out',
         sepia: false,
-        portrait: 'assets/images/portraits/theo_happy.svg',
+        portrait: 'assets/images/portraits/theo.png',
         castRow: [],
         caption: '清晨的报童高喊着跑过石板街——《风铃湾周报》刊登了星月糖屋的现点千层酥评测，店门口第一次排起了长队！'
       },
@@ -131,7 +131,7 @@ const CUTSCENES = {
         bg: 'assets/images/town_map_bg.jpg',
         camClass: 'cam-pan-right',
         sepia: true,
-        portrait: 'assets/images/portraits/bart_normal.svg',
+        portrait: 'assets/images/portraits/bart.png',
         castRow: [],
         caption: '然而远方的海平面悄然聚起乌云，一场突如其来的海滨暴雨正逼近旧港与风铃湾……'
       }
@@ -148,7 +148,7 @@ const CUTSCENES = {
         bg: 'assets/images/shop_facade.jpg',
         camClass: 'cam-zoom-in',
         sepia: false,
-        portrait: 'assets/images/portraits/bart_happy.svg',
+        portrait: 'assets/images/portraits/bart.png',
         castRow: [],
         caption: '暴雨夜的一块焦香流心巴斯克，让全镇居民在暖黄灯光下相聚。天亮时分，旧港的远洋商船也终于鸣笛靠岸。'
       },
@@ -158,7 +158,7 @@ const CUTSCENES = {
         bg: 'assets/images/town_map_bg.jpg',
         camClass: 'cam-pan-left',
         sepia: false,
-        portrait: 'assets/images/portraits/silver_spoon_serious.svg',
+        portrait: 'assets/images/portraits/silver_spoon.png',
         castRow: [],
         caption: '可就在商业街正对面，挂着冷冽金属招牌的连锁品牌【银匙机械烘焙】连夜挂牌——真正的商业对决即将打响！'
       }
@@ -175,7 +175,7 @@ const CUTSCENES = {
         bg: 'assets/images/shop_facade.jpg',
         camClass: 'cam-pan-right',
         sepia: false,
-        portrait: 'assets/images/portraits/silver_spoon_surprised.svg',
+        portrait: 'assets/images/portraits/silver_spoon.png',
         castRow: [],
         caption: '七层歌剧院蛋糕的醇厚回甘彻底打动了风铃湾的食客。银匙代表收起公文包，留下一句：“王都大赛，我们不会再输。”'
       },
@@ -187,10 +187,10 @@ const CUTSCENES = {
         sepia: false,
         portrait: '',
         castRow: [
-          'assets/images/portraits/coco_happy.svg',
-          'assets/images/portraits/lillian_happy.svg',
-          'assets/images/portraits/bart_happy.svg',
-          'assets/images/portraits/emily_happy.svg'
+          'assets/images/portraits/coco.png',
+          'assets/images/portraits/lillian.png',
+          'assets/images/portraits/bart.png',
+          'assets/images/portraits/emily.png'
         ],
         caption: '中心广场张灯结彩，全镇的上下游供应商伙伴已全部集结——迎接【百年风铃美食节】的压轴决战吧！'
       }
@@ -209,10 +209,10 @@ const CUTSCENES = {
         sepia: false,
         portrait: '',
         castRow: [
-          'assets/images/portraits/coco_happy.svg',
-          'assets/images/portraits/madeleine_happy.svg',
-          'assets/images/portraits/theo_happy.svg',
-          'assets/images/portraits/lillian_happy.svg'
+          'assets/images/portraits/coco.png',
+          'assets/images/portraits/madeleine.png',
+          'assets/images/portraits/theo.png',
+          'assets/images/portraits/lillian.png'
         ],
         caption: '礼堂级圣奥诺雷泡芙塔惊艳全场，星月糖屋重新捧回“风铃湾金徽章”！小镇的夜晚被欢笑与焦糖香气点亮。'
       },
@@ -222,7 +222,7 @@ const CUTSCENES = {
         bg: 'assets/images/town_map_bg.jpg',
         camClass: 'cam-pan-right',
         sepia: false,
-        portrait: 'assets/images/portraits/madeleine_surprised.svg',
+        portrait: 'assets/images/portraits/madeleine.png',
         castRow: [],
         caption: '庆功宴后，柜台角落静静躺着一枚【银色铃兰胸针】与半张《皇家甜点手账》；海雾尽头的跨海蒸汽火车站悄然亮灯——下一站，王都甜点博览会！'
       }

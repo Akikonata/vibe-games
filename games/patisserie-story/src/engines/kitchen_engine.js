@@ -77,7 +77,7 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
       occupied: true,
       npcId,
       name: npc.name,
-      portrait: `assets/images/portraits/${npcId}_normal.svg`,
+      portrait: `assets/images/portraits/${npcId}.png`,
       wantedId: wanted.id,
       wantedName: wanted.name,
       wantedIcon: wanted.iconImg,

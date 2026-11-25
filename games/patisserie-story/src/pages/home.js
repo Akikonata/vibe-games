@@ -160,7 +160,7 @@ export function mountHomePage(root, _params, { navigate }) {
             <div class="colonnade-pedestal">
               <div class="coco-row">
                 <div class="coco-avatar-frame">
-                  <img class="coco-avatar-img mode-fill" src="assets/images/coco_avatar.svg" alt="可可" />
+                  <img class="coco-avatar-img mode-fill" src="assets/images/coco_avatar.png" alt="可可" />
                 </div>
                 <div class="coco-bubble">
                   <div class="coco-name-row">

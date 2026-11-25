@@ -378,7 +378,20 @@
 .page-shop .pantry-row {
   display: flex;
   gap: 6px;
-  margin-bottom: 7px;
+  margin-bottom: 10px;
+}
+
+.page-shop .pantry-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.page-shop .pantry-basket-art {
+  width: 34px;
+  height: 30px;
 }
 
 .page-shop .pantry-btn {

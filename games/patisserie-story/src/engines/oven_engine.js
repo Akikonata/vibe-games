@@ -16,8 +16,9 @@ const STAGE_TIPS = [
   '焦化黄油与柠檬香气四溢，完美出炉！'
 ];
 
-const OVEN_TIME_LIMIT = 24;
-const STAGE_SPEEDS = [3.6, 4.5, 5.4];
+const OVEN_TIME_LIMIT = 35;
+const STAGE_SPEEDS = [2.2, 2.7, 3.2];
+const MAX_MISTAKES = 6;
 
 function createOvenEngine(page, onComplete, onFail) {
   let timer = null;
@@ -84,11 +85,11 @@ function createOvenEngine(page, onComplete, onFail) {
     const { pointerPos, hits, targetHits, mistakes, ovenScore } = page.data;
     if (hits >= targetHits) return;
 
-    if (pointerPos >= 38 && pointerPos <= 62) {
+    if (pointerPos >= 34 && pointerPos <= 66) {
       const nextHits = hits + 1;
       const stageIdx = Math.min(nextHits, 3);
-      const isCenter = pointerPos >= 45 && pointerPos <= 55;
-      const add = isCenter ? 100 : 75;
+      const isCenter = pointerPos >= 43 && pointerPos <= 57;
+      const add = isCenter ? 100 : 80;
       const nextScore = ovenScore + add;
       const hitTag = isCenter ? `✨ 180°C 正中心 PERFECT +${add}！` : `👍 黄金区命中 +${add}！`;
 
@@ -114,23 +115,23 @@ function createOvenEngine(page, onComplete, onFail) {
       }
     } else {
       const nextMistakes = mistakes + 1;
-      const nextScore = Math.max(0, ovenScore - 25);
-      if (nextMistakes >= 4) {
+      const nextScore = Math.max(0, ovenScore - 15);
+      if (nextMistakes >= MAX_MISTAKES) {
         stop();
         page.setData({ mistakes: nextMistakes, ovenScore: nextScore });
         if (onFail) {
           onFail({
             title: '💨 炉火失控烤焦啦！',
-            reason: '温控失误已达 4 次，等指针稳稳落进黄金区中央再出手吧！',
+            reason: `温控失误已达 ${MAX_MISTAKES} 次，等指针稳稳落进黄金区再出手吧！`,
             score: nextScore
           });
         }
         return;
       }
 
-      const tip = pointerPos < 38
-        ? `炉温偏低（失误 ${nextMistakes}/4，-25 分），等指针滑进黄金区再点！`
-        : `火候过旺（失误 ${nextMistakes}/4，-25 分），等指针回到黄金区再点！`;
+      const tip = pointerPos < 34
+        ? `炉温偏低（失误 ${nextMistakes}/${MAX_MISTAKES}，-15 分），等指针滑进黄金区再点！`
+        : `火候过旺（失误 ${nextMistakes}/${MAX_MISTAKES}，-15 分），等指针回到黄金区再点！`;
       page.setData({ feedback: tip, mistakes: nextMistakes, ovenScore: nextScore });
     }
   }

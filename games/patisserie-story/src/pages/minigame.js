@@ -242,7 +242,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
           <div class="s-dot ${d.hits >= 2 ? 'lit' : ''}"></div>
           <div class="s-dot ${d.hits >= 3 ? 'lit' : ''}"></div>
         </div>
-        <span class="temp-readout ${d.pointerPos >= 38 && d.pointerPos <= 62 ? 'in-zone' : ''}">${d.currentTemp}°C</span>
+        <span class="temp-readout ${d.pointerPos >= 34 && d.pointerPos <= 66 ? 'in-zone' : ''}">${d.currentTemp}°C</span>
       `;
       const vp = root.querySelector('#mg-oven-vp');
       vp.classList.toggle('flash', !!d.hitFlash);
@@ -356,7 +356,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
             <div class="card fail-modal-card">
               <span class="fail-modal-title">${d.failTitle}</span>
               <span class="fail-modal-reason">${d.failReason}</span>
-              <div class="fail-modal-hint">达到 72% 以上得分才可获 A 级，90% 且零失误获 S 级传奇剧情！</div>
+              <div class="fail-modal-hint">达成基础目标获 B 级即可过关！72% 获 A 级，90% 且零失误解锁 S 级传奇剧情！</div>
               <div class="btn-primary fail-retry-btn" data-action="retry">↻ 立即重新挑战</div>
             </div>
           </div>`

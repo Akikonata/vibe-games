@@ -60,13 +60,13 @@ function evaluatePrecisionResult({ mistakes = 0, score, maxScore = 300, passed =
   const m = mistakes || 0;
   const computedScore = typeof score === 'number'
     ? score
-    : Math.max(0, 300 - m * 65);
+    : Math.max(0, 300 - m * 45);
   return evaluateByRatio({
     score: computedScore,
     maxScore,
     perfectLives: m === 0,
     goodLives: m <= 1,
-    passed: passed && m < 4,
+    passed: passed && m < 6,
     minPassRatio: 0.35
   });
 }
