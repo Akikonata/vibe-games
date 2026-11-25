@@ -123,11 +123,14 @@ export function mountShopPage(root) {
     const prevY = cocoPos.y;
     const dx = wp.x - prevX;
     const dy = wp.y - prevY;
-    const moved = Math.hypot(dx, dy) > 2;
+    const dist = Math.hypot(dx, dy);
+    const moved = dist > 2;
     if (Math.abs(dx) > 1.5) cocoPos.facing = dx < 0 ? -1 : 1;
     cocoPos.x = wp.x;
     cocoPos.y = wp.y;
 
+    const walkMs = moved ? Math.max(260, Math.min(620, Math.round(dist * 11))) : 0;
+    actor.style.transitionDuration = `${walkMs}ms`;
     actor.style.left = `${wp.x}%`;
     actor.style.top = `${wp.y}%`;
     actor.classList.toggle('face-left', cocoPos.facing < 0);
@@ -138,14 +141,7 @@ export function mountShopPage(root) {
       clearTimeout(cocoWalkTimer);
       cocoWalkTimer = setTimeout(() => {
         actor.classList.remove('is-walking');
-        actor.classList.add('is-acting');
-        setTimeout(() => actor.classList.remove('is-acting'), 260);
-      }, 280);
-    } else {
-      actor.classList.remove('is-acting');
-      void actor.offsetWidth;
-      actor.classList.add('is-acting');
-      setTimeout(() => actor.classList.remove('is-acting'), 260);
+      }, walkMs);
     }
 
     if (burstEmoji && scene) {
@@ -313,7 +309,7 @@ export function mountShopPage(root) {
         <div class="zone-kitchen-floor">
           <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:69%;" aria-hidden="true">
             <div class="coco-25d-shadow"></div>
-            <img class="coco-25d-sprite mode-fit" src="assets/images/kitchen/coco_chef_25d.png" alt="" />
+            <div class="coco-25d-sprite-sheet"></div>
             <div id="k-coco-carry" class="coco-25d-carry"></div>
           </div>
 
