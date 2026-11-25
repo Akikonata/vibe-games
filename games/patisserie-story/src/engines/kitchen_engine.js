@@ -13,6 +13,12 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
   let tick = 0;
   let paused = false;
   let inTutorial = !!tutorialMode;
+  let msgHoldTicks = 0;
+
+  function flashMsg(msg, ticks = 18) {
+    msgHoldTicks = ticks;
+    page.setData({ serviceMsg: msg });
+  }
 
   function stop() {
     if (timer) {
@@ -147,6 +153,7 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
 
   function syncGuide(heldItem, stations, seats, customMsg) {
     const guide = computeHintAndHighlight(heldItem, stations, seats);
+    if (customMsg) msgHoldTicks = 16;
     page.setData({
       heldItem,
       stations,
@@ -158,7 +165,8 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
 
   function startLoop() {
     stop();
-    const patienceDrain = 0.72 / (bonuses ? bonuses.patienceMult : 1);
+    // 温和舒适的顾客耐心节奏（约 28 秒/位，升级花箱后约 35 秒），使用浮点精确扣减避免 Math.round 加速掉血
+    const patienceDrain = 0.36 / (bonuses ? bonuses.patienceMult : 1);
 
     timer = setInterval(() => {
       if (paused) return;
@@ -220,21 +228,29 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
           page.setData({ shiftCombo: 0 });
           return { id: s.id, occupied: false };
         }
-        return Object.assign({}, s, { patience: Math.round(nextP) });
+        return Object.assign({}, s, { patience: nextP });
       });
 
-      // 每 3.5 秒补位一位新顾客（保持前厅热闹）
-      if (!inTutorial && tick > 0 && tick % 35 === 0) {
+      // 如果前厅全空立刻补 1 位客人；每 3.5 秒补位一位新顾客（保持前厅热闹）
+      if (!inTutorial && seats.every(s => !s.occupied)) {
+        seats = spawnCustomerInto(seats);
+      } else if (!inTutorial && tick > 0 && tick % 35 === 0) {
         seats = spawnCustomerInto(seats);
       }
 
       const guide = computeHintAndHighlight(page.data.heldItem, stations, seats);
+      if (customMsg) {
+        msgHoldTicks = 16;
+      } else if (msgHoldTicks > 0) {
+        msgHoldTicks -= 1;
+      }
+      const nextMsg = customMsg || (msgHoldTicks > 0 ? page.data.serviceMsg : guide.hint);
       page.setData({
         shiftTimeLeft: timeLeft,
         stations,
         seats,
         highlightTarget: guide.highlight,
-        serviceMsg: customMsg || guide.hint
+        serviceMsg: nextMsg
       });
 
       if (timeLeft <= 0) {
@@ -251,7 +267,7 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
   // 点击原料篮：拿取对应甜点的生面糊
   function pickRaw(recipeId) {
     if (page.data.heldItem) {
-      page.setData({ serviceMsg: '双手正端着东西呢！先放进工位、暂存台或上菜吧' });
+      flashMsg('双手正端着东西呢！先放进工位、暂存台或上菜吧');
       return;
     }
     const recipe = menuRecipes.find(r => r.id === recipeId);
@@ -290,17 +306,17 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
     // 情况 2：手里拿着物品点击空闲工位 -> 放入加工
     if (held && st.state === 'idle') {
       if (held.isBurnt) {
-        page.setData({ serviceMsg: '烤糊的甜点不能再加工啦，丢进回收铜桶吧！' });
+        flashMsg('烤糊的甜点不能再加工啦，丢进回收铜桶吧！');
         return;
       }
       if (held.isFinished) {
-        page.setData({ serviceMsg: '这已经是成品啦！直接点击对应的顾客上菜吧！' });
+        flashMsg('这已经是成品啦！直接点击对应的顾客上菜吧！');
         return;
       }
       const neededType = held.steps[held.stepIndex];
       if (neededType !== st.type) {
         const rightName = (STATION_META[neededType] && STATION_META[neededType].name) || '正确工位';
-        page.setData({ serviceMsg: `这道工序需要先去【${rightName}】哦！` });
+        flashMsg(`这道工序需要先去【${rightName}】哦！`);
         return;
       }
       stations[idx] = Object.assign({}, st, {
@@ -314,7 +330,7 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
     }
 
     if (st.state === 'working') {
-      page.setData({ serviceMsg: `⏳ 【${st.name}】正在制作中，稍等马上就好！` });
+      flashMsg(`⏳ 【${st.name}】正在制作中，稍等马上就好！`);
     }
   }
 
@@ -348,15 +364,15 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
 
     if (!seat || !seat.occupied) return;
     if (!held) {
-      page.setData({ serviceMsg: `${seat.name} 正在等【${seat.wantedName}】，快去厨房做吧！` });
+      flashMsg(`${seat.name} 正在等【${seat.wantedName}】，快去厨房做吧！`);
       return;
     }
     if (!held.isFinished) {
-      page.setData({ serviceMsg: '还没制作完成呢！请按亮灯提示完成最后一道工序！' });
+      flashMsg('还没制作完成呢！请按亮灯提示完成最后一道工序！');
       return;
     }
     if (held.recipeId !== seat.wantedId) {
-      page.setData({ serviceMsg: `送错啦！${seat.name} 点的是【${seat.wantedName}】哦！` });
+      flashMsg(`送错啦！${seat.name} 点的是【${seat.wantedName}】哦！`);
       return;
     }
 

@@ -146,7 +146,7 @@ export function mountShopPage(root) {
            </div>
          </div>`
       : `<div class="scene-prop pos-pantry is-pantry-multi">
-           <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="原料篮" />
+           <img class="prop-sprite sprite-pantry is-pantry-item mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="原料篮" data-action="pickSmartRaw" />
            <div class="pantry-picks">
              ${d.menuRecipes.map(m => `
                <div class="pantry-pick-orb is-pantry-item" data-action="pickRaw" data-id="${m.id}" title="${m.name}">
@@ -244,23 +244,30 @@ export function mountShopPage(root) {
       } else if (s.occupied) {
         const fill = slot.querySelector('.cust-patience-fill');
         if (fill) {
-          fill.style.width = `${s.patience}%`;
+          fill.style.width = `${Math.max(0, Math.round(s.patience))}%`;
           fill.classList.toggle('low', s.patience < 35);
         }
       }
     });
 
-    // 2. 增量更新可可手中物品
+    // 2. 增量更新可可手中物品（明确显示甜点名称与下一步去向，绝不迷路）
     const h = d.heldItem;
-    const nextHandsSig = h ? `${h.recipeId}:${h.displayImg}:${h.statusLabel}:${h.isFinished}:${h.isBurnt}` : 'empty';
+    const STEP_NAMES = { oven: '👉放烤炉', cream: '👉去裱花台', decor: '👉去装饰台' };
+    const nextStepText = h
+      ? (h.isBurnt ? '💨丢回收桶' : (h.isFinished ? '✨点客人上菜' : (STEP_NAMES[h.steps[h.stepIndex]] || '加工中')))
+      : '';
+    const nextHandsSig = h ? `${h.recipeId}:${h.displayImg}:${nextStepText}:${h.isFinished}:${h.isBurnt}` : 'empty';
     if (handsSig !== nextHandsSig) {
       handsSig = nextHandsSig;
       const handsEl = root.querySelector('#k-hands');
       if (handsEl) {
         handsEl.innerHTML = h
           ? `<img class="tray-food-img mode-fit" src="${h.displayImg}" alt="" />
-             <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''}">${h.isFinished ? '✨成品' : (h.isBurnt ? '💨糊了' : '加工中')}</span>`
-          : '<span class="tray-empty-txt">空手</span>';
+             <div style="display:flex;flex-direction:column;gap:2px;">
+               <span style="font-size:11px;font-weight:800;color:#4A2511;">${h.recipeName}</span>
+               <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''}">${nextStepText}</span>
+             </div>`
+          : '<span class="tray-empty-txt">空手 · 点原料篮拿面糊</span>';
       }
     }
 
@@ -575,11 +582,19 @@ export function mountShopPage(root) {
       } else {
         launchKitchenShift({ tutorialMode: false });
       }
+    } else if (action === 'pickSmartRaw') {
+      const before = pageProxy.data.heldItem;
+      const waitingSeat = (pageProxy.data.seats || []).find(s => s.occupied);
+      const targetId = (waitingSeat && waitingSeat.wantedId) || (pageProxy.data.menuRecipes[0] && pageProxy.data.menuRecipes[0].id);
+      if (targetId) kitchen?.pickRaw(targetId);
+      if (!before && pageProxy.data.heldItem) {
+        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${pageProxy.data.heldItem.recipeName}`, kind: 'cream' });
+      }
     } else if (action === 'pickRaw') {
       const before = pageProxy.data.heldItem;
       kitchen?.pickRaw(target.dataset.id);
       if (!before && pageProxy.data.heldItem) {
-        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: '🥣 拿到面糊!', kind: 'cream' });
+        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${pageProxy.data.heldItem.recipeName}`, kind: 'cream' });
       }
     } else if (action === 'tapStation') {
       kitchen?.tapStation(target.dataset.id);

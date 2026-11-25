@@ -1042,15 +1042,26 @@
   color: #8C5E3C;
 }
 
-/* 纯图片金光引导动画（无需丑陋方框） */
+/* 高对比度金橙双层发光引导动画（在浅色大理石台面上依然一眼可见） */
 .page-shop .is-scene-glow {
-  filter: drop-shadow(0 0 14px rgba(255, 214, 92, 0.98)) drop-shadow(0 0 4px rgba(255, 248, 210, 0.95));
-  animation: scenePulse 0.95s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 12px rgba(255, 162, 24, 0.98)) drop-shadow(0 0 4px rgba(255, 244, 180, 0.98));
+  animation: scenePulse 0.8s ease-in-out infinite alternate;
 }
 
 @keyframes scenePulse {
-  0% { filter: drop-shadow(0 0 8px rgba(255, 208, 76, 0.85)); }
-  100% { filter: drop-shadow(0 0 18px rgba(255, 224, 118, 1)) brightness(1.07); }
+  0% { filter: drop-shadow(0 0 8px rgba(235, 128, 16, 0.92)); transform: translate(-50%, -50%) scale(1); }
+  100% { filter: drop-shadow(0 0 20px rgba(255, 184, 36, 1)) brightness(1.08); transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.page-shop .scene-customer.is-scene-glow,
+.page-shop .pantry-pick-orb.is-scene-glow,
+.page-shop .sprite-pantry.is-scene-glow {
+  animation: scenePulseFlat 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes scenePulseFlat {
+  0% { filter: drop-shadow(0 0 8px rgba(235, 128, 16, 0.92)); transform: scale(1); }
+  100% { filter: drop-shadow(0 0 18px rgba(255, 184, 36, 1)) brightness(1.08); transform: scale(1.06); }
 }
 
 @keyframes sceneBounce {
