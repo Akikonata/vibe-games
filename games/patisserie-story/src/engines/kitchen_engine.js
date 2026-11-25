@@ -1,13 +1,28 @@
 // engines/kitchen_engine.js
-// 轻度胡闹厨房（Overcooked-Lite）甜点屋营业模拟引擎
-// 支持：3 座位同步来客、双烤炉/裱花台/装饰台/暂存台/回收桶、智能高亮下一步引导、多原因统一暂停、练习模式与完整结算统计
+// 2.5D 甜点屋分区经营引擎：餐区入座招待 + 玻璃展示柜预置库存 + 后厨双烤炉批量补烤 + 婉拒空位（扣口碑）
+// 数值经 game-balance-design 推导：预置 2~3 份起售，低库存(<=1)预警，按甜点复杂度 3.6s~5.2s 批量烤 2~3 份直接入柜
 
 import { CHARACTERS } from '../data/characters.js';
-import { getKitchenFlow, STATION_META } from '../data/kitchen_recipes.js';
+import { getKitchenFlow } from '../data/kitchen_recipes.js';
 
 const CUSTOMER_POOL = ['lillian', 'theo', 'bart', 'emily', 'casper', 'madeleine'];
 const SHIFT_SECONDS = 45;
 const DECLINE_REP_PENALTY = 5;
+const MAX_STOCK_PER_RECIPE = 5;
+const LOW_STOCK_THRESHOLD = 1;
+const OVEN_BURN_TICKS = 95; // 9.5s 烤好后宽容期，55%(5.2s) 触发快烤糊预警
+
+function getBatchProfile(recipeId) {
+  const flow = getKitchenFlow(recipeId);
+  const stepCount = (flow && flow.steps ? flow.steps.length : 1);
+  if (stepCount >= 3) {
+    return { batchSize: 2, duration: 52, tierLabel: '三阶精工' }; // 5.2s -> +2份
+  }
+  if (stepCount === 2) {
+    return { batchSize: 3, duration: 44, tierLabel: '双阶手作' }; // 4.4s -> +3份
+  }
+  return { batchSize: 3, duration: 36, tierLabel: '招牌快烤' };   // 3.6s -> +3份
+}
 
 export function createKitchenEngine(page, {
   menuRecipes,
@@ -17,7 +32,7 @@ export function createKitchenEngine(page, {
   onTutorialDone,
   onServeEffect,
   onDeclineEffect,
-  onActionEffect,
+  onHarvestEffect,
   onShiftEnd
 }) {
   let timer = null;
@@ -30,7 +45,7 @@ export function createKitchenEngine(page, {
   let lostCustomers = 0;
   let declinedCustomers = 0;
   let burntCount = 0;
-  let discardedCount = 0;
+  let batchesBaked = 0;
   let refillTimers = [0, 0, 0];
 
   function isPaused() {
@@ -45,7 +60,7 @@ export function createKitchenEngine(page, {
     });
   }
 
-  function flashMsg(msg, ticks = 18) {
+  function flashMsg(msg, ticks = 20) {
     msgHoldTicks = ticks;
     page.setData({ serviceMsg: msg });
   }
@@ -57,13 +72,17 @@ export function createKitchenEngine(page, {
     }
   }
 
-  function makeEmptyStation(id, type, name, shortName) {
+  function makeEmptyOven(id, name, shortName) {
     return {
       id,
-      type,
+      type: 'oven',
       name,
       shortName,
-      item: null,
+      recipeId: null,
+      recipeName: '',
+      recipeIcon: '',
+      batchSize: 0,
+      duration: 36,
       progress: 0,
       overcook: 0,
       nearBurn: false,
@@ -71,43 +90,109 @@ export function createKitchenEngine(page, {
     };
   }
 
-  function computeHintAndHighlight(heldItem, stations, seats) {
-    if (!heldItem) {
-      const warnSt = stations.find(s => s.state === 'ready' && s.nearBurn);
-      if (warnSt) {
-        return { highlight: warnSt.id, hint: `🔥 【${warnSt.shortName}】快烤糊啦！快点击取出！` };
-      }
-      const readySt = stations.find(s => s.state === 'ready');
-      if (readySt) {
-        return { highlight: readySt.id, hint: `✨ 【${readySt.shortName}】可取餐！点击取出` };
-      }
-      const burntSt = stations.find(s => s.state === 'burnt');
-      if (burntSt) {
-        return { highlight: burntSt.id, hint: `💨 【${burntSt.shortName}】烤糊了！点击取出清理` };
-      }
-      return { highlight: 'pantry', hint: '点【大竹篮】智能取料，或点篮下甜点按钮指定取料！' };
+  function buildInitialDisplayStock() {
+    const initQty = menuRecipes.length === 1 ? 3 : 2;
+    return menuRecipes.map(r => {
+      const bp = getBatchProfile(r.id);
+      return {
+        recipeId: r.id,
+        name: r.name,
+        iconImg: r.iconImg,
+        price: r.price,
+        stock: initQty,
+        maxStock: MAX_STOCK_PER_RECIPE,
+        batchSize: bp.batchSize,
+        batchDuration: bp.duration,
+        tierLabel: bp.tierLabel
+      };
+    });
+  }
+
+  function pickMostNeededRecipeId(displayStock, seats, ovens) {
+    // 1. 优先：有在座顾客正在等且库存=0、且烤炉里尚未在烤的甜点
+    const bakingIds = new Set(ovens.filter(o => o.state === 'working' || o.state === 'ready').map(o => o.recipeId));
+    const urgentSeat = seats.find(s => {
+      if (!s.occupied) return false;
+      const slot = displayStock.find(d => d.recipeId === s.wantedId);
+      return slot && slot.stock <= 0 && !bakingIds.has(s.wantedId);
+    });
+    if (urgentSeat) return urgentSeat.wantedId;
+
+    // 2. 其次：库存=0 或 <=1 且没在烤的甜点
+    const lowSlot = displayStock
+      .slice()
+      .sort((a, b) => a.stock - b.stock)
+      .find(d => d.stock <= LOW_STOCK_THRESHOLD && !bakingIds.has(d.recipeId));
+    if (lowSlot) return lowSlot.recipeId;
+
+    // 3. 兜底：库存最少且未满的甜点
+    const minSlot = displayStock.slice().sort((a, b) => a.stock - b.stock)[0];
+    return minSlot ? minSlot.recipeId : (menuRecipes[0] && menuRecipes[0].id);
+  }
+
+  function computeHintAndHighlight(heldItem, displayStock, ovens, seats) {
+    // 优先 1：烤炉快烤糊或已烤好可收获入柜
+    const warnOven = ovens.find(o => o.state === 'ready' && o.nearBurn);
+    if (warnOven) {
+      return { highlight: warnOven.id, hint: `🔥 【${warnOven.shortName}】快烤糊啦！快点击收获 +${warnOven.batchSize} 份入柜！` };
     }
-    if (heldItem.isBurnt) {
-      return { highlight: 'trash', hint: '💥 烤糊了！点击右下角【回收铜桶】丢弃重做' };
+    const readyOven = ovens.find(o => o.state === 'ready');
+    if (readyOven && !heldItem) {
+      return { highlight: readyOven.id, hint: `✨ 【${readyOven.shortName}】整盘烤好！点击收获 +${readyOven.batchSize} 份入展示柜` };
     }
-    if (heldItem.isFinished) {
+
+    // 优先 2：手里正端着成品甜点 -> 送去对应餐桌
+    if (heldItem) {
       const matchingSeat = seats.find(s => s.occupied && s.wantedId === heldItem.recipeId);
       if (matchingSeat) {
-        return { highlight: `seat_${matchingSeat.id}`, hint: `🍰 【${heldItem.recipeName}】成品！点击【${matchingSeat.name}】上菜！` };
+        return { highlight: `seat_${matchingSeat.id}`, hint: `🍰 端着【${heldItem.recipeName}】！点击【${matchingSeat.name}】的餐桌上菜！` };
       }
-      return { highlight: 'hold', hint: `目前没人点【${heldItem.recipeName}】，先放左下【暂存台】备用！` };
+      return { highlight: `disp_${heldItem.recipeId}`, hint: `目前餐区没人点【${heldItem.recipeName}】，点展示柜放回库存即可！` };
     }
-    const nextStationType = heldItem.steps[heldItem.stepIndex];
-    const targetSt = stations.find(s => s.type === nextStationType && s.state === 'idle');
-    const stName = (STATION_META[nextStationType] && STATION_META[nextStationType].name) || '操作台';
-    const verb = (STATION_META[nextStationType] && STATION_META[nextStationType].verb) || '加工';
-    const isSemi = heldItem.stepIndex > 0;
-    return {
-      highlight: targetSt ? targetSt.id : nextStationType,
-      hint: isSemi
-        ? `👉 【${heldItem.recipeName}】半成品 · 下一步：去【${stName}】${verb}！`
-        : `👉 下一步：点击【${stName}】放入 ${heldItem.recipeName}！`
-    };
+
+    // 优先 3：有顾客点的甜点有库存 -> 高亮展示柜取餐
+    const servableSeat = seats.find(s => {
+      if (!s.occupied) return false;
+      const slot = displayStock.find(d => d.recipeId === s.wantedId);
+      return slot && slot.stock > 0;
+    });
+    if (servableSeat) {
+      const slot = displayStock.find(d => d.recipeId === servableSeat.wantedId);
+      return {
+        highlight: `disp_${slot.recipeId}`,
+        hint: `🧁 点击展示柜取【${slot.name}】（余 ${slot.stock}），送去【${servableSeat.name}】餐桌！`
+      };
+    }
+
+    // 优先 4：在座顾客点的全售罄 -> 高亮空闲烤炉提示批量补烤
+    const soldOutSeat = seats.find(s => {
+      if (!s.occupied) return false;
+      const slot = displayStock.find(d => d.recipeId === s.wantedId);
+      return slot && slot.stock <= 0;
+    });
+    if (soldOutSeat) {
+      const idleOven = ovens.find(o => o.state === 'idle');
+      if (idleOven) {
+        return {
+          highlight: idleOven.id,
+          hint: `🔥 【${soldOutSeat.wantedName}】库存不足！点下方【${idleOven.shortName}】或菜品钮批量烤制补货！`
+        };
+      }
+      const workingOven = ovens.find(o => o.state === 'working');
+      if (workingOven) {
+        return {
+          highlight: workingOven.id,
+          hint: `⏳ 【${workingOven.recipeName}】正在批量烤制中（可等出炉或婉拒空出餐桌）`
+        };
+      }
+    }
+
+    const burntOven = ovens.find(o => o.state === 'burnt');
+    if (burntOven) {
+      return { highlight: burntOven.id, hint: `💨 【${burntOven.shortName}】烤糊了！点击直接清理残渣` };
+    }
+
+    return { highlight: 'oven_1', hint: '点展示柜取餐招待，库存告急时点下方烤炉批量烤制补货！' };
   }
 
   function spawnCustomerInto(seats) {
@@ -138,25 +223,12 @@ export function createKitchenEngine(page, {
     return nextSeats;
   }
 
-  function countUndelivered(stations, heldItem, holdItem) {
-    let n = 0;
-    (stations || []).forEach(st => {
-      if (st.item && !st.item.isBurnt) n += 1;
-    });
-    if (heldItem && !heldItem.isBurnt) n += 1;
-    if (holdItem && !holdItem.isBurnt) n += 1;
-    return n;
-  }
-
   function finalizeShift() {
     if (ended) return;
     ended = true;
     stop();
-    const undeliveredCount = countUndelivered(
-      page.data.stations,
-      page.data.heldItem,
-      page.data.holdItem
-    );
+    const undeliveredCount = (page.data.ovens || []).filter(o => o.state === 'working' || o.state === 'ready').length
+      + (page.data.heldItem ? 1 : 0);
     if (typeof onShiftEnd === 'function') {
       onShiftEnd({
         earnedCoins: page.data.shiftCoins,
@@ -165,8 +237,8 @@ export function createKitchenEngine(page, {
         lostCustomers,
         declinedCustomers,
         burntCount,
+        batchesBaked,
         undeliveredCount,
-        discardedCount,
         isPractice: practiceMode
       });
     }
@@ -179,16 +251,15 @@ export function createKitchenEngine(page, {
     lostCustomers = 0;
     declinedCustomers = 0;
     burntCount = 0;
-    discardedCount = 0;
+    batchesBaked = 0;
     refillTimers = [0, 0, 0];
     pauseReasons.clear();
     msgHoldTicks = 0;
 
-    const stations = [
-      makeEmptyStation('oven_1', 'oven', '红砖烤炉 1', '烤炉 1'),
-      makeEmptyStation('oven_2', 'oven', '红砖烤炉 2', '烤炉 2'),
-      makeEmptyStation('cream_1', 'cream', '奶油裱花台', '裱花台'),
-      makeEmptyStation('decor_1', 'decor', '糖粉装饰台', '装饰台')
+    const displayStock = buildInitialDisplayStock();
+    const ovens = [
+      makeEmptyOven('oven_1', '红砖批量烤炉 1', '烤炉 1'),
+      makeEmptyOven('oven_2', '红砖批量烤炉 2', '烤炉 2')
     ];
 
     let seats = [
@@ -199,7 +270,7 @@ export function createKitchenEngine(page, {
     seats = spawnCustomerInto(seats);
     seats = spawnCustomerInto(seats);
 
-    const guide = computeHintAndHighlight(null, stations, seats);
+    const guide = computeHintAndHighlight(null, displayStock, ovens, seats);
 
     page.setData({
       isOpen: true,
@@ -213,9 +284,9 @@ export function createKitchenEngine(page, {
       shiftServed: 0,
       shiftCombo: 0,
       seats,
-      stations,
+      displayStock,
+      ovens,
       heldItem: null,
-      holdItem: null,
       inTutorial,
       highlightTarget: guide.highlight,
       serviceMsg: guide.hint,
@@ -241,277 +312,257 @@ export function createKitchenEngine(page, {
   }
 
   function skipTutorial() {
-    if (practiceMode) return;
-    if (!inTutorial) return;
+    if (practiceMode || !inTutorial) return;
     inTutorial = false;
     page.setData({ inTutorial: false });
     if (typeof onTutorialDone === 'function') onTutorialDone();
   }
 
-  function syncGuide(heldItem, stations, seats, customMsg) {
-    const guide = computeHintAndHighlight(heldItem, stations, seats);
-    if (customMsg) msgHoldTicks = 16;
+  function syncGuide(heldItem, displayStock, ovens, seats, customMsg) {
+    const guide = computeHintAndHighlight(heldItem, displayStock, ovens, seats);
+    if (customMsg) msgHoldTicks = 18;
     page.setData({
       heldItem,
-      stations,
+      displayStock,
+      ovens,
       seats,
       highlightTarget: guide.highlight,
       serviceMsg: customMsg || guide.hint
     });
   }
 
+  function stepTick() {
+    if (ended || isPaused()) return;
+    const frozenClock = inTutorial || practiceMode;
+    if (!frozenClock) tick += 1;
+    const timeLeft = Math.max(0, SHIFT_SECONDS - Math.floor(tick / 10));
+    let customMsg = '';
+    const speedMult = frozenClock ? 1.6 : 1;
+
+    // 1. 推进后厨双烤炉批量烘烤进度
+    const ovens = (page.data.ovens || []).map(o => {
+      if (o.state === 'working') {
+        const nextProg = Math.min(100, o.progress + (100 / o.duration) * speedMult);
+        if (nextProg >= 100) {
+          customMsg = `✨ 【${o.shortName}】${o.recipeName} ×${o.batchSize} 烤好啦！点击入柜补货`;
+          return Object.assign({}, o, { progress: 100, state: 'ready', overcook: 0, nearBurn: false });
+        }
+        return Object.assign({}, o, { progress: Math.round(nextProg) });
+      }
+      if (o.state === 'ready' && !frozenClock) {
+        const nextOver = o.overcook + 1;
+        const warnTick = Math.floor(OVEN_BURN_TICKS * 0.55);
+        if (nextOver >= OVEN_BURN_TICKS) {
+          burntCount += 1;
+          customMsg = `💨 【${o.shortName}】整盘烤糊了！点击烤炉一键清渣`;
+          return Object.assign({}, o, { state: 'burnt', nearBurn: false, overcook: nextOver });
+        }
+        const isNearBurn = nextOver >= warnTick;
+        if (isNearBurn && !o.nearBurn) {
+          customMsg = `🔥 【${o.shortName}】快烤糊啦！快点击收获入柜！`;
+        }
+        return Object.assign({}, o, { overcook: nextOver, nearBurn: isNearBurn });
+      }
+      return o;
+    });
+
+    // 2. 更新餐区 3 桌顾客耐心
+    const patienceDrain = 0.36 / (bonuses ? bonuses.patienceMult : 1);
+    let seats = (page.data.seats || []).map(s => {
+      if (!s.occupied || frozenClock) return s;
+      const nextP = s.patience - patienceDrain;
+      if (nextP <= 0) {
+        lostCustomers += 1;
+        customMsg = `😅 ${s.name} 等太久离开餐桌了`;
+        page.setData({ shiftCombo: 0 });
+        return { id: s.id, occupied: false };
+      }
+      return Object.assign({}, s, { patience: nextP });
+    });
+
+    for (let i = 0; i < 3; i++) {
+      if (refillTimers[i] > 0) {
+        refillTimers[i] -= 1;
+        if (refillTimers[i] === 0 && !seats[i].occupied) {
+          seats = spawnCustomerInto(seats);
+        }
+      }
+    }
+
+    if (!frozenClock && seats.every(s => !s.occupied) && refillTimers.every(t => t <= 0)) {
+      seats = spawnCustomerInto(seats);
+    } else if (!frozenClock && tick > 0 && tick % 32 === 0) {
+      seats = spawnCustomerInto(seats);
+    }
+
+    const guide = computeHintAndHighlight(page.data.heldItem, page.data.displayStock, ovens, seats);
+    if (customMsg) {
+      msgHoldTicks = 18;
+    } else if (msgHoldTicks > 0) {
+      msgHoldTicks -= 1;
+    }
+    const nextMsg = customMsg || (msgHoldTicks > 0 ? page.data.serviceMsg : guide.hint);
+    page.setData({
+      shiftTimeLeft: timeLeft,
+      ovens,
+      seats,
+      highlightTarget: guide.highlight,
+      serviceMsg: nextMsg
+    });
+
+    if (!frozenClock && timeLeft <= 0) {
+      finalizeShift();
+    }
+  }
+
   function startLoop() {
     stop();
-    const patienceDrain = 0.36 / (bonuses ? bonuses.patienceMult : 1);
-
-    timer = setInterval(() => {
-      if (ended || isPaused()) return;
-      const frozenClock = inTutorial || practiceMode;
-      if (!frozenClock) tick += 1;
-      const timeLeft = Math.max(0, SHIFT_SECONDS - Math.floor(tick / 10));
-      let customMsg = '';
-
-      // 1. 推进所有厨房工位进度（教学/练习模式略微加速，零等待感）
-      const speedMult = frozenClock ? 1.8 : 1;
-      const stations = page.data.stations.map(st => {
-        if (!st.item) return st;
-        const meta = STATION_META[st.type];
-        if (st.state === 'working') {
-          const nextProg = Math.min(100, st.progress + (100 / meta.duration) * speedMult);
-          if (nextProg >= 100) {
-            const doneItem = Object.assign({}, st.item, {
-              stepIndex: st.item.stepIndex + 1
-            });
-            doneItem.isFinished = doneItem.stepIndex >= doneItem.steps.length;
-            doneItem.displayImg = doneItem.recipeIcon;
-            doneItem.statusLabel = doneItem.isFinished ? '成品可上菜' : '半成品';
-            return Object.assign({}, st, {
-              item: doneItem,
-              progress: 100,
-              state: 'ready',
-              overcook: 0,
-              nearBurn: false
-            });
-          }
-          return Object.assign({}, st, { progress: Math.round(nextProg) });
-        }
-
-        // 烤炉温和防焦机制（教学/练习期间绝不烤糊）
-        if (st.state === 'ready' && st.type === 'oven' && !frozenClock) {
-          const nextOver = st.overcook + 1;
-          const warnTick = Math.floor(meta.burnTicks * 0.55);
-          if (nextOver >= meta.burnTicks) {
-            burntCount += 1;
-            const burntItem = Object.assign({}, st.item, {
-              isBurnt: true,
-              isFinished: false,
-              statusLabel: '烤糊了!'
-            });
-            customMsg = `💨 【${st.shortName}】烤糊冒烟啦！点击烤炉清理残渣`;
-            return Object.assign({}, st, {
-              item: burntItem,
-              overcook: nextOver,
-              nearBurn: false,
-              state: 'burnt'
-            });
-          }
-          const isNearBurn = nextOver >= warnTick;
-          if (isNearBurn && !st.nearBurn) {
-            customMsg = `🔥 【${st.shortName}】快烤糊啦！请立即点击取餐！`;
-          }
-          return Object.assign({}, st, { overcook: nextOver, nearBurn: isNearBurn });
-        }
-        return st;
-      });
-
-      // 2. 更新前厅 3 座位顾客耐心与新客到店（教学/练习期间耐心完全冻结）
-      let seats = page.data.seats.map(s => {
-        if (!s.occupied || frozenClock) return s;
-        const nextP = s.patience - patienceDrain;
-        if (nextP <= 0) {
-          lostCustomers += 1;
-          customMsg = `😅 ${s.name} 等太久离开座位了`;
-          page.setData({ shiftCombo: 0 });
-          return { id: s.id, occupied: false };
-        }
-        return Object.assign({}, s, { patience: nextP });
-      });
-
-      // 婉拒后短暂空位缓冲（约 1.5s 后补入新客人）
-      for (let i = 0; i < 3; i++) {
-        if (refillTimers[i] > 0) {
-          refillTimers[i] -= 1;
-          if (refillTimers[i] === 0 && !seats[i].occupied) {
-            seats = spawnCustomerInto(seats);
-          }
-        }
-      }
-
-      if (!frozenClock && seats.every(s => !s.occupied) && refillTimers.every(t => t <= 0)) {
-        seats = spawnCustomerInto(seats);
-      } else if (!frozenClock && tick > 0 && tick % 35 === 0) {
-        seats = spawnCustomerInto(seats);
-      }
-
-      const guide = computeHintAndHighlight(page.data.heldItem, stations, seats);
-      if (customMsg) {
-        msgHoldTicks = 16;
-      } else if (msgHoldTicks > 0) {
-        msgHoldTicks -= 1;
-      }
-      const nextMsg = customMsg || (msgHoldTicks > 0 ? page.data.serviceMsg : guide.hint);
-      page.setData({
-        shiftTimeLeft: timeLeft,
-        stations,
-        seats,
-        highlightTarget: guide.highlight,
-        serviceMsg: nextMsg
-      });
-
-      if (!frozenClock && timeLeft <= 0) {
-        finalizeShift();
-      }
-    }, 100);
+    timer = setInterval(stepTick, 100);
   }
 
-  // 点击原料篮：拿取对应甜点的生面糊
-  function pickRaw(recipeId) {
+  // 点击中腰玻璃展示柜：有库存取 1 份端在手里；手里正端着同款则放回展示柜；库存=0 提示烤制！
+  function tapDisplay(recipeId) {
     if (ended || isPaused()) return;
-    if (page.data.heldItem) {
-      flashMsg('双手正端着东西呢！先放进工位、暂存台或上菜吧');
-      return;
-    }
-    const recipe = menuRecipes.find(r => r.id === recipeId);
-    if (!recipe) return;
-    const flow = getKitchenFlow(recipe.id);
-    const rawItem = {
-      recipeId: recipe.id,
-      recipeName: recipe.name,
-      recipeIcon: recipe.iconImg,
-      displayImg: 'assets/images/kitchen/prop_raw_bowl.png',
-      steps: flow.steps,
-      stepIndex: 0,
-      isFinished: false,
-      isBurnt: false,
-      statusLabel: '生面糊'
-    };
-    syncGuide(rawItem, page.data.stations, page.data.seats);
-  }
-
-  // 点击厨房工位（烤炉 / 裱花台 / 装饰台）
-  function tapStation(stationId) {
-    if (ended || isPaused()) return;
-    const stations = page.data.stations.slice();
-    const idx = stations.findIndex(s => s.id === stationId);
+    const stockList = page.data.displayStock.map(d => Object.assign({}, d));
+    const idx = stockList.findIndex(d => d.recipeId === recipeId);
     if (idx === -1) return;
-    const st = stations[idx];
+    const slot = stockList[idx];
     const held = page.data.heldItem;
 
-    // 情况 1：空手点击已完成或烤糊的工位 -> 取出物品
-    if (!held && (st.state === 'ready' || st.state === 'burnt')) {
-      const taken = st.item;
-      stations[idx] = makeEmptyStation(st.id, st.type, st.name, st.shortName);
-      syncGuide(taken, stations, page.data.seats);
+    // 情况 1：手里正端着同款甜点 -> 放回展示柜库存
+    if (held && held.recipeId === recipeId) {
+      if (slot.stock < slot.maxStock) {
+        slot.stock += 1;
+        syncGuide(null, stockList, page.data.ovens, page.data.seats, `已将【${slot.name}】放回展示柜（余 ${slot.stock}）`);
+      } else {
+        flashMsg(`展示柜【${slot.name}】已满，直接端去招待客人吧！`);
+      }
       return;
     }
 
-    // 情况 1.5：手里正拿着东西时点击【已完成】或【烤糊】的工位 -> 智能顺手换锅 / 自动暂存 / 清理残渣
-    if (held && st.state === 'ready') {
-      const taken = st.item;
-      if (!held.isBurnt && !held.isFinished && held.steps[held.stepIndex] === st.type) {
-        stations[idx] = Object.assign({}, st, {
-          item: held,
-          progress: 6,
-          overcook: 0,
-          nearBurn: false,
-          state: 'working'
-        });
-        syncGuide(taken, stations, page.data.seats, `✨ 取出【${taken.recipeName}】，顺手放入【${held.recipeName}】加工！`);
+    // 情况 2：手里正端着别的甜点 -> 放回原位并换成这一款（若有库存）
+    if (held && held.recipeId !== recipeId) {
+      if (slot.stock <= 0) {
+        flashMsg(`🔥 【${slot.name}】库存不足！请点下方烤炉批量烤制 +${slot.batchSize} 份！`);
         return;
       }
-      if (!page.data.holdItem) {
-        stations[idx] = makeEmptyStation(st.id, st.type, st.name, st.shortName);
-        page.setData({ holdItem: held });
-        syncGuide(taken, stations, page.data.seats, `✨ 已将【${held.recipeName}】暂放托盘，取出【${taken.recipeName}】！`);
-        return;
+      const prevIdx = stockList.findIndex(d => d.recipeId === held.recipeId);
+      if (prevIdx !== -1 && stockList[prevIdx].stock < stockList[prevIdx].maxStock) {
+        stockList[prevIdx].stock += 1;
       }
-      flashMsg('双手和暂存台都满啦！先上菜或放进空闲工位再取餐哦！');
+      slot.stock -= 1;
+      const picked = { recipeId: slot.recipeId, recipeName: slot.name, recipeIcon: slot.iconImg };
+      syncGuide(picked, stockList, page.data.ovens, page.data.seats, `换取了【${slot.name}】（柜内余 ${slot.stock}）`);
       return;
     }
 
-    if (held && st.state === 'burnt') {
-      stations[idx] = makeEmptyStation(st.id, st.type, st.name, st.shortName);
-      syncGuide(held, stations, page.data.seats, `🗑️ 已清理【${st.shortName}】烤糊的残渣，空出工位啦！`);
+    // 情况 3：空手取餐
+    if (slot.stock <= 0) {
+      flashMsg(`🔥 【${slot.name}】库存不足（已售罄）！请点击下方烤炉或补烤按钮批量烤制 +${slot.batchSize} 份！`);
       return;
     }
 
-    // 情况 2：手里拿着物品点击空闲工位 -> 放入加工
-    if (held && st.state === 'idle') {
-      if (held.isBurnt) {
-        flashMsg('烤糊的甜点不能再加工啦，丢进回收铜桶吧！');
-        return;
-      }
-      if (held.isFinished) {
-        flashMsg('这已经是成品啦！直接点击对应的顾客上菜吧！');
-        return;
-      }
-      const neededType = held.steps[held.stepIndex];
-      if (neededType !== st.type) {
-        const rightName = (STATION_META[neededType] && STATION_META[neededType].name) || '正确工位';
-        flashMsg(`这道工序需要先去【${rightName}】哦！`);
-        return;
-      }
-      stations[idx] = Object.assign({}, st, {
-        item: held,
-        progress: 6,
-        overcook: 0,
-        nearBurn: false,
-        state: 'working'
-      });
-      syncGuide(null, stations, page.data.seats, `🔥 正在【${st.shortName}】中加工 ${held.recipeName}…`);
-      return;
-    }
-
-    if (st.state === 'working') {
-      flashMsg(`⏳ 【${st.shortName}】正在制作中，稍等马上就好！`);
-      return;
-    }
-
-    if (!held && st.state === 'idle') {
-      flashMsg('双手空空！先点中间【大竹篮】或下方甜点按钮拿生面糊吧～');
-    }
+    slot.stock -= 1;
+    const picked = { recipeId: slot.recipeId, recipeName: slot.name, recipeIcon: slot.iconImg };
+    const lowWarn = slot.stock === 0
+      ? `⚠️ 【${slot.name}】已拿光售罄！送完这单记得点下方烤炉批量补烤！`
+      : (slot.stock <= LOW_STOCK_THRESHOLD ? `⚠️ 【${slot.name}】库存告急（仅剩 ${slot.stock} 份），建议趁空批量补烤！` : '');
+    syncGuide(picked, stockList, page.data.ovens, page.data.seats, lowWarn || `🧁 已从展示柜取出【${slot.name}】，快去对应餐桌上菜！`);
   }
 
-  // 点击大理石暂存台：放下或取回/交换
-  function tapHold() {
+  // 启动一盘批量烤制（指定甜点或智能挑最缺库存甜点）
+  function startBatchBake(recipeId, preferredOvenId = null) {
+    if (ended || isPaused()) return { ok: false, reason: 'paused' };
+    const ovens = page.data.ovens.map(o => Object.assign({}, o));
+    const displayStock = page.data.displayStock;
+
+    let ovenIdx = preferredOvenId ? ovens.findIndex(o => o.id === preferredOvenId && o.state === 'idle') : -1;
+    if (ovenIdx === -1) ovenIdx = ovens.findIndex(o => o.state === 'idle');
+    if (ovenIdx === -1) {
+      flashMsg('⏳ 两座烤炉都在忙呢！等其中一炉烤好收获后再放入新的一盘吧');
+      return { ok: false, reason: 'busy' };
+    }
+
+    const targetRecipeId = recipeId || pickMostNeededRecipeId(displayStock, page.data.seats, ovens);
+    const slot = displayStock.find(d => d.recipeId === targetRecipeId);
+    if (!slot) return { ok: false, reason: 'invalid' };
+
+    if (slot.stock >= slot.maxStock) {
+      flashMsg(`【${slot.name}】展示柜库存已满（${slot.stock}/${slot.maxStock}），先招呼客人吧！`);
+      return { ok: false, reason: 'full' };
+    }
+
+    const o = ovens[ovenIdx];
+    ovens[ovenIdx] = Object.assign({}, o, {
+      recipeId: slot.recipeId,
+      recipeName: slot.name,
+      recipeIcon: slot.iconImg,
+      batchSize: slot.batchSize,
+      duration: slot.batchDuration,
+      progress: 6,
+      overcook: 0,
+      nearBurn: false,
+      state: 'working'
+    });
+
+    syncGuide(
+      page.data.heldItem,
+      displayStock,
+      ovens,
+      page.data.seats,
+      `🔥 【${o.shortName}】开始批量烤制 ${slot.name} ×${slot.batchSize}（约 ${(slot.batchDuration / 10).toFixed(1)}s）！`
+    );
+    return { ok: true, ovenId: o.id, recipeId: slot.recipeId };
+  }
+
+  // 点击后厨批量烤炉：烤好 -> 整盘收获入柜；烤糊 -> 一键清渣；空闲 -> 智能批量补烤最缺甜点
+  function tapOven(ovenId) {
     if (ended || isPaused()) return;
-    const { heldItem, holdItem } = page.data;
-    if (heldItem && !holdItem) {
-      page.setData({ holdItem: heldItem });
-      syncGuide(null, page.data.stations, page.data.seats, `已暂存【${heldItem.recipeName}】，空出双手继续忙！`);
-    } else if (!heldItem && holdItem) {
-      page.setData({ holdItem: null });
-      syncGuide(holdItem, page.data.stations, page.data.seats);
-    } else if (heldItem && holdItem) {
-      page.setData({ holdItem: heldItem });
-      syncGuide(holdItem, page.data.stations, page.data.seats, '已与暂存台交换甜点！');
-    } else {
-      flashMsg('暂存台空着呢，手里端东西时点它可以临时腾出双手！');
-    }
-  }
+    const ovens = page.data.ovens.map(o => Object.assign({}, o));
+    const idx = ovens.findIndex(o => o.id === ovenId);
+    if (idx === -1) return;
+    const o = ovens[idx];
 
-  // 点击回收铜桶：丢弃手中物品
-  function tapTrash() {
-    if (ended || isPaused()) return;
-    if (!page.data.heldItem) {
-      flashMsg('手里空空，无需丢弃哦！');
+    if (o.state === 'ready') {
+      const stockList = page.data.displayStock.map(d => Object.assign({}, d));
+      const dIdx = stockList.findIndex(d => d.recipeId === o.recipeId);
+      let added = o.batchSize;
+      if (dIdx !== -1) {
+        const before = stockList[dIdx].stock;
+        stockList[dIdx].stock = Math.min(stockList[dIdx].maxStock, before + o.batchSize);
+        added = stockList[dIdx].stock - before;
+      }
+      batchesBaked += 1;
+      ovens[idx] = makeEmptyOven(o.id, o.name, o.shortName);
+      if (typeof onHarvestEffect === 'function') {
+        onHarvestEffect({ ovenId: o.id, recipeName: o.recipeName, added: added || o.batchSize });
+      }
+      syncGuide(
+        page.data.heldItem,
+        stockList,
+        ovens,
+        page.data.seats,
+        `✨ 【${o.recipeName}】整盘出炉，展示柜库存 +${added || o.batchSize}！`
+      );
       return;
     }
-    discardedCount += 1;
-    syncGuide(null, page.data.stations, page.data.seats, '🗑️ 已清理手中物品，重新开始制作！');
+
+    if (o.state === 'burnt') {
+      ovens[idx] = makeEmptyOven(o.id, o.name, o.shortName);
+      syncGuide(page.data.heldItem, page.data.displayStock, ovens, page.data.seats, `🗑️ 已清理【${o.shortName}】烤糊残渣，炉位已空出！`);
+      return;
+    }
+
+    if (o.state === 'working') {
+      flashMsg(`⏳ 【${o.shortName}】正在批量烤制 ${o.recipeName} ×${o.batchSize}（${o.progress}%）`);
+      return;
+    }
+
+    // 空闲烤炉 -> 智能挑选最缺库存的甜点开烤
+    startBatchBake(null, ovenId);
   }
 
-  // 点击前厅顾客座位：上菜结账！
+  // 点击餐区餐桌：端上成品招待顾客！
   function tapSeat(seatId) {
     if (ended || isPaused()) return;
     const seats = page.data.seats.slice();
@@ -519,38 +570,35 @@ export function createKitchenEngine(page, {
     const held = page.data.heldItem;
 
     if (!seat || !seat.occupied) return;
+
     if (!held) {
-      flashMsg(`${seat.name} 正在等【${seat.wantedName}】，快去厨房做吧！`);
-      return;
-    }
-    if (held.isBurnt) {
-      flashMsg('烤糊的甜点不能端给客人哦！请丢进右下角回收铜桶！');
-      return;
-    }
-    if (!held.isFinished) {
-      const nextType = held.steps[held.stepIndex];
-      const rightName = (STATION_META[nextType] && STATION_META[nextType].name) || '下一工位';
-      flashMsg(`还没做完呢！下一步请先去【${rightName}】！`);
-      return;
-    }
-    if (held.recipeId !== seat.wantedId) {
-      flashMsg(`送错啦！${seat.name} 点的是【${seat.wantedName}】哦！`);
+      const slot = page.data.displayStock.find(d => d.recipeId === seat.wantedId);
+      if (slot && slot.stock > 0) {
+        flashMsg(`🧁 ${seat.name} 点了【${seat.wantedName}】，请先点击中间展示柜取餐（余 ${slot.stock} 份）！`);
+      } else {
+        flashMsg(`🔥 【${seat.wantedName}】库存不足！请点击下方烤炉批量烤制补货，或点「婉拒」空出餐桌！`);
+      }
       return;
     }
 
-    // 上菜大成功！
+    if (held.recipeId !== seat.wantedId) {
+      flashMsg(`送错桌啦！${seat.name} 点的是【${seat.wantedName}】，可点展示柜放回换餐！`);
+      return;
+    }
+
+    // 上菜大成功！连击小费封顶 +18，配合 2.2s 自然翻台节奏防止单日经济通胀
     const nextCombo = page.data.shiftCombo + 1;
-    const speedTip = seat.patience >= 65 ? 12 : 0;
-    const comboTip = nextCombo >= 2 ? nextCombo * 6 : 0;
+    const speedTip = seat.patience >= 70 ? 8 : 0;
+    const comboTip = nextCombo >= 2 ? Math.min(18, nextCombo * 3) : 0;
     const upgradeTip = bonuses ? bonuses.tipBonus : 0;
     const earned = seat.price + speedTip + comboTip + upgradeTip;
     const rep = Math.round(10 * (bonuses ? bonuses.repMult : 1));
 
     seats[seatId] = { id: seatId, occupied: false };
-    const refreshedSeats = spawnCustomerInto(seats);
+    refillTimers[seatId] = 22; // 2.2s 后迎来下一位新客人入座
 
     if (typeof onServeEffect === 'function') {
-      onServeEffect({ seatId, earned, customerName: seat.name });
+      onServeEffect({ seatId, earned, customerName: seat.name, recipeIcon: held.recipeIcon });
     }
 
     if (inTutorial && !practiceMode) {
@@ -567,15 +615,16 @@ export function createKitchenEngine(page, {
     });
     syncGuide(
       null,
-      page.data.stations,
-      refreshedSeats,
+      page.data.displayStock,
+      page.data.ovens,
+      seats,
       practiceMode
-        ? `🎓 练习上菜成功！【${seat.wantedName}】交付给 ${seat.name}（可继续练或结束练习）`
-        : `✨ ${seat.name} 超满意【${seat.wantedName}】！+${earned} 金币`
+        ? `🎓 练习上菜成功！【${seat.wantedName}】已端上 ${seat.name} 的餐桌！`
+        : `✨ ${seat.name} 享用【${seat.wantedName}】超满意！+${earned} 金币`
     );
   }
 
-  // 婉拒顾客：主动空出座位，但会扣除口碑并重置连击
+  // 婉拒顾客：主动空出餐桌，扣除口碑并重置连击
   function declineSeat(seatId) {
     if (ended || isPaused()) return;
     const seats = page.data.seats.slice();
@@ -584,7 +633,7 @@ export function createKitchenEngine(page, {
 
     declinedCustomers += 1;
     seats[seatId] = { id: seatId, occupied: false };
-    refillTimers[seatId] = 15; // 1.5s 后自动迎来下一位新客人
+    refillTimers[seatId] = 15;
 
     const nextRep = practiceMode ? page.data.shiftRep : (page.data.shiftRep - DECLINE_REP_PENALTY);
     page.setData({
@@ -602,27 +651,28 @@ export function createKitchenEngine(page, {
 
     syncGuide(
       page.data.heldItem,
-      page.data.stations,
+      page.data.displayStock,
+      page.data.ovens,
       seats,
       practiceMode
-        ? `🚪 已婉拒 ${seat.name} 空出座位（练习不扣真实口碑，稍后将迎来新客）`
-        : `🚪 已婉拒 ${seat.name} 空出座位，口碑 -${DECLINE_REP_PENALTY}、连击清零`
+        ? `🚪 已婉拒 ${seat.name} 空出餐桌（练习不扣真实口碑，稍后补位）`
+        : `🚪 已婉拒 ${seat.name} 空出餐桌，口碑 -${DECLINE_REP_PENALTY}、连击清零`
     );
   }
 
   return {
     start,
     stop,
+    stepTick,
     pause,
     resume,
     resumeAll,
     isPaused,
     finishShift: finalizeShift,
     skipTutorial,
-    pickRaw,
-    tapStation,
-    tapHold,
-    tapTrash,
+    tapDisplay,
+    tapOven,
+    startBatchBake,
     tapSeat,
     declineSeat
   };

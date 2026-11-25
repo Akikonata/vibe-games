@@ -1,6 +1,5 @@
 // src/pages/shop.js
-// 星月糖屋轻度胡闹厨房（Overcooked-Lite）营业系统 + 装潢设备升级
-// 营业中采用持久 DOM 增量补丁更新，全交互语义化 button，支持暂停/切屏自动暂停/练习引导/详细结算诊断
+// 星月糖屋 2.5D 三分区经营系统：餐区入座招待 + 玻璃展示柜预置库存 + 后厨大理石台双烤炉批量补烤 + 婉拒空位（扣口碑）
 
 import { RECIPES } from '../data/recipes.js';
 import { SHOP_UPGRADES, computeShopBonuses } from '../data/shop_upgrades.js';
@@ -52,64 +51,26 @@ function getShortRecipeName(recipe) {
   return SHORT_RECIPE_NAMES[recipe.id] || (recipe.name || '').slice(0, 4);
 }
 
-function getDishStage(item) {
-  if (!item) return 'empty';
-  if (item.isBurnt) return 'burnt';
-  if (item.isFinished) return 'ready';
-  return item.stepIndex > 0 ? 'semi' : 'raw';
-}
-
-function renderDishVisualHtml(item, sizeClass = 'sz-station', extraImgClass = '') {
-  if (!item) return '';
-  const stage = getDishStage(item);
-  if (stage === 'raw') {
-    return `<div class="dish-vis is-raw ${sizeClass}">
-      <img class="dish-main-img ${extraImgClass} mode-fit" src="assets/images/kitchen/prop_raw_bowl.png" alt="" />
-      <img class="dish-sub-badge mode-fit" src="${item.recipeIcon}" alt="" />
-    </div>`;
-  }
-  if (stage === 'semi') {
-    const nextType = item.steps && item.steps[item.stepIndex];
-    const stageIcon = nextType === 'cream' ? '🧁' : (nextType === 'decor' ? '✨' : '🔥');
-    return `<div class="dish-vis is-semi ${sizeClass}">
-      <img class="dish-main-img semi-tint ${extraImgClass} mode-fit" src="${item.recipeIcon}" alt="" />
-      <span class="dish-stage-chip">${stageIcon}</span>
-    </div>`;
-  }
-  if (stage === 'burnt') {
-    return `<div class="dish-vis is-burnt ${sizeClass}">
-      <img class="dish-main-img burnt-tint ${extraImgClass} mode-fit" src="${item.recipeIcon}" alt="" />
-    </div>`;
-  }
-  return `<div class="dish-vis is-ready ${sizeClass}">
-    <img class="dish-main-img ${extraImgClass} mode-fit" src="${item.recipeIcon}" alt="" />
-  </div>`;
-}
-
-function buildSummaryAdvice({ served, lost, burnt, undelivered, isPractice }) {
+function buildSummaryAdvice({ served, lost, declined, burnt, batchesBaked, isPractice }) {
   if (isPractice) {
-    if (served > 0) return '已经跑通出餐动线啦！现在可以点「挂出营业牌」正式开张赚金币。';
-    return '练习模式随时可重玩，建议先试做一份玛德琳（烤炉→顾客）和一份千层酥（烤炉→裱花→顾客）。';
+    if (served > 0) return '已经掌握「展示柜取餐上桌 + 库存告急批量补烤」节奏啦！可以正式挂牌开张赚金币。';
+    return '练习模式随时可重玩：先点中间玻璃展示柜拿现成甜点端上餐桌，库存剩 1 份时点下方烤炉批量补烤！';
   }
   if (served === 0) {
-    if (burnt > 0) {
-      return '本轮有甜点在烤炉放太久烤糊了：看到「✨ 可取餐」或「🔥 快烤糊」提示时立即点击烤炉取出即可。';
-    }
-    if (undelivered > 0) {
-      return '甜点已开始制作但未完成交付：留意底部托盘的「下一步」提示（千层酥烤完还要点左下【裱花台】），变成品后再点对应顾客上菜。';
-    }
-    if (lost > 0) {
-      return '顾客等太久离座了：开局直接点中央【大竹篮】可智能拿首位顾客要的面糊，优先出第一单能稳住节奏。';
-    }
-    return '先点「练习引导（不消耗天数）」熟悉取料→烘烤→裱花→上菜，再正式开张会更顺手！';
+    if (burnt > 0) return '有整盘甜点在烤炉放太久烤糊了，看到「✨ 收获入柜」或「🔥 快烤糊」提示时及时点击烤炉即可入柜。';
+    if (lost > 0) return '开店自带预置库存！直接点中间玻璃展示柜拿成品端给餐桌上的客人，不用等烤完再上第一单。';
+    return '先点「练习引导（不消耗天数）」熟悉展示柜取餐、端上餐桌与烤炉批量补货吧！';
+  }
+  if (declined >= 2) {
+    return '本轮婉拒次数较多扣了一些口碑：当展示柜库存降到 1 份（告急）时就提前开烤炉补货，能大幅减少售罄婉拒。';
   }
   if (burnt > 0) {
-    return '已经成功出餐啦！烤好后及时取出（满手也可直接点熟炉顺手换锅），减少烤糊能让单日营收更高。';
+    return '出餐很顺手！烤好后及时点烤炉整盘入柜，避免烤糊浪费炉位，单日营收还能更高。';
   }
-  if (lost > 0) {
-    return '出餐很稳！可以同时用两座烤炉并行烘烤，减少顾客等待流失、拿到更高连击小费。';
+  if (batchesBaked === 0 && lost > 0) {
+    return '库存售罄时记得及时点下方大理石台烤炉批量补烤（一次 +2~3 份直接入柜），客流就不会断档啦！';
   }
-  return '零失误流畅出餐！保持这个节奏，很快就能攒够金币升级糖屋装潢啦！';
+  return '餐区招待与后厨补货衔接丝滑！继续保持这个节奏，很快就能攒够金币升级店面装潢！';
 }
 
 export function mountShopPage(root) {
@@ -119,29 +80,38 @@ export function mountShopPage(root) {
   let kitchenMounted = false;
   let helpModalOpen = false;
 
-  // 营业中局部缓存，避免无变化节点重复重写
   let seatSigs = ['', '', ''];
+  let displaySigs = {};
+  let ovenSigs = {};
   let handsSig = '';
-  let stationSigs = {};
-  let holdSig = '';
   let pauseSig = '';
 
-  // 2.5D 可可走位与步骤动画状态
-  let cocoPos = { x: 50, y: 52, facing: 1 };
+  // 2.5D 可可地板走位状态（在陶砖过道与餐区/展示柜/大理石烤台间移动）
+  let cocoPos = { x: 50, y: 69, facing: 1 };
   let cocoWalkTimer = null;
 
   const COCO_WAYPOINTS = {
-    pantry:  { x: 50, y: 63 },
-    oven_1:  { x: 35, y: 45 },
-    oven_2:  { x: 65, y: 45 },
-    cream_1: { x: 34, y: 63 },
-    decor_1: { x: 66, y: 63 },
-    hold:    { x: 34, y: 74 },
-    trash:   { x: 66, y: 74 },
-    seat_0:  { x: 34, y: 36 },
-    seat_1:  { x: 50, y: 36 },
-    seat_2:  { x: 66, y: 36 }
+    seat_0: { x: 24, y: 39 },
+    seat_1: { x: 50, y: 39 },
+    seat_2: { x: 76, y: 39 },
+    disp_0: { x: 25, y: 63 },
+    disp_1: { x: 50, y: 63 },
+    disp_2: { x: 75, y: 63 },
+    oven_1: { x: 26, y: 74 },
+    oven_2: { x: 74, y: 74 },
+    batch:  { x: 50, y: 74 }
   };
+
+  function spawnStepBurst(container, xPct, yPct, emoji, kind = 'spark') {
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = `k25d-fx fx-${kind}`;
+    el.style.left = `${xPct}%`;
+    el.style.top = `${yPct}%`;
+    el.textContent = emoji;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
 
   function moveCocoTo(targetKey, burstEmoji = '') {
     const wp = COCO_WAYPOINTS[targetKey];
@@ -164,7 +134,7 @@ export function mountShopPage(root) {
 
     if (moved) {
       actor.classList.add('is-walking');
-      spawnStepBurst(scene, prevX, prevY + 4, '💨', 'dust');
+      spawnStepBurst(scene, prevX, prevY + 3, '💨', 'dust');
       clearTimeout(cocoWalkTimer);
       cocoWalkTimer = setTimeout(() => {
         actor.classList.remove('is-walking');
@@ -192,17 +162,6 @@ export function mountShopPage(root) {
     setTimeout(() => el.classList.remove('anim-bump'), 320);
   }
 
-  function spawnStepBurst(container, xPct, yPct, emoji, kind = 'spark') {
-    if (!container) return;
-    const el = document.createElement('div');
-    el.className = `k25d-fx fx-${kind}`;
-    el.style.left = `${xPct}%`;
-    el.style.top = `${yPct}%`;
-    el.textContent = emoji;
-    container.appendChild(el);
-    setTimeout(() => el.remove(), 700);
-  }
-
   const pageProxy = {
     data: {
       activeTab: 'counter',
@@ -223,12 +182,12 @@ export function mountShopPage(root) {
       shiftServed: 0,
       shiftCombo: 0,
       seats: [],
-      stations: [],
+      displayStock: [],
+      ovens: [],
       heldItem: null,
-      holdItem: null,
       inTutorial: false,
       highlightTarget: '',
-      serviceMsg: '挑选 1~3 道招牌甜点，挂牌开门进入厨房营业！',
+      serviceMsg: '挑选 1~3 道招牌甜点，挂牌开门进入糖屋营业！',
       daySummary: null,
       upgrades: []
     },
@@ -252,9 +211,10 @@ export function mountShopPage(root) {
         const rank = (progress.levelRanks && progress.levelRanks[lvlId]) || 'A';
         const rankMult = RANK_PRICE_MULT[rank] || 1;
         const price = Math.round(flow.basePrice * rankMult * bonuses.priceMult);
-        const stepBadge = flow.steps.length >= 3 ? '三工序高溢价' : (flow.steps.length === 2 ? '双工序高价' : '单工序快出');
+        const stepCount = flow.steps.length;
+        const batchInfo = stepCount >= 3 ? '补烤 5.2s/+2份' : (stepCount === 2 ? '补烤 4.4s/+3份' : '补烤 3.6s/+3份');
         const priceBreakdown = `基${flow.basePrice}·${rank}×${rankMult.toFixed(2).replace(/\.00$/, '')}${bonuses.priceMult > 1 ? `·装潢×${bonuses.priceMult.toFixed(2).replace(/0$/, '')}` : ''}`;
-        return { ...r, price, basePrice: flow.basePrice, stepBadge, priceBreakdown, flowText: flow.flowText, selected: progress.menuRecipeIds.includes(r.id) };
+        return { ...r, price, basePrice: flow.basePrice, batchInfo, priceBreakdown, flowText: flow.flowText, selected: progress.menuRecipeIds.includes(r.id) };
       });
 
     let menuIds = progress.menuRecipeIds.filter(id => progress.unlockedRecipeIds.includes(id));
@@ -284,63 +244,41 @@ export function mountShopPage(root) {
 
   function mountKitchenShell(d) {
     seatSigs = ['', '', ''];
+    displaySigs = {};
+    ovenSigs = {};
     handsSig = '';
-    stationSigs = {};
-    holdSig = '';
     pauseSig = '';
 
-    const PROP_IMG = {
-      oven: 'assets/images/kitchen/prop_oven.png',
-      cream: 'assets/images/kitchen/prop_cream_station.png',
-      decor: 'assets/images/kitchen/prop_decor_station.png'
-    };
+    const displayMarkup = (d.displayStock || []).map((slot, idx) => `
+      <button type="button" id="k-disp-${slot.recipeId}" class="display-bay-btn" data-action="tapDisplay" data-id="${slot.recipeId}" data-idx="${idx}" aria-label="${slot.name}，当前库存 ${slot.stock} 份">
+        <div class="display-cake-stand">
+          <img class="display-cake-img mode-fit" src="${slot.iconImg}" alt="" />
+        </div>
+        <span class="display-bay-name">${getShortRecipeName({ id: slot.recipeId, name: slot.name })}</span>
+        <span id="k-disp-qty-${slot.recipeId}" class="display-qty-pill">×${slot.stock}</span>
+      </button>
+    `).join('');
 
-    const STATION_POS = {
-      oven_1: 'pos-oven-1',
-      oven_2: 'pos-oven-2',
-      cream_1: 'pos-cream',
-      decor_1: 'pos-decor'
-    };
+    const batchBtnsMarkup = (d.displayStock || []).map(slot => `
+      <button type="button" id="k-batch-${slot.recipeId}" class="batch-bake-btn" data-action="startBatch" data-id="${slot.recipeId}" aria-label="批量烤制${slot.name} +${slot.batchSize}份">
+        <img class="batch-btn-img mode-fit" src="${slot.iconImg}" alt="" />
+        <span class="batch-btn-txt">${getShortRecipeName({ id: slot.recipeId, name: slot.name })} <b>+${slot.batchSize}</b></span>
+      </button>
+    `).join('');
 
-    const singleMenu = d.menuRecipes.length === 1 ? d.menuRecipes[0] : null;
-    const pantryMarkup = singleMenu
-      ? `<div class="scene-prop pos-pantry is-pantry-single">
-           <button type="button" class="pantry-basket-btn is-pantry-item" data-action="pickRaw" data-id="${singleMenu.id}" aria-label="原料篮：拿取${singleMenu.name}">
-             <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="" />
-             <span class="pantry-badge-pill">
-               <img class="pantry-mini-dessert mode-fit" src="${singleMenu.iconImg}" alt="" />
-               <span>${getShortRecipeName(singleMenu)}</span>
-             </span>
-           </button>
-         </div>`
-      : `<div class="scene-prop pos-pantry is-pantry-multi">
-           <button type="button" class="pantry-basket-btn is-pantry-item" data-action="pickSmartRaw" aria-label="大竹篮智能取料：自动拿首位等待顾客点的甜点">
-             <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="" />
-             <span class="pantry-smart-tag">🧺 智能取料</span>
-           </button>
-           <div class="pantry-picks" role="group" aria-label="指定甜点取料">
-             ${d.menuRecipes.map(m => `
-               <button type="button" class="pantry-pick-orb is-pantry-item" data-action="pickRaw" data-id="${m.id}" aria-label="指定取料：${m.name}" aria-pressed="false">
-                 <img class="pantry-orb-img mode-fit" src="${m.iconImg}" alt="" />
-                 <span class="pantry-orb-name">${getShortRecipeName(m)}</span>
-               </button>
-             `).join('')}
-           </div>
-         </div>`;
-
-    const stationsMarkup = d.stations.map(st => `
-      <button type="button" id="k-st-${st.id}" class="scene-prop ${STATION_POS[st.id] || ''} state-idle" data-action="tapStation" data-id="${st.id}" aria-label="${st.shortName} · 空闲">
-        <img class="prop-sprite sprite-${st.type} mode-fit" src="${PROP_IMG[st.type]}" alt="" />
-        <div id="k-st-ov-${st.id}" class="prop-overlay"></div>
-        <span class="prop-name-tag">${st.shortName}</span>
+    const ovensMarkup = (d.ovens || []).map((o, idx) => `
+      <button type="button" id="k-oven-${o.id}" class="bench-oven-btn ${idx === 0 ? 'pos-bench-left' : 'pos-bench-right'} state-idle" data-action="tapOven" data-id="${o.id}" aria-label="${o.shortName} · 空闲">
+        <img class="prop-sprite sprite-bench-oven mode-fit" src="assets/images/kitchen/prop_oven.png" alt="" />
+        <div id="k-oven-ov-${o.id}" class="prop-overlay"></div>
+        <span class="prop-name-tag">${o.shortName}</span>
       </button>
     `).join('');
 
     root.innerHTML = `
-      <div class="kitchen-scene is-25d">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/kitchen_25d_bg.jpg" alt="" />
+      <div class="kitchen-scene is-zoned-25d">
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg" alt="" />
 
-        <!-- 顶部悬浮半透明营收 HUD + 暂停/帮助语义按钮 -->
+        <!-- 顶部悬浮半透明营收 HUD -->
         <div class="scene-hud">
           <span id="k-time" class="hud-time">${d.isPractice ? '🎓 练习' : `⏱ ${d.shiftTimeLeft}s`}</span>
           <span id="k-coins" class="hud-coins">🪙 +${d.shiftCoins}</span>
@@ -351,56 +289,54 @@ export function mountShopPage(root) {
           </div>
         </div>
 
-        <!-- 新手/练习顶部浮条与手指箭头 -->
         <div id="k-tut-coach"></div>
-        <div id="k-tut-finger" class="tut-finger-pointer" aria-hidden="true" style="display:none;">👇</div>
 
-        <!-- 吧台窗口：3 位顾客与可婉拒订单卡 -->
-        <div class="scene-customers">
-          ${[0, 1, 2].map(id => `<div id="k-seat-wrap-${id}" class="scene-customer-wrap"><button type="button" id="k-seat-${id}" class="scene-customer is-empty" data-action="tapSeat" data-id="${id}" aria-label="空座位" disabled></button><button type="button" id="k-decline-${id}" class="cust-decline-btn" data-action="declineSeat" data-id="${id}" aria-label="婉拒顾客空出座位" title="不接待（空出座位，口碑-5）" style="display:none;">✕ 婉拒</button></div>`).join('')}
+        <!-- 区域 1：上部阳光餐区（3 张欧式圆桌，人物真实坐在桌旁） -->
+        <div class="zone-dining" aria-label="餐区">
+          ${[0, 1, 2].map(id => `
+            <div id="k-seat-wrap-${id}" class="dining-table-slot">
+              <button type="button" id="k-seat-${id}" class="dining-seat-btn is-empty" data-action="tapSeat" data-id="${id}" aria-label="空餐桌" disabled></button>
+              <button type="button" id="k-decline-${id}" class="cust-decline-btn" data-action="declineSeat" data-id="${id}" aria-label="婉拒顾客空出餐桌" title="不接待（空出餐桌，口碑-5）" style="display:none;">✕ 婉拒</button>
+            </div>
+          `).join('')}
         </div>
 
-        <!-- 吧台沿上的轻盈提示条 -->
-        <div id="k-tip" class="scene-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
+        <!-- 区域 2：中腰玻璃甜点展示柜（预置库存 + 告急/售罄预警，直接摆在玻璃柜内） -->
+        <div class="zone-display-case" role="group" aria-label="玻璃甜点展示柜库存">
+          ${displayMarkup}
+        </div>
 
-        <!-- 2.5D U型大理石与橡木实景工作台 + 可可主厨地板走位层 -->
-        <div class="scene-workbench">
-          ${stationsMarkup}
-          ${pantryMarkup}
+        <!-- 吧台木板沿上的单行实时提示 -->
+        <div id="k-tip" class="zoned-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
 
-          <!-- 中央木地板上自由跑动的 2.5D Q版可可主厨 -->
-          <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:52%;" aria-hidden="true">
+        <!-- 区域 3：后厨陶砖过道（可可自由跑动） + 底部大理石烘焙台面（烤炉与补烤选单稳稳放在台上） -->
+        <div class="zone-kitchen-floor">
+          <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:69%;" aria-hidden="true">
             <div class="coco-25d-shadow"></div>
             <img class="coco-25d-sprite mode-fit" src="assets/images/kitchen/coco_chef_25d.png" alt="" />
             <div id="k-coco-carry" class="coco-25d-carry"></div>
           </div>
 
-          <!-- 左下：大理石暂存碟 -->
-          <button type="button" id="k-hold" class="scene-prop pos-hold" data-action="tapHold" aria-label="大理石暂存台：空闲" title="暂存台">
-            <div class="hold-saucer">
-              <div id="k-hold-vis" class="hold-vis-wrap" style="display:none;"></div>
-              <span id="k-hold-lbl" class="hold-mini-tag">暂存台</span>
+          <!-- 底部大理石操作台面上的双批量烤炉 + 指定补烤选单 -->
+          <div class="zone-marble-bench" aria-label="后厨烘焙大理石台">
+            ${ovensMarkup}
+            <div class="bench-batch-center" role="group" aria-label="后厨批量补烤甜点">
+              <span class="bench-batch-title">🔥 批量补烤</span>
+              <div class="bench-batch-list">${batchBtnsMarkup}</div>
             </div>
-          </button>
+          </div>
 
-          <!-- 底部中：可可手中托盘实景状态 -->
-          <div class="scene-coco-tray" aria-live="polite">
+          <!-- 最底部可可手持状态条 -->
+          <div class="zoned-coco-bar" aria-live="polite">
             <img class="tray-coco-avatar mode-fill" src="assets/images/coco_avatar.png" alt="可可" />
             <div id="k-hands" class="tray-held-slot"></div>
           </div>
-
-          <!-- 右下：复古回收铜桶 -->
-          <button type="button" id="k-trash" class="scene-prop pos-trash" data-action="tapTrash" aria-label="回收铜桶：丢弃手中物品" title="丢弃">
-            <img class="prop-sprite sprite-trash mode-fit" src="assets/images/kitchen/prop_copper_bin.png" alt="" />
-            <span class="prop-mini-label">回收桶</span>
-          </button>
         </div>
 
-        <!-- 暂停蒙层 -->
         <div id="k-pause-mask"></div>
       </div>
     `;
-    cocoPos = { x: 50, y: 52, facing: 1 };
+    cocoPos = { x: 50, y: 69, facing: 1 };
     kitchenMounted = true;
   }
 
@@ -424,29 +360,34 @@ export function mountShopPage(root) {
       pauseBtn.setAttribute('aria-label', d.isPaused ? '继续营业' : '暂停营业');
     }
 
-    // 1. 增量更新前厅 3 位立绘顾客 + 婉拒按钮
+    // 1. 增量更新餐区 3 张圆桌的入座顾客 + 婉拒按钮
     (d.seats || []).forEach((s, idx) => {
       const slot = root.querySelector(`#k-seat-${s.id}`);
       const decBtn = root.querySelector(`#k-decline-${s.id}`);
       if (!slot) return;
       const isGlow = d.highlightTarget === 'seat_' + s.id;
-      slot.className = `scene-customer ${s.occupied ? 'is-occupied' : 'is-empty'} ${isGlow ? 'is-scene-glow' : ''}`;
+      const stockEntry = s.occupied ? (d.displayStock || []).find(x => x.recipeId === s.wantedId) : null;
+      const isOutOfStock = !!(stockEntry && stockEntry.stock <= 0);
+      slot.className = `dining-seat-btn ${s.occupied ? 'is-occupied' : 'is-empty'} ${isGlow ? 'is-scene-glow' : ''}`;
       slot.disabled = !s.occupied;
-      slot.setAttribute('aria-label', s.occupied ? `顾客${s.name}：想要${s.wantedName}${isGlow ? '，点击上菜' : ''}` : '空座位');
+      slot.setAttribute('aria-label', s.occupied
+        ? `餐桌${s.id + 1} ${s.name}：想要${s.wantedName}${isOutOfStock ? '（库存不足）' : ''}${isGlow ? '，点击上菜' : ''}`
+        : `空餐桌${s.id + 1}`);
       if (decBtn) {
         decBtn.style.display = s.occupied ? 'inline-flex' : 'none';
-        decBtn.setAttribute('aria-label', s.occupied ? `不接待${s.name}（空出座位，口碑-5）` : '空座位');
+        decBtn.setAttribute('aria-label', s.occupied ? `不接待${s.name}（空出餐桌，口碑-5）` : '空餐桌');
       }
-      const sig = s.occupied ? `1:${s.npcId}:${s.wantedId}:${isGlow ? 1 : 0}` : '0';
+      const sig = s.occupied ? `1:${s.npcId}:${s.wantedId}:${isGlow ? 1 : 0}:${isOutOfStock ? 1 : 0}` : '0';
       if (seatSigs[idx] !== sig) {
         seatSigs[idx] = sig;
         slot.innerHTML = s.occupied
-          ? `<div class="cust-bubble">
+          ? `<div class="dining-order-bubble ${isOutOfStock ? 'is-soldout' : ''}">
                <img class="cust-want-img mode-fit" src="${s.wantedIcon}" alt="" />
                <div class="cust-patience"><div class="cust-patience-fill ${s.patience < 35 ? 'low' : ''}" style="width:${Math.max(0, Math.round(s.patience))}%;"></div></div>
+               ${isOutOfStock ? '<span class="order-oos-tag">缺货</span>' : ''}
              </div>
-             ${isGlow ? '<span class="cust-serve-tag">🍰 点此上菜</span>' : ''}
-             <img class="cust-portrait mode-widthfix" src="${s.portrait}" alt="${s.name}" />`
+             ${isGlow ? '<span class="cust-serve-tag">🍰 端上桌</span>' : ''}
+             <img class="dining-guest-portrait mode-widthfix" src="${s.portrait}" alt="${s.name}" />`
           : '';
       } else if (s.occupied) {
         const fill = slot.querySelector('.cust-patience-fill');
@@ -457,141 +398,114 @@ export function mountShopPage(root) {
       }
     });
 
-    // 2. 增量更新可可手中托盘（明确显示菜名、半成品与“下一步：裱花/装饰/烤炉”）
+    // 2. 增量更新中腰玻璃展示柜库存（充足 / 告急 <=1 / 售罄 0）+ 下方批量补烤按钮紧急高亮
+    (d.displayStock || []).forEach(slot => {
+      const btn = root.querySelector(`#k-disp-${slot.recipeId}`);
+      const qtyEl = root.querySelector(`#k-disp-qty-${slot.recipeId}`);
+      const batchBtn = root.querySelector(`#k-batch-${slot.recipeId}`);
+      if (!btn || !qtyEl) return;
+
+      const isGlow = d.highlightTarget === `disp_${slot.recipeId}`;
+      const isSelected = !!(d.heldItem && d.heldItem.recipeId === slot.recipeId);
+      const stockClass = slot.stock <= 0 ? 'stock-empty' : (slot.stock <= 1 ? 'stock-low' : 'stock-ok');
+
+      btn.className = `display-bay-btn ${stockClass} ${isGlow ? 'is-scene-glow' : ''} ${isSelected ? 'is-selected' : ''}`;
+      btn.setAttribute('aria-label', `${slot.name}，展示柜库存 ${slot.stock}/${slot.maxStock}${slot.stock <= 0 ? '，售罄请去烤炉批量烤制' : ''}`);
+
+      const nextSig = `${slot.stock}:${stockClass}`;
+      if (displaySigs[slot.recipeId] !== nextSig) {
+        displaySigs[slot.recipeId] = nextSig;
+        qtyEl.textContent = slot.stock <= 0 ? '🔥 售罄' : (slot.stock === 1 ? '⚠️ 余1' : `×${slot.stock}`);
+        qtyEl.className = `display-qty-pill ${stockClass}`;
+      }
+
+      if (batchBtn) {
+        batchBtn.classList.toggle('is-urgent', slot.stock <= 1);
+      }
+    });
+
+    // 3. 增量更新后厨大理石台上的双批量烤炉（空闲 / 批量制作中 / 整盘可收获 / 快烤糊 / 已烤糊）
+    (d.ovens || []).forEach((o, idx) => {
+      const cell = root.querySelector(`#k-oven-${o.id}`);
+      const ov = root.querySelector(`#k-oven-ov-${o.id}`);
+      if (!cell || !ov) return;
+      const isGlow = d.highlightTarget === o.id;
+      const stateClass = o.nearBurn ? 'state-near-burn' : `state-${o.state}`;
+      cell.className = `bench-oven-btn ${idx === 0 ? 'pos-bench-left' : 'pos-bench-right'} ${stateClass} ${isGlow ? 'is-scene-glow' : ''}`;
+
+      const stateLabel = o.state === 'idle'
+        ? '空闲，点击智能批量补烤'
+        : (o.state === 'working'
+          ? `批量烤制${o.recipeName}×${o.batchSize}，${o.progress}%`
+          : (o.nearBurn ? `快烤糊，点击收获+${o.batchSize}` : (o.state === 'ready' ? `烤好，点击收获+${o.batchSize}入柜` : '已烤糊，点击清渣')));
+      cell.setAttribute('aria-label', `${o.shortName} · ${stateLabel}`);
+
+      const sig = `${o.state}:${o.nearBurn ? 1 : 0}:${o.recipeId || ''}:${isGlow ? 1 : 0}`;
+      if (ovenSigs[o.id] !== sig) {
+        ovenSigs[o.id] = sig;
+        if (o.state === 'idle') {
+          ov.innerHTML = isGlow
+            ? '<span class="prop-pill guide-next">🔥 点此补烤</span>'
+            : '<span class="prop-state-tag idle">空闲·可补烤</span>';
+        } else if (o.state === 'working') {
+          ov.innerHTML = `
+            <div class="st-anim-steam"><span>♨️</span><span>✨</span></div>
+            <img class="oven-batch-img mode-fit" src="${o.recipeIcon}" alt="" />
+            <div class="prop-prog-track"><div class="prop-prog-fill" style="width:${o.progress}%;"></div></div>
+            <span class="prop-state-tag working">×${o.batchSize} <b class="prog-num">${o.progress}%</b></span>
+          `;
+        } else if (o.state === 'ready' && o.nearBurn) {
+          ov.innerHTML = `
+            <div class="st-anim-smoke warn"><span>💨</span><span>🔥</span></div>
+            <img class="oven-batch-img ready-pop mode-fit" src="${o.recipeIcon}" alt="" />
+            <span class="prop-pill near-burn">🔥 快糊·收+${o.batchSize}</span>
+          `;
+        } else if (o.state === 'ready') {
+          ov.innerHTML = `
+            <img class="oven-batch-img ready-pop mode-fit" src="${o.recipeIcon}" alt="" />
+            <span class="prop-pill ready">✨ 收获 +${o.batchSize}</span>
+          `;
+        } else {
+          ov.innerHTML = `
+            <div class="st-anim-smoke burnt"><span>💨</span><span>💨</span></div>
+            <img class="oven-batch-img burnt-tint mode-fit" src="${o.recipeIcon}" alt="" />
+            <span class="prop-pill burnt">💨 糊了·点清</span>
+          `;
+        }
+      } else if (o.state === 'working') {
+        const fill = ov.querySelector('.prop-prog-fill');
+        if (fill) fill.style.width = `${o.progress}%`;
+        const num = ov.querySelector('.prog-num');
+        if (num) num.textContent = `${o.progress}%`;
+      }
+    });
+
+    // 4. 更新可可手中成品状态 + 2.5D 可可端盘视觉
     const h = d.heldItem;
-    const STEP_NAMES = { oven: '下一步：烤炉', cream: '下一步：裱花', decor: '下一步：装饰' };
-    const nextStepText = h
-      ? (h.isBurnt
-        ? '已烤糊 · 点回收桶'
-        : (h.isFinished
-          ? '成品 · 点顾客上菜'
-          : (STEP_NAMES[h.steps[h.stepIndex]] || '加工中')))
-      : '';
-    const stageSuffix = h && !h.isFinished && !h.isBurnt && h.stepIndex > 0 ? ' (半成品)' : '';
-    const nextHandsSig = h ? `${h.recipeId}:${getDishStage(h)}:${h.stepIndex}:${nextStepText}` : 'empty';
+    const nextHandsSig = h ? `${h.recipeId}:${h.recipeIcon}` : 'empty';
     if (handsSig !== nextHandsSig) {
       handsSig = nextHandsSig;
       const handsEl = root.querySelector('#k-hands');
       const carryEl = root.querySelector('#k-coco-carry');
       if (handsEl) {
         handsEl.innerHTML = h
-          ? `${renderDishVisualHtml(h, 'sz-tray')}
+          ? `<img class="tray-food-img mode-fit" src="${h.recipeIcon}" alt="" />
              <div class="tray-text-col">
-               <span class="tray-recipe-name">${getShortRecipeName({ id: h.recipeId, name: h.recipeName })}${stageSuffix}</span>
-               <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''} ${h.stepIndex > 0 && !h.isFinished && !h.isBurnt ? 'semi' : ''}">${nextStepText}</span>
+               <span class="tray-recipe-name">${getShortRecipeName({ id: h.recipeId, name: h.recipeName })}</span>
+               <span class="tray-status-dot ready">✨ 点对应餐桌上菜</span>
              </div>`
-          : '<span class="tray-empty-txt">空手 · 点原料篮取料</span>';
+          : '<span class="tray-empty-txt">空手 · 点玻璃展示柜取餐</span>';
       }
       if (carryEl) {
-        carryEl.innerHTML = h ? renderDishVisualHtml(h, 'sz-carry') : '';
+        carryEl.innerHTML = h
+          ? `<div class="dish-vis is-ready sz-carry"><img class="dish-main-img mode-fit" src="${h.recipeIcon}" alt="" /></div>`
+          : '';
       }
     }
 
-    // 3. 增量更新 4 个实景工位道具（空闲 / 制作中 / 可取餐 / 快烤糊 / 已烤糊 + 下一步高亮文字）
-    const STATION_POS = { oven_1: 'pos-oven-1', oven_2: 'pos-oven-2', cream_1: 'pos-cream', decor_1: 'pos-decor' };
-    const NEXT_STATION_HINT = { oven: '👉 下一步：烘烤', cream: '👉 下一步：裱花', decor: '👉 下一步：装饰' };
-    (d.stations || []).forEach(st => {
-      const cell = root.querySelector(`#k-st-${st.id}`);
-      const ov = root.querySelector(`#k-st-ov-${st.id}`);
-      if (!cell || !ov) return;
-      const isGlow = d.highlightTarget === st.id || d.highlightTarget === st.type;
-      const stateClass = st.nearBurn ? 'state-near-burn' : `state-${st.state}`;
-      cell.className = `scene-prop ${STATION_POS[st.id] || ''} ${stateClass} ${isGlow ? 'is-scene-glow' : ''}`;
-
-      const stateLabel = st.state === 'idle'
-        ? '空闲'
-        : (st.state === 'working'
-          ? `制作中${st.progress}%`
-          : (st.nearBurn ? '快烤糊，立即取餐' : (st.state === 'ready' ? '可取餐' : '已烤糊，点击清渣')));
-      cell.setAttribute('aria-label', `${st.shortName} · ${stateLabel}`);
-
-      const sig = st.item
-        ? `${st.state}:${st.nearBurn ? 1 : 0}:${st.item.recipeId}:${getDishStage(st.item)}:${st.item.stepIndex}:${isGlow ? 1 : 0}`
-        : `idle:${isGlow ? 1 : 0}`;
-      if (stationSigs[st.id] !== sig) {
-        stationSigs[st.id] = sig;
-        if (!st.item) {
-          ov.innerHTML = isGlow
-            ? `<span class="prop-pill guide-next">${NEXT_STATION_HINT[st.type] || '👉 放这里'}</span>`
-            : '<span class="prop-state-tag idle">空闲</span>';
-        } else if (st.state === 'working') {
-          const workFx = st.type === 'oven'
-            ? '<div class="st-anim-steam"><span>♨️</span><span>✨</span></div>'
-            : (st.type === 'cream'
-              ? '<div class="st-anim-swirl"><span>🧁</span><span>💫</span></div>'
-              : '<div class="st-anim-snow"><span>❄️</span><span>✨</span></div>');
-          ov.innerHTML = `
-            ${workFx}
-            ${renderDishVisualHtml(st.item, 'sz-station')}
-            <div class="prop-prog-track"><div class="prop-prog-fill" style="width:${st.progress}%;"></div></div>
-            <span class="prop-state-tag working">制作中 <b class="prog-num">${st.progress}%</b></span>
-          `;
-        } else if (st.state === 'ready' && st.nearBurn) {
-          ov.innerHTML = `
-            <div class="st-anim-smoke warn"><span>💨</span><span>🔥</span></div>
-            ${renderDishVisualHtml(st.item, 'sz-station', 'ready-pop')}
-            <span class="prop-pill near-burn">🔥 快烤糊!</span>
-          `;
-        } else if (st.state === 'ready') {
-          ov.innerHTML = `
-            ${renderDishVisualHtml(st.item, 'sz-station', 'ready-pop')}
-            <span class="prop-pill ready">✨ 可取餐</span>
-          `;
-        } else {
-          ov.innerHTML = `
-            <div class="st-anim-smoke burnt"><span>💨</span><span>💨</span></div>
-            ${renderDishVisualHtml(st.item, 'sz-station')}
-            <span class="prop-pill burnt">💨 已烤糊</span>
-          `;
-        }
-      } else if (st.state === 'working') {
-        const fill = ov.querySelector('.prop-prog-fill');
-        if (fill) fill.style.width = `${st.progress}%`;
-        const num = ov.querySelector('.prog-num');
-        if (num) num.textContent = `${st.progress}%`;
-      }
-    });
-
-    // 4. 更新原料篮发光 + 三枚甜点按钮选中态（严禁位移或遮挡）
-    const pantryGlow = d.highlightTarget === 'pantry';
-    root.querySelectorAll('.is-pantry-item').forEach(el => {
-      el.classList.toggle('is-scene-glow', pantryGlow);
-    });
-    root.querySelectorAll('.pantry-pick-orb').forEach(orb => {
-      const selected = !!(d.heldItem && d.heldItem.recipeId === orb.dataset.id);
-      orb.classList.toggle('is-selected', selected);
-      orb.setAttribute('aria-pressed', selected ? 'true' : 'false');
-    });
-
-    // 5. 更新暂存台与回收铜桶
-    const holdEl = root.querySelector('#k-hold');
-    if (holdEl) {
-      holdEl.classList.toggle('is-scene-glow', d.highlightTarget === 'hold');
-      holdEl.setAttribute('aria-label', d.holdItem ? `暂存台：放着${d.holdItem.recipeName}，点击取回或交换` : '大理石暂存台：空闲');
-      const nextHoldSig = d.holdItem ? `${d.holdItem.recipeId}:${getDishStage(d.holdItem)}:${d.holdItem.stepIndex}` : 'empty';
-      if (holdSig !== nextHoldSig) {
-        holdSig = nextHoldSig;
-        const vis = root.querySelector('#k-hold-vis');
-        const lbl = root.querySelector('#k-hold-lbl');
-        if (d.holdItem && vis) {
-          vis.innerHTML = renderDishVisualHtml(d.holdItem, 'sz-hold');
-          vis.style.display = 'flex';
-          lbl.style.display = 'none';
-        } else if (vis) {
-          vis.innerHTML = '';
-          vis.style.display = 'none';
-          lbl.style.display = 'block';
-        }
-      }
-    }
-
-    const trashEl = root.querySelector('#k-trash');
-    if (trashEl) trashEl.classList.toggle('is-scene-glow', d.highlightTarget === 'trash');
-
-    // 6. 更新首单教学 / 练习模式顶部浮条与手指箭头
+    // 5. 练习模式 / 教学顶部横幅
     const coachEl = root.querySelector('#k-tut-coach');
-    const fingerEl = root.querySelector('#k-tut-finger');
-    if (coachEl && fingerEl) {
+    if (coachEl) {
       if (d.isPractice) {
         coachEl.innerHTML = `
           <div class="tut-coach-banner practice-banner">
@@ -602,44 +516,22 @@ export function mountShopPage(root) {
             </div>
           </div>
         `;
-        fingerEl.style.display = 'none';
       } else if (d.inTutorial) {
-        const GUIDE_POS = {
-          pantry:  { x: 50, y: 61, text: '① 点中央【大竹篮】或篮下甜点按钮拿生面糊！' },
-          oven_1:  { x: 26, y: 43, text: '② 点发光的【烤炉 1】放入烘烤！' },
-          oven_2:  { x: 74, y: 43, text: '② 点发光的【烤炉 2】放入烘烤！' },
-          cream_1: { x: 18, y: 62, text: '③ 半成品请点左下【裱花台】继续裱花！' },
-          decor_1: { x: 82, y: 62, text: '③ 半成品请点右下【装饰台】撒糖粉！' },
-          seat_0:  { x: 18, y: 20, text: '④ 成品啦！点发光的【顾客】上菜收金币！' },
-          seat_1:  { x: 50, y: 20, text: '④ 成品啦！点发光的【顾客】上菜收金币！' },
-          seat_2:  { x: 82, y: 20, text: '④ 成品啦！点发光的【顾客】上菜收金币！' }
-        };
-        const working = (d.stations || []).find(s => s.state === 'working');
-        const ready = (d.stations || []).find(s => s.state === 'ready');
-        let g = GUIDE_POS[d.highlightTarget];
-        if (!g && working) g = { x: 26, y: 43, text: '⏳ 正在自动制作中，马上就好！' };
-        if (ready && !d.heldItem) {
-          const p = GUIDE_POS[ready.id] || { x: 26, y: 43 };
-          g = { x: p.x, y: p.y, text: `③ 【${ready.shortName}】可取餐！点击取出` };
-        }
-        if (g) {
-          coachEl.innerHTML = `
-            <div class="tut-coach-banner" style="top:52px;">
-              <span class="tut-coach-text">🎓 ${g.text}</span>
-              <button type="button" class="tut-coach-skip" data-action="skipKitchenTut">跳过</button>
-            </div>
-          `;
-          fingerEl.style.display = working && !ready ? 'none' : 'block';
-          fingerEl.style.left = `${g.x}%`;
-          fingerEl.style.top = `${g.y}%`;
-        }
+        const tutMsg = d.heldItem
+          ? '② 点上方餐桌旁的发光顾客，端上甜点收金币！'
+          : '① 展示柜已预置库存！点中间玻璃展示柜取一份甜点！';
+        coachEl.innerHTML = `
+          <div class="tut-coach-banner practice-banner">
+            <span class="tut-coach-text">🎓 ${tutMsg}</span>
+            <button type="button" class="tut-coach-skip" data-action="skipKitchenTut">跳过</button>
+          </div>
+        `;
       } else {
         coachEl.innerHTML = '';
-        fingerEl.style.display = 'none';
       }
     }
 
-    // 7. 暂停蒙层（切出页面或点击暂停时显示，打开帮助说明时不重复叠加）
+    // 6. 暂停蒙层
     const nextPauseSig = d.pauseManual && !helpModalOpen ? `1:${d.pauseHidden ? 1 : 0}:${d.isPractice ? 1 : 0}` : '0';
     if (pauseSig !== nextPauseSig) {
       pauseSig = nextPauseSig;
@@ -687,7 +579,7 @@ export function mountShopPage(root) {
           <div class="stat-chip"><span class="stat-label">⭐ 糖屋口碑</span><span class="stat-val">${d.reputation}</span></div>
         </div>
         <div class="tab-bar" role="tablist">
-          <button type="button" role="tab" aria-selected="${d.activeTab === 'counter'}" class="tab-btn ${d.activeTab === 'counter' ? 'active' : ''}" data-action="tab" data-tab="counter">☕ 厨房营业</button>
+          <button type="button" role="tab" aria-selected="${d.activeTab === 'counter'}" class="tab-btn ${d.activeTab === 'counter' ? 'active' : ''}" data-action="tab" data-tab="counter">☕ 糖屋营业</button>
           <button type="button" role="tab" aria-selected="${d.activeTab === 'upgrades'}" class="tab-btn ${d.activeTab === 'upgrades' ? 'active' : ''}" data-action="tab" data-tab="upgrades">🪵 装潢升级</button>
         </div>
       </div>
@@ -698,7 +590,7 @@ export function mountShopPage(root) {
       mainSectionHtml = `
         <div class="card prep-card">
           <div class="prep-head">
-            <span class="prep-title">🥐 今日上架菜单（选 1~3 道）</span>
+            <span class="prep-title">🥐 今日展示柜上架（选 1~3 道，开店自带预置库存）</span>
             <span class="prep-count">已选 ${d.menuRecipes.length} / 3</span>
           </div>
           ${d.unlockedRecipes.length > 0
@@ -706,13 +598,13 @@ export function mountShopPage(root) {
                 <button type="button" class="menu-item ${r.selected ? 'is-picked' : ''}" data-action="toggleMenu" data-id="${r.id}" aria-pressed="${r.selected}">
                   <img class="menu-icon mode-fit" src="${r.iconImg}" alt="" />
                   <span class="menu-name">${r.name}</span>
-                  <span class="menu-flow">${r.flowText} · ${r.stepBadge || ''}</span>
+                  <span class="menu-flow">${r.batchInfo}</span>
                   <span class="menu-price">🪙 ${r.price}</span>
                   <span style="font-size:9px;color:#8D6242;">${r.priceBreakdown || ''}</span>
                 </button>`).join('')}</div>`
             : '<div class="empty-tip">柜台还没有可售卖的甜点哦！快去完成序章解锁第一道玛德琳吧～</div>'}
           <div class="prep-cta-group">
-            <button type="button" class="btn-primary open-btn" data-action="startBusiness">🔔 挂出营业牌 · 进入厨房迎客</button>
+            <button type="button" class="btn-primary open-btn" data-action="startBusiness">🔔 挂出营业牌 · 进入糖屋迎客</button>
             <button type="button" class="btn-secondary practice-btn" data-action="startPractice">🎓 练习引导（不消耗天数）</button>
           </div>
         </div>
@@ -747,10 +639,10 @@ export function mountShopPage(root) {
               <div class="sum-row"><span>${s.isPractice ? '练习模拟收益' : '营业焦糖金币'}</span><span class="sum-val">${s.isPractice ? `模拟 +${s.simCoins || 0} / 实际入账 0` : `+${s.coins}`} 🪙</span></div>
               <div class="sum-row"><span>${s.isPractice ? '练习模拟口碑' : '新增店铺口碑'}</span><span class="sum-val ${!s.isPractice && s.rep < 0 ? 'warn' : ''}">${s.isPractice ? `模拟 ${s.simRep >= 0 ? '+' : ''}${s.simRep || 0} / 实际入账 0` : `${s.rep >= 0 ? '+' : ''}${s.rep}`} ⭐</span></div>
               <div class="sum-divider"></div>
+              <div class="sum-row sub"><span>后厨批量补烤</span><span class="sum-val">${s.batchesBaked || 0} 炉</span></div>
               <div class="sum-row sub"><span>流失顾客</span><span class="sum-val ${s.lost > 0 ? 'warn' : ''}">${s.lost} 位</span></div>
               <div class="sum-row sub"><span>婉拒顾客（每次 -5 口碑）</span><span class="sum-val ${(s.declined || 0) > 0 ? 'warn' : ''}">${s.declined || 0} 位</span></div>
-              <div class="sum-row sub"><span>烤糊次数</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
-              <div class="sum-row sub"><span>打烊未交付</span><span class="sum-val ${s.undelivered > 0 ? 'warn' : ''}">${s.undelivered} 份</span></div>
+              <div class="sum-row sub"><span>烤糊炉次</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
             </div>
             <div class="summary-advice">💡 ${s.advice}</div>
             <button type="button" class="btn-primary summary-close-btn" data-action="closeSummary">${s.isPractice ? '返回营业准备' : '收下营收 · 迎接明天'}</button>
@@ -790,38 +682,48 @@ export function mountShopPage(root) {
       practiceMode,
       onTutorialDone: () => {
         markTutorialSeen('kitchen');
-        showToast('🎉 营业上手啦！正式开张 45 秒！', 1600);
+        showToast('🎉 上手啦！正式营业 45 秒开始！', 1600);
       },
       onServeEffect: ({ seatId, earned }) => {
         const scene = root.querySelector('.kitchen-scene');
-        const xMap = [18, 50, 82];
+        const xMap = [22, 50, 78];
         spawnFloatText(scene, {
           xPct: xMap[seatId] || 50,
-          yPct: 22,
-          text: practiceMode ? '🎓 出餐成功!' : `+${earned} 🪙 💗`,
+          yPct: 24,
+          text: practiceMode ? '🎓 已端上桌!' : `+${earned} 🪙 💗`,
+          kind: 'gold'
+        });
+      },
+      onHarvestEffect: ({ ovenId, added }) => {
+        const scene = root.querySelector('.kitchen-scene');
+        spawnFloatText(scene, {
+          xPct: ovenId === 'oven_1' ? 24 : 76,
+          yPct: 76,
+          text: `✨ 入柜 +${added} 份!`,
           kind: 'gold'
         });
       },
       onDeclineEffect: ({ seatId, repPenalty }) => {
         const scene = root.querySelector('.kitchen-scene');
-        const xMap = [18, 50, 82];
+        const xMap = [22, 50, 78];
         moveCocoTo(`seat_${seatId}`, '🚪');
         spawnFloatText(scene, {
           xPct: xMap[seatId] || 50,
-          yPct: 20,
+          yPct: 22,
           text: repPenalty > 0 ? `婉拒 · 口碑 -${repPenalty} ⭐` : '已婉拒（练习）',
           kind: 'red'
         });
       },
-      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, lostCustomers, declinedCustomers = 0, burntCount, undeliveredCount, isPractice }) => {
+      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, lostCustomers, declinedCustomers = 0, burntCount, batchesBaked = 0, undeliveredCount, isPractice }) => {
         if (!isPractice) {
           recordBusinessDay({ earnedCoins, earnedRep });
         }
         const advice = buildSummaryAdvice({
           served: servedCount,
           lost: lostCustomers,
+          declined: declinedCustomers,
           burnt: burntCount,
-          undelivered: undeliveredCount,
+          batchesBaked,
           isPractice
         });
         pageProxy.setData({
@@ -836,6 +738,7 @@ export function mountShopPage(root) {
             rep: isPractice ? 0 : earnedRep,
             simCoins: earnedCoins,
             simRep: earnedRep,
+            batchesBaked,
             lost: lostCustomers,
             declined: declinedCustomers,
             burnt: burntCount,
@@ -908,16 +811,14 @@ export function mountShopPage(root) {
       else kitchen.pause('manual');
     } else if (action === 'resumeShift') {
       kitchen?.resumeAll();
-    } else if (action === 'endShiftEarly') {
-      kitchen?.finishShift();
-    } else if (action === 'exitPractice') {
+    } else if (action === 'endShiftEarly' || action === 'exitPractice') {
       kitchen?.finishShift();
     } else if (action === 'startRealFromPractice') {
       launchKitchenShift({ tutorialMode: false, practiceMode: false });
     } else if (action === 'skipKitchenTut') {
       kitchen?.skipTutorial();
     } else if (action === 'tab') {
-      if (pageProxy.data.isOpen) { showToast('厨房正在营业中，打烊后再看装潢哦！'); return; }
+      if (pageProxy.data.isOpen) { showToast('糖屋正在营业中，打烊后再看装潢哦！'); return; }
       pageProxy.setData({ activeTab: target.dataset.tab });
     } else if (action === 'toggleMenu') {
       if (pageProxy.data.isOpen) return;
@@ -948,46 +849,33 @@ export function mountShopPage(root) {
         return;
       }
       launchKitchenShift({ tutorialMode: false, practiceMode: true });
-    } else if (action === 'pickSmartRaw') {
-      const before = pageProxy.data.heldItem;
-      const waitingSeat = (pageProxy.data.seats || []).find(s => s.occupied);
-      const targetId = (waitingSeat && waitingSeat.wantedId) || (pageProxy.data.menuRecipes[0] && pageProxy.data.menuRecipes[0].id);
-      moveCocoTo('pantry', '✨');
-      pulseProp('.pantry-basket-btn');
-      if (targetId) kitchen?.pickRaw(targetId);
-      if (!before && pageProxy.data.heldItem) {
-        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
+    } else if (action === 'tapDisplay') {
+      const idx = Number(target.dataset.idx) || 0;
+      moveCocoTo(`disp_${Math.min(2, idx)}`, '🧁');
+      pulseProp(`#k-disp-${target.dataset.id}`);
+      kitchen?.tapDisplay(target.dataset.id);
+    } else if (action === 'tapOven') {
+      const oId = target.dataset.id;
+      moveCocoTo(oId, '🔥');
+      pulseProp(`#k-oven-${oId}`);
+      kitchen?.tapOven(oId);
+    } else if (action === 'startBatch') {
+      const res = kitchen?.startBatchBake(target.dataset.id);
+      if (res && res.ok) {
+        moveCocoTo(res.ovenId, '🔥');
+        pulseProp(`#k-oven-${res.ovenId}`);
+      } else {
+        moveCocoTo('batch');
       }
-    } else if (action === 'pickRaw') {
-      const before = pageProxy.data.heldItem;
-      moveCocoTo('pantry', '✨');
-      pulseProp('.pantry-basket-btn');
-      kitchen?.pickRaw(target.dataset.id);
-      if (!before && pageProxy.data.heldItem) {
-        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
-      }
-    } else if (action === 'tapStation') {
-      const stId = target.dataset.id;
-      const fx = stId.startsWith('oven') ? '🔥' : (stId.startsWith('cream') ? '🧁' : '✨');
-      moveCocoTo(stId, fx);
-      pulseProp(`#k-st-${stId}`);
-      kitchen?.tapStation(stId);
-    } else if (action === 'tapHold') {
-      moveCocoTo('hold', '🍽️');
-      pulseProp('#k-hold');
-      kitchen?.tapHold();
-    } else if (action === 'tapTrash') {
-      moveCocoTo('trash', '💨');
-      pulseProp('#k-trash');
-      kitchen?.tapTrash();
     } else if (action === 'tapSeat') {
       const seatId = Number(target.dataset.id);
       moveCocoTo(`seat_${seatId}`, '🍰');
       kitchen?.tapSeat(seatId);
     } else if (action === 'declineSeat') {
       kitchen?.declineSeat(Number(target.dataset.id));
-    } else if (action === 'closeSummary') pageProxy.setData({ daySummary: null });
-    else if (action === 'buyUpgrade') {
+    } else if (action === 'closeSummary') {
+      pageProxy.setData({ daySummary: null });
+    } else if (action === 'buyUpgrade') {
       const upg = SHOP_UPGRADES.find(u => u.id === target.dataset.id);
       if (!upg) return;
       const res = buyShopUpgrade(upg.id, upg.cost);
