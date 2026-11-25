@@ -11,8 +11,11 @@ import {
   getShopTierTitle,
   recordBusinessDay,
   buyShopUpgrade,
-  saveMenuRecipeIds
+  saveMenuRecipeIds,
+  hasSeenTutorial,
+  markTutorialSeen
 } from '../utils/store.js';
+import { createTutorialCardHtml, spawnFloatText } from '../utils/tutorial.js';
 import { showToast } from '../../../../shared/web-ui.js';
 
 const RANK_PRICE_MULT = { S: 1.35, A: 1.15, B: 1.0 };
@@ -164,12 +167,17 @@ export function mountShopPage(root) {
       <div class="kitchen-scene">
         <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/kitchen_scene_bg.jpg" alt="星月糖屋后厨" />
 
-        <!-- 顶部悬浮半透明营收 HUD -->
+        <!-- 顶部悬浮半透明营收 HUD + 随时可看 ? 玩法说明 -->
         <div class="scene-hud">
           <span id="k-time" class="hud-time">⏱ ${d.shiftTimeLeft}s</span>
           <span id="k-coins" class="hud-coins">🪙 +${d.shiftCoins}</span>
           <span id="k-served" class="hud-served">出餐 ${d.shiftServed} · x${d.shiftCombo}</span>
+          <div class="help-fab-btn" data-action="openHelp" title="玩法说明">?</div>
         </div>
+
+        <!-- 新手 4 步交互引导浮条与手指箭头 -->
+        <div id="k-tut-coach"></div>
+        <div id="k-tut-finger" class="tut-finger-pointer" style="display:none;">👇</div>
 
         <!-- 吧台后方：3 位二次元立绘顾客直接站立点单 -->
         <div class="scene-customers">
@@ -317,6 +325,46 @@ export function mountShopPage(root) {
 
     const trashEl = root.querySelector('#k-trash');
     if (trashEl) trashEl.classList.toggle('is-scene-glow', d.highlightTarget === 'trash');
+
+    // 5. 更新首单 4 步交互式新手引导条与跳动手指箭头
+    const coachEl = root.querySelector('#k-tut-coach');
+    const fingerEl = root.querySelector('#k-tut-finger');
+    if (coachEl && fingerEl) {
+      if (d.inTutorial) {
+        const GUIDE_POS = {
+          pantry:  { x: 50, y: 63, text: '① 点击中央【竹编原料篮】，拿起一碗生面糊！' },
+          oven_1:  { x: 26, y: 44, text: '② 点击左侧发光的【红砖烤炉】，放进去烘烤！' },
+          oven_2:  { x: 74, y: 44, text: '② 点击发光的【红砖烤炉】，放进去烘烤！' },
+          cream_1: { x: 20, y: 66, text: '② 点击左下【奶油裱花台】进行裱花加工！' },
+          decor_1: { x: 80, y: 66, text: '② 点击右下【糖粉装饰台】进行撒粉装饰！' },
+          seat_0:  { x: 18, y: 20, text: '④ 做好啦！点击发光的【顾客】上菜收金币！' },
+          seat_1:  { x: 50, y: 20, text: '④ 做好啦！点击发光的【顾客】上菜收金币！' },
+          seat_2:  { x: 82, y: 20, text: '④ 做好啦！点击发光的【顾客】上菜收金币！' }
+        };
+        const working = (d.stations || []).find(s => s.state === 'working');
+        const ready = (d.stations || []).find(s => s.state === 'ready');
+        let g = GUIDE_POS[d.highlightTarget];
+        if (!g && working) g = { x: 26, y: 44, text: '⏳ 正在自动烘烤中，马上就出炉啦！' };
+        if (ready && !d.heldItem) {
+          const p = GUIDE_POS[ready.id] || { x: 26, y: 44 };
+          g = { x: p.x, y: p.y, text: '③ 烤好发光啦！点烤炉取出成品甜点！' };
+        }
+        if (g) {
+          coachEl.innerHTML = `
+            <div class="tut-coach-banner" style="top:52px;">
+              <span class="tut-coach-text">🎓 ${g.text}</span>
+              <span class="tut-coach-skip" data-action="skipKitchenTut">跳过</span>
+            </div>
+          `;
+          fingerEl.style.display = working && !ready ? 'none' : 'block';
+          fingerEl.style.left = `${g.x}%`;
+          fingerEl.style.top = `${g.y}%`;
+        }
+      } else {
+        coachEl.innerHTML = '';
+        fingerEl.style.display = 'none';
+      }
+    }
   }
 
   function render() {
@@ -424,12 +472,84 @@ export function mountShopPage(root) {
     if (sc && prevScroll > 0) sc.scrollTop = prevScroll;
   }
 
+  function launchKitchenShift({ tutorialMode = false } = {}) {
+    if (kitchen) kitchen.stop();
+    kitchenMounted = false;
+    const currentDay = pageProxy.data.day;
+    kitchen = createKitchenEngine(pageProxy, {
+      menuRecipes: pageProxy.data.menuRecipes,
+      bonuses,
+      tutorialMode,
+      onTutorialDone: () => {
+        markTutorialSeen('kitchen');
+        showToast('🎉 营业上手啦！正式开张 45 秒！', 1600);
+      },
+      onServeEffect: ({ seatId, earned }) => {
+        const scene = root.querySelector('.kitchen-scene');
+        const xMap = [18, 50, 82];
+        spawnFloatText(scene, {
+          xPct: xMap[seatId] || 50,
+          yPct: 22,
+          text: `+${earned} 🪙 💗`,
+          kind: 'gold'
+        });
+      },
+      onShiftEnd: ({ earnedCoins, earnedRep, servedCount }) => {
+        recordBusinessDay({ earnedCoins, earnedRep });
+        pageProxy.setData({
+          isOpen: false,
+          daySummary: { day: currentDay, served: servedCount, coins: earnedCoins, rep: earnedRep }
+        }, () => refreshShop());
+      }
+    });
+    kitchen.start();
+  }
+
+  function showHelpModal(isFirstTime) {
+    let slot = root.querySelector('#k-help-modal');
+    if (!slot) {
+      slot = document.createElement('div');
+      slot.id = 'k-help-modal';
+      root.appendChild(slot);
+    }
+    if (!isFirstTime && kitchen) kitchen.pause();
+    slot.innerHTML = createTutorialCardHtml('kitchen', { isFirstTime });
+  }
+
+  function closeHelpModal() {
+    const slot = root.querySelector('#k-help-modal');
+    if (slot) slot.innerHTML = '';
+  }
+
   const onClick = (e) => {
+    const tutTarget = e.target.closest('[data-tut-action]');
+    if (tutTarget) {
+      const ta = tutTarget.dataset.tutAction;
+      if (ta === 'start') {
+        const wasOpen = pageProxy.data.isOpen;
+        closeHelpModal();
+        if (wasOpen) kitchen?.resume();
+        else launchKitchenShift({ tutorialMode: true });
+      } else if (ta === 'skip') {
+        markTutorialSeen('kitchen');
+        closeHelpModal();
+        launchKitchenShift({ tutorialMode: false });
+      } else if (ta === 'backdrop' && pageProxy.data.isOpen) {
+        closeHelpModal();
+        kitchen?.resume();
+      }
+      return;
+    }
+
     const target = e.target.closest('[data-action], [data-stop]');
     if (!target || !target.dataset.action) return;
     const action = target.dataset.action;
 
-    if (action === 'tab') {
+    if (action === 'openHelp') {
+      showHelpModal(false);
+    } else if (action === 'skipKitchenTut') {
+      kitchen?.skipTutorial();
+    } else if (action === 'tab') {
       if (pageProxy.data.isOpen) { showToast('厨房正在营业中，打烊后再看装潢哦！'); return; }
       pageProxy.setData({ activeTab: target.dataset.tab });
     } else if (action === 'toggleMenu') {
@@ -450,24 +570,20 @@ export function mountShopPage(root) {
         showToast('请先通过序章解锁玛德琳再开门营业！');
         return;
       }
-      if (kitchen) kitchen.stop();
-      kitchenMounted = false;
-      const currentDay = pageProxy.data.day;
-      kitchen = createKitchenEngine(pageProxy, {
-        menuRecipes: pageProxy.data.menuRecipes,
-        bonuses,
-        onShiftEnd: ({ earnedCoins, earnedRep, servedCount }) => {
-          recordBusinessDay({ earnedCoins, earnedRep });
-          pageProxy.setData({
-            isOpen: false,
-            daySummary: { day: currentDay, served: servedCount, coins: earnedCoins, rep: earnedRep }
-          }, () => refreshShop());
-        }
-      });
-      kitchen.start();
-    } else if (action === 'pickRaw') kitchen?.pickRaw(target.dataset.id);
-    else if (action === 'tapStation') kitchen?.tapStation(target.dataset.id);
-    else if (action === 'tapHold') kitchen?.tapHold();
+      if (!hasSeenTutorial('kitchen')) {
+        showHelpModal(true);
+      } else {
+        launchKitchenShift({ tutorialMode: false });
+      }
+    } else if (action === 'pickRaw') {
+      const before = pageProxy.data.heldItem;
+      kitchen?.pickRaw(target.dataset.id);
+      if (!before && pageProxy.data.heldItem) {
+        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: '🥣 拿到面糊!', kind: 'cream' });
+      }
+    } else if (action === 'tapStation') {
+      kitchen?.tapStation(target.dataset.id);
+    } else if (action === 'tapHold') kitchen?.tapHold();
     else if (action === 'tapTrash') kitchen?.tapTrash();
     else if (action === 'tapSeat') kitchen?.tapSeat(Number(target.dataset.id));
     else if (action === 'closeSummary') pageProxy.setData({ daySummary: null });

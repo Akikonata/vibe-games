@@ -48,6 +48,7 @@ function createCatchEngine(page, type, onComplete, onFail) {
   const cfg = CATCH_CONFIGS[type] || CATCH_CONFIGS.orbit_match;
   let timer = null;
   let tick = 0;
+  let paused = false;
   let nextId = 1;
   let lastSpawnBasketX = 50;
   let idleSpawns = 0;
@@ -88,6 +89,7 @@ function createCatchEngine(page, type, onComplete, onFail) {
   function startLoop() {
     stop();
     timer = setInterval(() => {
+      if (paused) return;
       tick += 1;
       const timeLeft = Math.max(0, cfg.timeLimit - Math.floor((tick * 45) / 1000));
       let items = (page.data.catchItems || []).map(it => Object.assign({}, it, { y: it.y + it.vy }));
@@ -224,7 +226,7 @@ function createCatchEngine(page, type, onComplete, onFail) {
     page.setData({ catchBasketX: nextX });
   }
 
-  return { start, stop, moveBasket, setBasketX };
+  return { start, stop, moveBasket, setBasketX, setPaused(v) { paused = !!v; } };
 }
 
 export {

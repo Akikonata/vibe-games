@@ -7,6 +7,7 @@ const ARENA_PLATE_TOP = 456;
 
 function createStackerEngine(page, stackConfig, onComplete, onFail) {
   let timer = null;
+  let paused = false;
 
   function stop() {
     if (timer) {
@@ -44,6 +45,7 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
   function startLoop() {
     stop();
     timer = setInterval(() => {
+      if (paused) return;
       const {
         activePhase,
         activeLayerIndex,
@@ -190,7 +192,7 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
     }
   }
 
-  return { start, stop, drop, resolveLanding };
+  return { start, stop, drop, resolveLanding, setPaused(v) { paused = !!v; } };
 }
 
 export {

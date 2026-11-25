@@ -1,12 +1,13 @@
 // src/pages/minigame.js
 // 全 11 关 5 大独立实景小游戏引擎调度层（oven | stacker | rhythm | multi_pan | catch）
-// 背景图层持久挂载，按帧轻量局部更新，并支持手机触控与桌面键盘快捷键
+// 接入统一新手 3 格图解卡、冻结倒计时互动首步教学、操作点飘字 VFX、接盘丝滑拖拽与 ? 随时重看
 
 import { LEVELS } from '../data/levels.js';
 import { RECIPES } from '../data/recipes.js';
 import { STACKER_RECIPES } from '../data/minigame_scenes.js';
 import { RANK_META } from '../data/story_branches.js';
-import { completeLevel } from '../utils/store.js';
+import { completeLevel, hasSeenTutorial, markTutorialSeen } from '../utils/store.js';
+import { createTutorialCardHtml, spawnFloatText } from '../utils/tutorial.js';
 import { createOvenEngine } from '../engines/oven_engine.js';
 import { createStackerEngine } from '../engines/stacker_engine.js';
 import { RHYTHM_CONFIGS, createRhythmEngine } from '../engines/rhythm_engine.js';
@@ -31,6 +32,8 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
   let engine = null;
   let finishTimer = null;
   let destroyed = false;
+  let tutCoachActive = false;
+  let startedOnce = false;
 
   const pageProxy = {
     data: {
@@ -44,7 +47,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       failScore: 0,
       // 1. Oven
       pointerPos: 12, pointerDir: 1, currentTemp: 134, hits: 0, targetHits: 3, mistakes: 0,
-      ovenScore: 0, ovenTimeLeft: 24, ovenSceneImg: 'assets/images/scenes/oven_stage_0.svg', actionLabel: '', feedback: '',
+      ovenScore: 0, ovenTimeLeft: 35, ovenSceneImg: 'assets/images/scenes/oven_stage_0.svg', actionLabel: '', feedback: '',
       // 2. Stacker
       stackConfig: null, stackLayers: [], stackLayerHeight: 42, activeLayerIndex: 0, activeLayer: null,
       activePhase: 'swing', swingX: 20, swingDir: 1, dropY: 42, dropVy: 0, score: 0, combo: 0, lives: 3,
@@ -86,14 +89,14 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     });
   }
 
-  // 一次性挂载静态舞台壳与背景图，避免高频刷新导致图片闪烁或吞点击
   let stageMarkup = '';
   if (engineMode === 'oven') {
     stageMarkup = `
       <div class="card oven-card">
         <div id="mg-hud" class="oven-status-bar"></div>
-        <div id="mg-oven-vp" class="oven-viewport">
+        <div id="mg-oven-vp" class="oven-viewport" data-action="ovenTap" style="position:relative;cursor:pointer;">
           <img id="mg-oven-img" class="oven-scene-img mode-widthfix" src="assets/images/scenes/oven_stage_0.svg" alt="烤炉" />
+          <div id="mg-fx-layer" style="position:absolute;inset:0;pointer-events:none;"></div>
         </div>
         <div class="thermometer-box">
           <div class="scale-labels">
@@ -114,7 +117,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     stageMarkup = `
       <div class="card oven-card">
         <div id="mg-hud" class="oven-status-bar stack-hud"></div>
-        <div class="stack-arena" data-action="stackDrop">
+        <div id="mg-fx-layer" class="stack-arena" data-action="stackDrop">
           <img class="arena-bg-img mode-fill" src="assets/images/minigames/bg_stacker.svg" alt="" />
           <div class="crane-rail"></div>
           <div id="mg-cord" class="crane-cord"></div>
@@ -133,7 +136,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     stageMarkup = `
       <div class="card oven-card">
         <div id="mg-hud" class="oven-status-bar stack-hud"></div>
-        <div class="rhythm-stage">
+        <div id="mg-fx-layer" class="rhythm-stage">
           <img class="arena-bg-img mode-fill" src="${cfg.bgImg}" alt="" />
           ${[0, 1, 2].map(lane => `
             <div class="rhythm-lane" data-action="rhythmHit" data-lane="${lane}">
@@ -160,7 +163,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     stageMarkup = `
       <div class="card oven-card">
         <div id="mg-hud" class="oven-status-bar stack-hud"></div>
-        <div class="stovetop-arena">
+        <div id="mg-fx-layer" class="stovetop-arena">
           <img class="arena-bg-img mode-fill" src="${cfg.bgImg}" alt="" />
           <div class="burners-row">
             ${[0, 1, 2].map(id => `
@@ -184,24 +187,25 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     stageMarkup = `
       <div class="card oven-card">
         <div id="mg-hud" class="oven-status-bar stack-hud"></div>
-        <div id="mg-catch-arena" class="catch-arena" data-action="catchArena">
+        <div id="mg-catch-arena" class="catch-arena" style="touch-action:none;">
           <img class="arena-bg-img mode-fill" src="${cfg.bgImg}" alt="" />
           <div id="mg-catch-items"></div>
           <div id="mg-catch-vessel" class="catch-vessel" style="left:50%;">
             <img class="vessel-sprite mode-fit" src="${cfg.catcherImg}" alt="" />
           </div>
+          <div id="mg-fx-layer" style="position:absolute;inset:0;pointer-events:none;"></div>
         </div>
         <span id="mg-feedback" class="feedback-text"></span>
         <div class="catch-controls">
-          <div class="btn-secondary move-btn" data-action="moveLeft">◀ 向左移动</div>
-          <div class="btn-secondary move-btn" data-action="moveRight">向右移动 ▶</div>
+          <div class="btn-secondary move-btn" data-action="moveLeft">◀ 向左移</div>
+          <div class="btn-secondary move-btn" data-action="moveRight">向右移 ▶</div>
         </div>
       </div>
     `;
   }
 
   root.innerHTML = `
-    <div class="minigame-shell">
+    <div class="minigame-shell" style="position:relative;">
       <div class="caramel-canopy">
         <div class="awning-bar"></div>
         <div class="caramel-drip-edge"></div>
@@ -212,16 +216,24 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
         <div class="card header-card">
           <div class="header-row">
             <span class="game-title">${level.minigameTitle}</span>
-            <div class="recipe-pill">
-              <img class="pill-icon mode-fit" src="${recipe.iconImg}" alt="" />
-              <span>${recipe.name}</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="recipe-pill">
+                <img class="pill-icon mode-fit" src="${recipe.iconImg}" alt="" />
+                <span>${recipe.name}</span>
+              </div>
+              <div class="help-fab-btn" style="background:#8C4920;border-color:#DFB06E;" data-action="openHelp" title="玩法说明">?</div>
             </div>
           </div>
           <span class="game-desc">${level.targetDesc}</span>
         </div>
-        ${stageMarkup}
+        <div id="mg-stage-wrap" style="position:relative;">
+          ${stageMarkup}
+          <div id="mg-tut-coach"></div>
+          <div id="mg-tut-finger" class="tut-finger-pointer" style="display:none;">👇</div>
+        </div>
       </div>
       <div id="mg-fail-slot"></div>
+      <div id="mg-tut-modal-slot"></div>
     </div>
   `;
 
@@ -229,6 +241,74 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
   let lastLandedCount = -1;
   const lastPanSrc = ['', '', ''];
   let lastFailState = false;
+
+  function fxBox() {
+    return root.querySelector('#mg-fx-layer');
+  }
+
+  function setCoach(text, fingerX, fingerY) {
+    const c = root.querySelector('#mg-tut-coach');
+    const f = root.querySelector('#mg-tut-finger');
+    if (!c || !f) return;
+    if (!text) {
+      c.innerHTML = '';
+      f.style.display = 'none';
+      return;
+    }
+    c.innerHTML = `
+      <div class="tut-coach-banner" style="top:12px;">
+        <span class="tut-coach-text">🎓 ${text}</span>
+        <span class="tut-coach-skip" data-action="skipCoach">跳过</span>
+      </div>
+    `;
+    f.style.display = 'block';
+    f.style.left = `${fingerX}%`;
+    f.style.top = `${fingerY}%`;
+  }
+
+  function finishInteractiveCoach(toastText) {
+    if (!tutCoachActive) return;
+    tutCoachActive = false;
+    markTutorialSeen(engineMode);
+    setCoach(null);
+    engine.setPaused?.(false);
+    showToast(toastText || '🎉 学会啦！正式挑战开始！', 1400);
+  }
+
+  function enterInteractiveCoach() {
+    tutCoachActive = true;
+    engine.start();
+    startedOnce = true;
+
+    if (engineMode === 'oven') {
+      engine.setPaused(true);
+      pageProxy.setData({ pointerPos: 50, currentTemp: 180 });
+      setCoach('指针正在金色 180°C 正中心，点一下烤炉试试！', 50, 56);
+    } else if (engineMode === 'multi_pan') {
+      engine.setPaused(true);
+      const pans = pageProxy.data.pans.map(p => (p.id === 1
+        ? { ...p, heat: 74, state: 'ready', label: '✨ 点我出锅!', spriteImg: `assets/images/minigames/${pageProxy.data.panConfig.spritePrefix}_ready.svg` }
+        : p));
+      pageProxy.setData({ pans });
+      setCoach('中间铜锅变金黄发光啦！立刻点它翻面出锅！', 50, 54);
+    } else if (engineMode === 'stacker') {
+      engine.setPaused(true);
+      pageProxy.setData({ swingX: 50, activePhase: 'swing' });
+      setCoach('食材已对齐正中虚线，点击屏幕放下第一层！', 50, 44);
+    } else if (engineMode === 'rhythm') {
+      engine.setPaused(true);
+      pageProxy.setData({ rhythmNotes: [{ id: 9001, lane: 1, y: 76 }] });
+      setCoach('音符正好落进中间器皿圈里，立刻点击中间轨道！', 50, 68);
+    } else if (engineMode === 'catch') {
+      engine.setPaused(true);
+      const good = pageProxy.data.catchConfig.goodItems[0];
+      pageProxy.setData({
+        catchBasketX: 28,
+        catchItems: [{ id: 9001, x: 72, y: 66, vy: 0, img: good.img, label: good.label, pts: 100, isBad: false }]
+      });
+      setCoach('按住画面向右拖动礼盒（或点右侧）接住这颗甜点！', 72, 68);
+    }
+  }
 
   function updateView() {
     const d = pageProxy.data;
@@ -364,65 +444,198 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     }
   }
 
-  // 启动对应引擎
+  // 初始化引擎实例
   if (engineMode === 'oven') engine = createOvenEngine(pageProxy, onComplete, onFail);
   else if (engineMode === 'stacker') engine = createStackerEngine(pageProxy, STACKER_RECIPES[type], onComplete, onFail);
   else if (engineMode === 'rhythm') engine = createRhythmEngine(pageProxy, type, onComplete, onFail);
   else if (engineMode === 'multi_pan') engine = createMultiPanEngine(pageProxy, type, onComplete, onFail);
   else engine = createCatchEngine(pageProxy, CATCH_CONFIGS[type] ? type : 'orbit_match', onComplete, onFail);
 
-  engine.start();
+  function showTutCard(isFirstTime) {
+    if (startedOnce) engine.setPaused?.(true);
+    root.querySelector('#mg-tut-modal-slot').innerHTML = createTutorialCardHtml(engineMode, { isFirstTime });
+  }
+
+  function closeTutCard() {
+    root.querySelector('#mg-tut-modal-slot').innerHTML = '';
+  }
+
+  // 首次进入该类玩法先弹 3 格图解卡，绝不偷跑倒计时
+  if (!hasSeenTutorial(engineMode)) {
+    engine.start();
+    engine.setPaused?.(true);
+    startedOnce = true;
+    showTutCard(true);
+  } else {
+    engine.start();
+    startedOnce = true;
+  }
+
+  function handleOvenTap() {
+    if (tutCoachActive) {
+      spawnFloatText(fxBox(), { xPct: 50, yPct: 48, text: '✨ PERFECT! +100', kind: 'gold' });
+      finishInteractiveCoach('🎉 控温学会啦！继续瞄准 180°C 黄金区！');
+      engine.onTap?.();
+      return;
+    }
+    const prevHits = pageProxy.data.hits;
+    engine.onTap?.();
+    if (pageProxy.data.hits > prevHits) {
+      spawnFloatText(fxBox(), { xPct: 50, yPct: 48, text: '🔥 完美控温!', kind: 'gold' });
+    } else {
+      spawnFloatText(fxBox(), { xPct: 50, yPct: 52, text: '💨 偏了点!', kind: 'red' });
+    }
+  }
+
+  function handleStackDrop() {
+    if (tutCoachActive) {
+      spawnFloatText(fxBox(), { xPct: 50, yPct: 42, text: '✨ 稳稳对齐!', kind: 'gold' });
+      finishInteractiveCoach('🎉 手感掌握啦！继续稳稳叠高！');
+    }
+    engine.drop?.();
+  }
+
+  function handleRhythmHit(lane) {
+    if (tutCoachActive) {
+      if (lane !== 1) return;
+      pageProxy.setData({ rhythmNotes: [] });
+      spawnFloatText(fxBox(), { xPct: 50, yPct: 68, text: '✨ PERFECT! +100', kind: 'gold' });
+      finishInteractiveCoach('🎉 节拍踩准啦！正式发拍开始！');
+      return;
+    }
+    const prevHits = pageProxy.data.rhythmHits;
+    engine.hitLane?.(lane);
+    const xPct = lane * 33.33 + 16.66;
+    if (pageProxy.data.rhythmHits > prevHits) {
+      spawnFloatText(fxBox(), { xPct, yPct: 68, text: pageProxy.data.rhythmJudgeKind === 'perfect' ? '✨ PERFECT!' : '👍 GOOD!', kind: pageProxy.data.rhythmJudgeKind === 'perfect' ? 'gold' : 'green' });
+    } else {
+      spawnFloatText(fxBox(), { xPct, yPct: 68, text: '空拍 -15', kind: 'red' });
+    }
+  }
+
+  function handleTapPan(id) {
+    if (tutCoachActive) {
+      if (id !== 1) return;
+      spawnFloatText(fxBox(), { xPct: 50, yPct: 45, text: '✨ 完美翻面 +100', kind: 'gold' });
+      finishInteractiveCoach('🎉 翻锅学会啦！三口锅正式开火！');
+      engine.tapPan?.(id);
+      return;
+    }
+    const prevServed = pageProxy.data.panServed;
+    engine.tapPan?.(id);
+    const xPct = [18, 50, 82][id] || 50;
+    if (pageProxy.data.panServed > prevServed) {
+      spawnFloatText(fxBox(), { xPct, yPct: 42, text: '✨ 出锅!', kind: 'gold' });
+    } else {
+      spawnFloatText(fxBox(), { xPct, yPct: 48, text: '⏳ 再等等', kind: 'cream' });
+    }
+  }
+
+  function updateCatchX(pct) {
+    engine.setBasketX?.(pct);
+    if (tutCoachActive && Math.abs(pageProxy.data.catchBasketX - 72) <= 13) {
+      pageProxy.setData({ catchItems: [] });
+      spawnFloatText(fxBox(), { xPct: 72, yPct: 68, text: '✨ 接住啦 +100!', kind: 'gold' });
+      finishInteractiveCoach('🎉 拖动学会啦！正式收集开始！');
+    }
+  }
+
+  // 接盘模式丝滑拖拽控制（手机触控滑动 & 鼠标按住拖动均支持）
+  const catchArena = root.querySelector('#mg-catch-arena');
+  let catchDragging = false;
+  const moveCatchByClientX = (clientX) => {
+    if (!catchArena) return;
+    const rect = catchArena.getBoundingClientRect();
+    const pct = Math.round(((clientX - rect.left) / Math.max(1, rect.width)) * 100);
+    updateCatchX(pct);
+  };
+  if (catchArena) {
+    catchArena.addEventListener('pointerdown', (e) => {
+      catchDragging = true;
+      moveCatchByClientX(e.clientX);
+      try { catchArena.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    catchArena.addEventListener('pointermove', (e) => {
+      if (!catchDragging) return;
+      moveCatchByClientX(e.clientX);
+    });
+    catchArena.addEventListener('pointerup', () => { catchDragging = false; });
+    catchArena.addEventListener('pointercancel', () => { catchDragging = false; });
+  }
 
   const onClick = (e) => {
+    const tutTarget = e.target.closest('[data-tut-action]');
+    if (tutTarget) {
+      const ta = tutTarget.dataset.tutAction;
+      if (ta === 'start') {
+        const first = !hasSeenTutorial(engineMode);
+        closeTutCard();
+        if (first) {
+          enterInteractiveCoach();
+        } else {
+          engine.setPaused?.(false);
+        }
+      } else if (ta === 'skip') {
+        markTutorialSeen(engineMode);
+        closeTutCard();
+        engine.setPaused?.(false);
+      } else if (ta === 'backdrop' && hasSeenTutorial(engineMode)) {
+        closeTutCard();
+        engine.setPaused?.(false);
+      }
+      return;
+    }
+
     const target = e.target.closest('[data-action]');
     if (!target) return;
     const action = target.dataset.action;
 
-    if (action === 'retry') {
+    if (action === 'openHelp') {
+      showTutCard(false);
+    } else if (action === 'skipCoach') {
+      finishInteractiveCoach('已跳过教学，正式开始！');
+      if (engineMode === 'rhythm' || engineMode === 'catch') {
+        engine.start();
+      }
+    } else if (action === 'retry') {
       lastLandedCount = -1;
+      tutCoachActive = false;
+      setCoach(null);
       pageProxy.setData({ gameFailed: false });
       engine.start();
     } else if (action === 'ovenTap') {
-      engine.onTap?.();
+      handleOvenTap();
     } else if (action === 'stackDrop') {
-      engine.drop?.();
+      handleStackDrop();
     } else if (action === 'rhythmHit') {
-      engine.hitLane?.(Number(target.dataset.lane));
+      handleRhythmHit(Number(target.dataset.lane));
     } else if (action === 'tapPan') {
-      engine.tapPan?.(Number(target.dataset.id));
+      handleTapPan(Number(target.dataset.id));
     } else if (action === 'moveLeft') {
-      engine.moveBasket?.(-16);
+      updateCatchX(pageProxy.data.catchBasketX - 16);
     } else if (action === 'moveRight') {
-      engine.moveBasket?.(16);
-    } else if (action === 'catchArena') {
-      const arena = root.querySelector('#mg-catch-arena');
-      if (arena && engine.setBasketX) {
-        const rect = arena.getBoundingClientRect();
-        const pct = Math.round(((e.clientX - rect.left) / Math.max(1, rect.width)) * 100);
-        engine.setBasketX(pct);
-      }
+      updateCatchX(pageProxy.data.catchBasketX + 16);
     }
   };
 
-  // 桌面键盘快捷操控
   const onKeyDown = (e) => {
-    if (pageProxy.data.gameFailed) return;
+    if (pageProxy.data.gameFailed || root.querySelector('.tut-modal-mask')) return;
     const k = e.key.toLowerCase();
     if (engineMode === 'oven' && (e.code === 'Space' || e.key === 'Enter')) {
-      e.preventDefault(); engine.onTap?.();
+      e.preventDefault(); handleOvenTap();
     } else if (engineMode === 'stacker' && (e.code === 'Space' || e.key === 'Enter')) {
-      e.preventDefault(); engine.drop?.();
+      e.preventDefault(); handleStackDrop();
     } else if (engineMode === 'rhythm') {
-      if (k === '1' || k === 'a' || e.key === 'ArrowLeft') engine.hitLane?.(0);
-      else if (k === '2' || k === 's' || e.key === 'ArrowDown') engine.hitLane?.(1);
-      else if (k === '3' || k === 'd' || e.key === 'ArrowRight') engine.hitLane?.(2);
+      if (k === '1' || k === 'a' || e.key === 'ArrowLeft') handleRhythmHit(0);
+      else if (k === '2' || k === 's' || e.key === 'ArrowDown') handleRhythmHit(1);
+      else if (k === '3' || k === 'd' || e.key === 'ArrowRight') handleRhythmHit(2);
     } else if (engineMode === 'multi_pan') {
-      if (k === '1' || k === 'a') engine.tapPan?.(0);
-      else if (k === '2' || k === 's') engine.tapPan?.(1);
-      else if (k === '3' || k === 'd') engine.tapPan?.(2);
+      if (k === '1' || k === 'a') handleTapPan(0);
+      else if (k === '2' || k === 's') handleTapPan(1);
+      else if (k === '3' || k === 'd') handleTapPan(2);
     } else if (engineMode === 'catch') {
-      if (e.key === 'ArrowLeft' || k === 'a') { e.preventDefault(); engine.moveBasket?.(-16); }
-      else if (e.key === 'ArrowRight' || k === 'd') { e.preventDefault(); engine.moveBasket?.(16); }
+      if (e.key === 'ArrowLeft' || k === 'a') { e.preventDefault(); updateCatchX(pageProxy.data.catchBasketX - 16); }
+      else if (e.key === 'ArrowRight' || k === 'd') { e.preventDefault(); updateCatchX(pageProxy.data.catchBasketX + 16); }
     }
   };
 

@@ -23,6 +23,7 @@ const MAX_MISTAKES = 6;
 function createOvenEngine(page, onComplete, onFail) {
   let timer = null;
   let ticks = 0;
+  let paused = false;
 
   function stop() {
     if (timer) {
@@ -51,6 +52,7 @@ function createOvenEngine(page, onComplete, onFail) {
     });
 
     timer = setInterval(() => {
+      if (paused) return;
       ticks += 1;
       const timeLeft = Math.max(0, OVEN_TIME_LIMIT - Math.floor((ticks * 45) / 1000));
       let { pointerPos, pointerDir, hits, ovenScore } = page.data;
@@ -136,7 +138,7 @@ function createOvenEngine(page, onComplete, onFail) {
     }
   }
 
-  return { start, stop, onTap };
+  return { start, stop, onTap, setPaused(v) { paused = !!v; } };
 }
 
 export {

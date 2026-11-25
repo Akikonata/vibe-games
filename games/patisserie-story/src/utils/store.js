@@ -68,6 +68,14 @@ export function hasStoryFlag(flagKey) {
   return !!(progress.storyFlags && progress.storyFlags[flagKey]);
 }
 
+export function hasSeenTutorial(mode) {
+  return hasStoryFlag(`tut_${mode}`);
+}
+
+export function markTutorialSeen(mode) {
+  return setStoryFlag(`tut_${mode}`, true);
+}
+
 export function completeLevel(levelId, rank = 'A', score = 0) {
   const level = LEVELS.find(item => item.id === levelId);
   if (!level) return loadProgress();

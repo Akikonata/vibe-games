@@ -32,6 +32,7 @@ function createMultiPanEngine(page, type, onComplete, onFail) {
   const cfg = MULTI_PAN_CONFIGS[type] || MULTI_PAN_CONFIGS.pan_flip;
   let timer = null;
   let ticks = 0;
+  let paused = false;
 
   function stop() {
     if (timer) {
@@ -72,6 +73,7 @@ function createMultiPanEngine(page, type, onComplete, onFail) {
   function startLoop() {
     stop();
     timer = setInterval(() => {
+      if (paused) return;
       ticks += 1;
       const timeLeft = Math.max(0, cfg.timeLimit - Math.floor((ticks * 85) / 1000));
       let { panScore, panBurnt, panTip } = page.data;
@@ -194,7 +196,7 @@ function createMultiPanEngine(page, type, onComplete, onFail) {
     }
   }
 
-  return { start, stop, tapPan };
+  return { start, stop, tapPan, setPaused(v) { paused = !!v; } };
 }
 
 export {

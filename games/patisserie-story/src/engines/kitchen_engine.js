@@ -8,9 +8,11 @@ import { getKitchenFlow, STATION_META } from '../data/kitchen_recipes.js';
 const CUSTOMER_POOL = ['lillian', 'theo', 'bart', 'emily', 'casper', 'madeleine'];
 const SHIFT_SECONDS = 45;
 
-function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
+export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode = false, onTutorialDone, onServeEffect, onShiftEnd }) {
   let timer = null;
   let tick = 0;
+  let paused = false;
+  let inTutorial = !!tutorialMode;
 
   function stop() {
     if (timer) {
@@ -119,12 +121,28 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
       stations,
       heldItem: null,
       holdItem: null,
+      inTutorial,
       highlightTarget: guide.highlight,
       serviceMsg: guide.hint,
       daySummary: null
     }, () => {
       startLoop();
     });
+  }
+
+  function pause() {
+    paused = true;
+  }
+
+  function resume() {
+    paused = false;
+  }
+
+  function skipTutorial() {
+    if (!inTutorial) return;
+    inTutorial = false;
+    page.setData({ inTutorial: false });
+    if (typeof onTutorialDone === 'function') onTutorialDone();
   }
 
   function syncGuide(heldItem, stations, seats, customMsg) {
@@ -143,16 +161,18 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
     const patienceDrain = 0.72 / (bonuses ? bonuses.patienceMult : 1);
 
     timer = setInterval(() => {
-      tick += 1;
+      if (paused) return;
+      if (!inTutorial) tick += 1;
       const timeLeft = Math.max(0, SHIFT_SECONDS - Math.floor(tick / 10));
       let customMsg = '';
 
-      // 1. 推进所有厨房工位进度
+      // 1. 推进所有厨房工位进度（教学模式略微加速，零等待感）
+      const speedMult = inTutorial ? 1.8 : 1;
       const stations = page.data.stations.map(st => {
         if (!st.item) return st;
         const meta = STATION_META[st.type];
         if (st.state === 'working') {
-          const nextProg = Math.min(100, st.progress + (100 / meta.duration));
+          const nextProg = Math.min(100, st.progress + (100 / meta.duration) * speedMult);
           if (nextProg >= 100) {
             const doneItem = Object.assign({}, st.item, {
               stepIndex: st.item.stepIndex + 1
@@ -170,8 +190,8 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
           return Object.assign({}, st, { progress: Math.round(nextProg) });
         }
 
-        // 烤炉温和防焦机制（留足约 9 秒宽容时间，不劝退但有胡闹厨房紧张感）
-        if (st.state === 'ready' && st.type === 'oven') {
+        // 烤炉温和防焦机制（教学期间绝不烤糊）
+        if (st.state === 'ready' && st.type === 'oven' && !inTutorial) {
           const nextOver = st.overcook + 1;
           if (nextOver >= meta.burnTicks) {
             const burntItem = Object.assign({}, st.item, {
@@ -191,9 +211,9 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
         return st;
       });
 
-      // 2. 更新前厅 3 座位顾客耐心与新客到店
+      // 2. 更新前厅 3 座位顾客耐心与新客到店（教学期间耐心完全冻结）
       let seats = page.data.seats.map(s => {
-        if (!s.occupied) return s;
+        if (!s.occupied || inTutorial) return s;
         const nextP = s.patience - patienceDrain;
         if (nextP <= 0) {
           customMsg = `😅 ${s.name} 等太久离开座位了`;
@@ -204,7 +224,7 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
       });
 
       // 每 3.5 秒补位一位新顾客（保持前厅热闹）
-      if (tick % 35 === 0) {
+      if (!inTutorial && tick > 0 && tick % 35 === 0) {
         seats = spawnCustomerInto(seats);
       }
 
@@ -352,6 +372,16 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
     // 马上安排下一位客人进店保持节奏
     const refreshedSeats = spawnCustomerInto(seats);
 
+    if (typeof onServeEffect === 'function') {
+      onServeEffect({ seatId, earned, customerName: seat.name });
+    }
+
+    if (inTutorial) {
+      inTutorial = false;
+      page.setData({ inTutorial: false });
+      if (typeof onTutorialDone === 'function') onTutorialDone();
+    }
+
     page.setData({
       shiftCoins: page.data.shiftCoins + earned,
       shiftRep: page.data.shiftRep + rep,
@@ -369,6 +399,9 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
   return {
     start,
     stop,
+    pause,
+    resume,
+    skipTutorial,
     pickRaw,
     tapStation,
     tapHold,
@@ -376,7 +409,3 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
     tapSeat
   };
 }
-
-export {
-  createKitchenEngine
-};

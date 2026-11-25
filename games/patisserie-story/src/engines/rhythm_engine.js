@@ -30,6 +30,7 @@ function createRhythmEngine(page, type, onComplete, onFail) {
   const cfg = RHYTHM_CONFIGS[type] || RHYTHM_CONFIGS.rhythm_bake;
   let timer = null;
   let tick = 0;
+  let paused = false;
   let nextNoteId = 1;
   let spawned = 0;
 
@@ -92,6 +93,7 @@ function createRhythmEngine(page, type, onComplete, onFail) {
   function startLoop() {
     stop();
     timer = setInterval(() => {
+      if (paused) return;
       tick += 1;
       let notes = (page.data.rhythmNotes || []).map(n => Object.assign({}, n, { y: n.y + cfg.speed }));
       let { rhythmDone, rhythmMisses, rhythmCombo, rhythmJudge, rhythmJudgeKind } = page.data;
@@ -193,7 +195,7 @@ function createRhythmEngine(page, type, onComplete, onFail) {
     }
   }
 
-  return { start, stop, hitLane };
+  return { start, stop, hitLane, setPaused(v) { paused = !!v; } };
 }
 
 export {
