@@ -857,8 +857,8 @@
 .page-shop .pos-cream { left: 20%; top: 75%; }
 .page-shop .sprite-cream { width: 118px; height: 118px; }
 
-.page-shop .pos-pantry { left: 50%; top: 72%; z-index: 14; }
-.page-shop .sprite-pantry { width: 132px; height: 132px; position: relative; z-index: 1; }
+.page-shop .pos-pantry { left: 50%; top: 70%; z-index: 14; }
+.page-shop .sprite-pantry { width: 124px; height: 124px; position: relative; z-index: 1; }
 
 .page-shop .pos-decor { left: 80%; top: 75%; }
 .page-shop .sprite-decor { width: 120px; height: 120px; }
@@ -944,8 +944,8 @@
 
 .page-shop .pantry-picks {
   position: relative;
-  z-index: 3;
-  margin-top: -14px;
+  z-index: 5;
+  margin-top: 2px;
   display: flex;
   gap: 8px;
 }
