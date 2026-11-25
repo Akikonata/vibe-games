@@ -1621,12 +1621,12 @@
 .page-shop .coco-25d-sprite-sheet {
   position: relative;
   z-index: 2;
-  width: 96px;
-  height: 144px;
+  width: 112px;
+  height: 168px;
   background-image: url('../assets/images/kitchen/coco_walk_sheet.png');
   background-repeat: no-repeat;
-  background-size: 384px 144px;
-  background-position: -96px 0;
+  background-size: 448px 168px;
+  background-position: -112px 0;
   filter: drop-shadow(0 6px 8px rgba(42, 18, 6, 0.36));
 }
 
@@ -1635,12 +1635,12 @@
 }
 
 .page-shop .coco-25d-actor.is-walking .coco-25d-sprite-sheet {
-  animation: cocoWalkFrames 0.36s steps(4) infinite;
+  animation: cocoWalkFrames 0.52s steps(4) infinite;
 }
 
 @keyframes cocoWalkFrames {
   from { background-position: 0 0; }
-  to { background-position: -384px 0; }
+  to { background-position: -448px 0; }
 }
 
 .page-shop .coco-25d-carry {
@@ -2148,12 +2148,12 @@
   z-index: auto;
 }
 
-/* Q版人物（无椅纯坐姿）z-index: 2 —— 稳坐左侧木椅(z:1)之上、自然落于圆桌(z:3)之后！ */
+/* Q版人物（无椅纯坐姿）z-index: 2 —— 稳坐左侧木椅(z:1)之上、自然落于圆桌(z:3)之后，头身比与站姿可可严格一致 */
 .page-shop .dining-chibi-guest {
   position: absolute;
-  left: -4px;
-  bottom: 12px;
-  width: clamp(48px, 13.5vw, 58px);
+  left: -2px;
+  bottom: 13px;
+  width: clamp(38px, 10.5vw, 46px);
   height: auto;
   z-index: 2;
   filter: drop-shadow(0 4px 5px rgba(42, 18, 6, 0.3));

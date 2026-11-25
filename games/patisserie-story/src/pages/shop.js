@@ -167,7 +167,7 @@ export function mountShopPage(root) {
       cocoPos.x = next.x;
       cocoPos.y = next.y;
 
-      const segMs = Math.max(150, Math.min(460, Math.round(dist * 7.5)));
+      const segMs = Math.max(260, Math.min(780, Math.round(dist * 14)));
       actor.style.transitionDuration = `${segMs}ms`;
       actor.style.left = `${next.x}%`;
       actor.style.top = `${next.y}%`;
