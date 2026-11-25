@@ -115,8 +115,12 @@ export function mountHomePage(root, _params, { navigate }) {
         </div>`
       : '';
 
+    const ownedUpgs = (d.progress && d.progress.purchasedUpgradeIds) || [];
+    const hasUpg = (id) => ownedUpgs.includes(id);
+    const upgClassList = ownedUpgs.map(id => `has-upg-${id}`).join(' ');
+
     root.innerHTML = `
-      <div class="home-shell">
+      <div class="home-shell ${upgClassList}">
         <div class="caramel-canopy">
           <div class="awning-bar"></div>
           <div class="caramel-drip-edge"></div>
@@ -146,12 +150,19 @@ export function mountHomePage(root, _params, { navigate }) {
                 <div class="arch-vine-top"><span class="vine-sprout">🌿</span><span class="vine-sprout">🍃</span><span class="vine-sprout">🌿</span></div>
                 <div class="arch-window-frame">
                   <img class="facade-img mode-fill" src="assets/images/shop_facade.jpg" alt="星月糖屋" />
-                  <div class="facade-pill">✦ 第一卷 · 风铃湾篇</div>
+                  ${hasUpg('crystal_lamp') ? '<img class="facade-upg-chandelier mode-fit" src="assets/images/upgrades/prop_upg_chandelier.png" alt="" aria-hidden="true" />' : ''}
+                  ${hasUpg('brass_espresso') ? '<img class="facade-upg-espresso mode-fit" src="assets/images/upgrades/prop_upg_espresso.png" alt="" aria-hidden="true" />' : ''}
+                  ${hasUpg('porcelain_gift') ? '<img class="facade-upg-gift mode-fit" src="assets/images/upgrades/prop_upg_giftbox.png" alt="" aria-hidden="true" />' : ''}
+                  <div class="facade-pill">✦ 第一卷 · 风铃湾篇${ownedUpgs.length > 0 ? ` · 装潢 ${ownedUpgs.length}/5` : ''}</div>
                 </div>
                 <div class="windowsill">
-                  <span class="sill-plant">🪴</span>
-                  <div class="sill-plaque">MAISON ÉTOILE · 1898</div>
-                  <span class="sill-plant">🪴</span>
+                  ${hasUpg('herb_boxes')
+                    ? '<img class="sill-upg-herb mode-fit" src="assets/images/upgrades/prop_upg_herb_box.png" alt="" aria-hidden="true" />'
+                    : '<span class="sill-plant">🪴</span>'}
+                  <div class="sill-plaque">${hasUpg('oak_counter') ? '★ MAISON ÉTOILE · 御制橡木 ★' : 'MAISON ÉTOILE · 1898'}</div>
+                  ${hasUpg('herb_boxes')
+                    ? '<img class="sill-upg-herb flip mode-fit" src="assets/images/upgrades/prop_upg_herb_box.png" alt="" aria-hidden="true" />'
+                    : '<span class="sill-plant">🪴</span>'}
                 </div>
               </div>
               <div class="wafer-column"><div class="col-capital"></div><div class="col-shaft"></div><div class="col-base"></div></div>

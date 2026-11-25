@@ -219,7 +219,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       highlightTarget: '',
       serviceMsg: '挑选 1~3 道招牌甜点，挂牌开门进入糖屋营业！',
       daySummary: null,
-      upgrades: []
+      upgrades: [],
+      purchasedUpgradeIds: []
     },
     setData(patch, cb) {
       if (destroyed) return;
@@ -270,7 +271,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       shopTierTitle: getShopTierTitle(progress.reputation),
       unlockedRecipes,
       menuRecipes,
-      upgrades
+      upgrades,
+      purchasedUpgradeIds: progress.purchasedUpgradeIds || []
     });
   }
 
@@ -306,9 +308,39 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       </button>
     `).join('');
 
+    const ownedUpgs = d.purchasedUpgradeIds || [];
+    const hasUpg = (id) => ownedUpgs.includes(id);
+    const upgClasses = ownedUpgs.map(id => `has-upg-${id}`).join(' ');
+
+    const sceneUpgradesMarkup = `
+      ${hasUpg('crystal_lamp') ? `
+        <div class="scene-upg-chandelier" aria-hidden="true">
+          <div class="chandelier-warm-wash"></div>
+          <img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_chandelier.png" alt="" />
+        </div>
+      ` : ''}
+      ${hasUpg('herb_boxes') ? `
+        <img class="scene-upg-herb left mode-fit" src="assets/images/upgrades/prop_upg_herb_box.png" alt="" aria-hidden="true" />
+        <img class="scene-upg-herb right mode-fit" src="assets/images/upgrades/prop_upg_herb_box.png" alt="" aria-hidden="true" />
+      ` : ''}
+      ${hasUpg('porcelain_gift') ? `
+        <img class="scene-upg-gift mode-fit" src="assets/images/upgrades/prop_upg_giftbox.png" alt="" aria-hidden="true" />
+      ` : ''}
+      ${hasUpg('oak_counter') ? `
+        <div class="scene-upg-oak-plaque" aria-hidden="true">✦ 法式橡木御制展示柜 ✦</div>
+      ` : ''}
+      ${hasUpg('brass_espresso') ? `
+        <div class="scene-upg-espresso" aria-hidden="true">
+          <span class="espresso-steam">☕</span>
+          <img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_espresso.png" alt="" />
+        </div>
+      ` : ''}
+    `;
+
     root.innerHTML = `
-      <div class="kitchen-scene is-zoned-25d">
+      <div class="kitchen-scene is-zoned-25d ${upgClasses}">
         <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=3" alt="" />
+        ${sceneUpgradesMarkup}
 
         <!-- 顶部悬浮半透明营收 HUD -->
         <div class="scene-hud">
@@ -713,7 +745,35 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         </div>
       `;
     } else {
+      const ownedIds = d.purchasedUpgradeIds || [];
+      const hasOwned = (id) => ownedIds.includes(id);
       mainSectionHtml = `
+        <div class="card upg-preview-card">
+          <div class="upg-preview-head">
+            <span>🏛️ 店面装潢实景预览（已安装 ${ownedIds.length} / ${d.upgrades.length} 件）</span>
+            <span class="upg-preview-sub">购入后立即呈现在门面与营业内景</span>
+          </div>
+          <div class="upg-preview-stage ${ownedIds.map(id => `has-upg-${id}`).join(' ')}">
+            <img class="upg-preview-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=3" alt="糖屋装潢预览" />
+            ${hasOwned('crystal_lamp') ? `
+              <div class="scene-upg-chandelier is-mini"><div class="chandelier-warm-wash"></div><img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_chandelier.png" alt="" /></div>
+            ` : ''}
+            ${hasOwned('herb_boxes') ? `
+              <img class="scene-upg-herb left is-mini mode-fit" src="assets/images/upgrades/prop_upg_herb_box.png" alt="" />
+              <img class="scene-upg-herb right is-mini mode-fit" src="assets/images/upgrades/prop_upg_herb_box.png" alt="" />
+            ` : ''}
+            ${hasOwned('porcelain_gift') ? `
+              <img class="scene-upg-gift is-mini mode-fit" src="assets/images/upgrades/prop_upg_giftbox.png" alt="" />
+            ` : ''}
+            ${hasOwned('oak_counter') ? `
+              <div class="scene-upg-oak-plaque is-mini">✦ 法式橡木御制展示柜 ✦</div>
+            ` : ''}
+            ${hasOwned('brass_espresso') ? `
+              <div class="scene-upg-espresso is-mini"><span class="espresso-steam">☕</span><img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_espresso.png" alt="" /></div>
+            ` : ''}
+            ${ownedIds.length === 0 ? '<div class="upg-preview-empty-tag">尚未安装装潢 · 购入下方装饰即可改造店面</div>' : ''}
+          </div>
+        </div>
         <div class="upgrade-list">
           ${d.upgrades.map(u => `
             <div class="card upgrade-card ${u.owned ? 'is-owned' : ''}">

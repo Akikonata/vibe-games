@@ -77,8 +77,15 @@ function computeShopBonuses(purchasedIds = []) {
   return result;
 }
 
+const PNG_UPGRADE_ICONS = {
+  herb_boxes: 'assets/images/upgrades/prop_upg_herb_box.png',
+  brass_espresso: 'assets/images/upgrades/prop_upg_espresso.png',
+  crystal_lamp: 'assets/images/upgrades/prop_upg_chandelier.png',
+  porcelain_gift: 'assets/images/upgrades/prop_upg_giftbox.png'
+};
+
 SHOP_UPGRADES.forEach(u => {
-  u.iconImg = `assets/images/upgrades/${u.id}.svg`;
+  u.iconImg = PNG_UPGRADE_ICONS[u.id] || `assets/images/upgrades/${u.id}.svg`;
 });
 
 export {

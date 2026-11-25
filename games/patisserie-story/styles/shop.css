@@ -2304,3 +2304,207 @@
   box-shadow: 0 4px 12px rgba(42, 18, 6, 0.34);
   pointer-events: none;
 }
+
+
+/* =========================================================
+   装潢升级实景呈现（2.5D 糖屋营业内景 + 装潢页实时预览）
+   ========================================================= */
+.page-shop .upg-preview-card {
+  padding: 10px 11px 11px;
+  margin-bottom: 10px;
+}
+
+.page-shop .upg-preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #4A2511;
+}
+
+.page-shop .upg-preview-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: #8A5E3B;
+}
+
+.page-shop .upg-preview-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #C89660;
+  box-shadow: inset 0 0 12px rgba(42, 18, 6, 0.2);
+}
+
+.page-shop .upg-preview-bg {
+  width: 100%;
+  height: 100%;
+  object-position: center 34%;
+  display: block;
+}
+
+.page-shop .upg-preview-empty-tag {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(58, 28, 12, 0.82);
+  border: 1px solid #E5B97C;
+  color: #FFF6E5;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 18;
+}
+
+/* 1. 暖光复古铜艺吊灯（crystal_lamp） */
+.page-shop .scene-upg-chandelier {
+  position: absolute;
+  top: 4.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(66px, 19vw, 86px);
+  z-index: 9;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+
+.page-shop .scene-upg-chandelier.is-mini {
+  top: 2%;
+  width: 58px;
+}
+
+.page-shop .scene-upg-chandelier .scene-upg-img {
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 4px 8px rgba(255, 200, 80, 0.55));
+}
+
+.page-shop .chandelier-warm-wash {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 232, 150, 0.34) 0%, rgba(255, 206, 100, 0.12) 48%, transparent 74%);
+  z-index: 1;
+  pointer-events: none;
+  animation: lampBreathe 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes lampBreathe {
+  0% { opacity: 0.72; transform: translateX(-50%) scale(0.96); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+}
+
+/* 2. 窗台迷迭香与常春藤花箱（herb_boxes） */
+.page-shop .scene-upg-herb {
+  position: absolute;
+  top: 12.8%;
+  width: clamp(54px, 15vw, 70px);
+  height: auto;
+  z-index: 8;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(42, 18, 6, 0.35));
+}
+
+.page-shop .scene-upg-herb.left { left: 16%; }
+.page-shop .scene-upg-herb.right { right: 16%; transform: scaleX(-1); }
+.page-shop .scene-upg-herb.is-mini { top: 20%; width: 48px; }
+
+/* 3. 月光骨瓷伴手礼盒（porcelain_gift） */
+.page-shop .scene-upg-gift {
+  position: absolute;
+  top: 20%;
+  right: 3%;
+  width: clamp(44px, 12vw, 56px);
+  height: auto;
+  z-index: 9;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(42, 18, 6, 0.38));
+}
+
+.page-shop .scene-upg-gift.is-mini {
+  top: 32%;
+  right: 4%;
+  width: 44px;
+}
+
+/* 4. 法式橡木玻璃展示柜（oak_counter） */
+.page-shop .kitchen-scene.has-upg-oak_counter .counter-25d-fg {
+  filter: saturate(1.16) contrast(1.05) drop-shadow(0 0 10px rgba(255, 212, 110, 0.45));
+}
+
+.page-shop .kitchen-scene.has-upg-oak_counter .display-bay-btn {
+  border-color: rgba(230, 174, 68, 0.92);
+  box-shadow: inset 0 0 12px rgba(255, 224, 130, 0.42), 0 2px 6px rgba(120, 68, 16, 0.22);
+}
+
+.page-shop .scene-upg-oak-plaque {
+  position: absolute;
+  top: 39.2%;
+  left: 41%;
+  transform: translateX(-50%);
+  z-index: 16;
+  padding: 1.5px 10px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8B4E1C 0%, #5B2E0D 100%);
+  border: 1.5px solid #F3CC7A;
+  color: #FFE9AE;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(42, 18, 6, 0.36);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.page-shop .scene-upg-oak-plaque.is-mini {
+  top: 63%;
+  left: 42%;
+  font-size: 8.5px;
+}
+
+/* 5. 复古黄铜浓缩咖啡机（brass_espresso） */
+.page-shop .scene-upg-espresso {
+  position: absolute;
+  left: 2.5%;
+  top: 52.5%;
+  width: clamp(50px, 14vw, 66px);
+  z-index: 16;
+  pointer-events: none;
+}
+
+.page-shop .scene-upg-espresso.is-mini {
+  left: 4%;
+  top: 66%;
+  width: 48px;
+}
+
+.page-shop .scene-upg-espresso .scene-upg-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 4px 6px rgba(42, 18, 6, 0.4));
+}
+
+.page-shop .espresso-steam {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  animation: riseSteam 1.4s ease-out infinite;
+}
