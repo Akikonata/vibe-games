@@ -3,7 +3,7 @@
 
 import { RECIPES } from '../data/recipes.js';
 import { SHOP_UPGRADES, computeShopBonuses } from '../data/shop_upgrades.js';
-import { getKitchenFlow } from '../data/kitchen_recipes.js';
+import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js';
 import { createKitchenEngine } from '../engines/kitchen_engine.js';
 import {
   loadProgress,
@@ -51,26 +51,26 @@ function getShortRecipeName(recipe) {
   return SHORT_RECIPE_NAMES[recipe.id] || (recipe.name || '').slice(0, 4);
 }
 
-function buildSummaryAdvice({ served, lost, declined, burnt, batchesBaked, isPractice }) {
+function buildSummaryAdvice({ served, lost, declined, burnt, burntCost = 0, netCoins = 0, batchesBaked, isPractice }) {
   if (isPractice) {
-    if (served > 0) return '已经掌握「展示柜取餐上桌 + 库存告急批量补烤」节奏啦！可以正式挂牌开张赚金币。';
-    return '练习模式随时可重玩：先点中间玻璃展示柜拿现成甜点端上餐桌，库存剩 1 份时点下方烤炉批量补烤！';
+    if (served > 0) return '已经掌握「展示柜取餐上桌 + 结账清台 + 控制成本批量补烤」节奏啦！可以正式挂牌开张赚净利。';
+    return '练习模式随时可重玩：开店备货和每次补烤都会计入原料成本，记得按需补烤、避免烤糊浪费！';
   }
   if (served === 0) {
-    if (burnt > 0) return '有整盘甜点在烤炉放太久烤糊了，看到「✨ 收获入柜」或「🔥 快烤糊」提示时及时点击烤炉即可入柜。';
-    if (lost > 0) return '开店自带预置库存！直接点中间玻璃展示柜拿成品端给餐桌上的客人，不用等烤完再上第一单。';
-    return '先点「练习引导（不消耗天数）」熟悉展示柜取餐、端上餐桌与烤炉批量补货吧！';
+    if (burnt > 0) return `本轮烤糊浪费了 ${burntCost} 金币原料！看到「✨ 收获入柜」或「🔥 快烤糊」时记得及时收获。`;
+    if (lost > 0) return '开店自带预置库存！直接点中间展示柜取餐送去餐桌，卖完再按需补烤就能快速回本赚净利。';
+    return '先点「练习引导（不消耗天数）」熟悉取餐、结账清台与按需批量补烤，避免白花原料成本！';
   }
-  if (declined >= 2) {
-    return '本轮婉拒次数较多扣了一些口碑：当展示柜库存降到 1 份（告急）时就提前开烤炉补货，能大幅减少售罄婉拒。';
+  if (netCoins < 0) {
+    return `本轮原料投入高于营业收入（净利 ${netCoins} 🪙）：打烊前 5 秒尽量不要新开烤炉，减少剩余库存与烤糊损耗。`;
   }
   if (burnt > 0) {
-    return '出餐很顺手！烤好后及时点烤炉整盘入柜，避免烤糊浪费炉位，单日营收还能更高。';
+    return `已实现盈利！不过烤糊浪费了 ${burntCost} 金币原料，及时收获能把净利率再拉高一截。`;
   }
-  if (batchesBaked === 0 && lost > 0) {
-    return '库存售罄时记得及时点下方大理石台烤炉批量补烤（一次 +2~3 份直接入柜），客流就不会断档啦！';
+  if (declined >= 2) {
+    return '本轮婉拒次数较多扣了一些口碑：在库存剩 1 份（告急）时提前补烤，既不断货也不浪费原料。';
   }
-  return '餐区招待与后厨补货衔接丝滑！继续保持这个节奏，很快就能攒够金币升级店面装潢！';
+  return '成本控制与翻台节奏都很稳健！升级展示柜提高售价后，单份毛利还会进一步扩大！';
 }
 
 export function mountShopPage(root) {
@@ -239,10 +239,12 @@ export function mountShopPage(root) {
         const rank = (progress.levelRanks && progress.levelRanks[lvlId]) || 'A';
         const rankMult = RANK_PRICE_MULT[rank] || 1;
         const price = Math.round(flow.basePrice * rankMult * bonuses.priceMult);
+        const unitCost = getUnitCost(r.id);
+        const unitProfit = price - unitCost;
         const stepCount = flow.steps.length;
-        const batchInfo = stepCount >= 3 ? '补烤 5.2s/+2份' : (stepCount === 2 ? '补烤 4.4s/+3份' : '补烤 3.6s/+3份');
-        const priceBreakdown = `基${flow.basePrice}·${rank}×${rankMult.toFixed(2).replace(/\.00$/, '')}${bonuses.priceMult > 1 ? `·装潢×${bonuses.priceMult.toFixed(2).replace(/0$/, '')}` : ''}`;
-        return { ...r, price, basePrice: flow.basePrice, batchInfo, priceBreakdown, flowText: flow.flowText, selected: progress.menuRecipeIds.includes(r.id) };
+        const batchInfo = stepCount >= 3 ? `补烤5.2s/+2 · 料${unitCost * 2}` : (stepCount === 2 ? `补烤4.4s/+3 · 料${unitCost * 3}` : `补烤3.6s/+3 · 料${unitCost * 3}`);
+        const priceBreakdown = `成本${unitCost} · 净利+${unitProfit}`;
+        return { ...r, price, unitCost, unitProfit, basePrice: flow.basePrice, batchInfo, priceBreakdown, flowText: flow.flowText, selected: progress.menuRecipeIds.includes(r.id) };
       });
 
     let menuIds = progress.menuRecipeIds.filter(id => progress.unlockedRecipeIds.includes(id));
@@ -288,9 +290,9 @@ export function mountShopPage(root) {
     `).join('');
 
     const batchBtnsMarkup = (d.displayStock || []).map(slot => `
-      <button type="button" id="k-batch-${slot.recipeId}" class="batch-bake-btn" data-action="startBatch" data-id="${slot.recipeId}" aria-label="批量烤制${slot.name} +${slot.batchSize}份">
+      <button type="button" id="k-batch-${slot.recipeId}" class="batch-bake-btn" data-action="startBatch" data-id="${slot.recipeId}" aria-label="批量烤制${slot.name} +${slot.batchSize}份，原料成本 ${slot.batchCost} 金币">
         <img class="batch-btn-img mode-fit" src="${slot.iconImg}" alt="" />
-        <span class="batch-btn-txt">${getShortRecipeName({ id: slot.recipeId, name: slot.name })} <b>+${slot.batchSize}</b></span>
+        <span class="batch-btn-txt">${getShortRecipeName({ id: slot.recipeId, name: slot.name })} <b>+${slot.batchSize}</b> <small style="color:#8C5830;">-${slot.batchCost}🪙</small></span>
       </button>
     `).join('');
 
@@ -379,7 +381,10 @@ export function mountShopPage(root) {
         : (d.inTutorial ? `🎓 ${d.shiftTimeLeft}s` : `⏱ ${d.shiftTimeLeft}s`);
     }
     const coinsEl = root.querySelector('#k-coins');
-    if (coinsEl) coinsEl.textContent = `🪙 +${d.shiftCoins}`;
+    if (coinsEl) {
+      coinsEl.textContent = `净利 ${d.shiftCoins >= 0 ? '+' : ''}${d.shiftCoins}`;
+      coinsEl.style.color = d.shiftCoins < 0 ? '#FFB4A2' : '#FFD966';
+    }
     const servedEl = root.querySelector('#k-served');
     if (servedEl) servedEl.textContent = `出餐 ${d.shiftServed} · x${d.shiftCombo}`;
     const tipEl = root.querySelector('#k-tip');
@@ -671,6 +676,11 @@ export function mountShopPage(root) {
                   <span style="font-size:9px;color:#8D6242;">${r.priceBreakdown || ''}</span>
                 </button>`).join('')}</div>`
             : '<div class="empty-tip">柜台还没有可售卖的甜点哦！快去完成序章解锁第一道玛德琳吧～</div>'}
+          ${d.menuRecipes.length > 0
+            ? `<div style="margin-top:8px;padding:6px 10px;border-radius:10px;background:#FFF7E8;border:1px solid #E5C89E;font-size:11.5px;color:#6B3B18;text-align:center;">
+                 📦 开店预置备货：${d.menuRecipes.length === 1 ? '3' : '每款 2'} 份 · 初始原料成本 <b>🪙 ${d.menuRecipes.reduce((sum, r) => sum + (d.menuRecipes.length === 1 ? 3 : 2) * (r.unitCost || 0), 0)}</b>（卖完按需补烤）
+               </div>`
+            : ''}
           <div class="prep-cta-group">
             <button type="button" class="btn-primary open-btn" data-action="startBusiness">🔔 挂出营业牌 · 进入糖屋迎客</button>
             <button type="button" class="btn-secondary practice-btn" data-action="startPractice">🎓 练习引导（不消耗天数）</button>
@@ -704,15 +714,16 @@ export function mountShopPage(root) {
             <div class="ribbon-title">${s.isPractice ? '🎓 练习结束 · 不消耗天数' : `🌙 第 ${s.day} 天 · 打烊结算`}</div>
             <div class="summary-rows">
               <div class="sum-row"><span>今日成功出餐</span><span class="sum-val">${s.served} 份</span></div>
-              <div class="sum-row"><span>${s.isPractice ? '练习模拟收益' : '营业焦糖金币'}</span><span class="sum-val">${s.isPractice ? `模拟 +${s.simCoins || 0} / 实际入账 0` : `+${s.coins}`} 🪙</span></div>
+              <div class="sum-row sub"><span>营业毛收入（含小费 +${s.totalTips || 0}）</span><span class="sum-val">+${s.grossCoins || 0} 🪙</span></div>
+              <div class="sum-row sub"><span>原料总成本（备货 ${s.prepCost || 0} + 补烤 ${s.bakeCost || 0}）</span><span class="sum-val warn">-${s.totalCost || 0} 🪙</span></div>
+              <div class="sum-row"><span>${s.isPractice ? '练习模拟净利' : '本轮营业净利'}</span><span class="sum-val ${(!s.isPractice && s.coins < 0) ? 'warn' : ''}">${s.isPractice ? `模拟 ${(s.simNet || 0) >= 0 ? '+' : ''}${s.simNet || 0} / 实际入账 0` : `${s.coins >= 0 ? '+' : ''}${s.coins}`} 🪙</span></div>
               <div class="sum-row"><span>${s.isPractice ? '练习模拟口碑' : '新增店铺口碑'}</span><span class="sum-val ${!s.isPractice && s.rep < 0 ? 'warn' : ''}">${s.isPractice ? `模拟 ${s.simRep >= 0 ? '+' : ''}${s.simRep || 0} / 实际入账 0` : `${s.rep >= 0 ? '+' : ''}${s.rep}`} ⭐</span></div>
               <div class="sum-divider"></div>
-              <div class="sum-row sub"><span>累计服务小费</span><span class="sum-val">+${s.totalTips || 0} 🪙</span></div>
               <div class="sum-row sub"><span>餐桌擦拭清台</span><span class="sum-val">${s.tablesCleaned || 0} 次</span></div>
               <div class="sum-row sub"><span>后厨批量补烤</span><span class="sum-val">${s.batchesBaked || 0} 炉</span></div>
               <div class="sum-row sub"><span>流失顾客</span><span class="sum-val ${s.lost > 0 ? 'warn' : ''}">${s.lost} 位</span></div>
               <div class="sum-row sub"><span>婉拒顾客（每次 -5 口碑）</span><span class="sum-val ${(s.declined || 0) > 0 ? 'warn' : ''}">${s.declined || 0} 位</span></div>
-              <div class="sum-row sub"><span>烤糊炉次</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
+              <div class="sum-row sub"><span>烤糊炉次${(s.burntCost || 0) > 0 ? `（浪费 ${s.burntCost} 🪙）` : ''}</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
             </div>
             <div class="summary-advice">💡 ${s.advice}</div>
             <button type="button" class="btn-primary summary-close-btn" data-action="closeSummary">${s.isPractice ? '返回营业准备' : '收下营收 · 迎接明天'}</button>
@@ -804,7 +815,16 @@ export function mountShopPage(root) {
           kind: 'red'
         });
       },
-      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, totalTips = 0, tablesCleaned = 0, lostCustomers, declinedCustomers = 0, burntCount, batchesBaked = 0, undeliveredCount, isPractice }) => {
+      onBakeStartEffect: ({ ovenId, cost }) => {
+        const scene = root.querySelector('.kitchen-scene');
+        spawnFloatText(scene, {
+          xPct: ovenId === 'oven_1' ? 18 : 82,
+          yPct: 78,
+          text: `-${cost} 🪙 原料`,
+          kind: 'red'
+        });
+      },
+      onShiftEnd: ({ earnedCoins, grossCoins = 0, prepCost = 0, bakeCost = 0, totalCost = 0, burntCost = 0, earnedRep, servedCount, totalTips = 0, tablesCleaned = 0, lostCustomers, declinedCustomers = 0, burntCount, batchesBaked = 0, undeliveredCount, isPractice }) => {
         if (!isPractice) {
           recordBusinessDay({ earnedCoins, earnedRep });
         }
@@ -813,6 +833,8 @@ export function mountShopPage(root) {
           lost: lostCustomers,
           declined: declinedCustomers,
           burnt: burntCount,
+          burntCost,
+          netCoins: earnedCoins,
           batchesBaked,
           isPractice
         });
@@ -825,8 +847,13 @@ export function mountShopPage(root) {
             day: currentDay,
             served: servedCount,
             coins: isPractice ? 0 : earnedCoins,
+            grossCoins,
+            prepCost,
+            bakeCost,
+            totalCost,
+            burntCost,
+            simNet: earnedCoins,
             rep: isPractice ? 0 : earnedRep,
-            simCoins: earnedCoins,
             simRep: earnedRep,
             totalTips,
             tablesCleaned,

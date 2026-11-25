@@ -4,7 +4,7 @@
 // + 中腰玻璃展示柜预置库存 + 后厨大理石台双烤炉批量补烤
 
 import { CHARACTERS } from '../data/characters.js';
-import { getKitchenFlow } from '../data/kitchen_recipes.js';
+import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js';
 
 const CUSTOMER_POOL = [
   { npcId: 'lillian', chibiKey: 'lillian' },
@@ -38,6 +38,7 @@ export function createKitchenEngine(page, {
   onCleanEffect,
   onDeclineEffect,
   onHarvestEffect,
+  onBakeStartEffect,
   onShiftEnd
 }) {
   let timer = null;
@@ -50,6 +51,9 @@ export function createKitchenEngine(page, {
   let lostCustomers = 0;
   let declinedCustomers = 0;
   let burntCount = 0;
+  let burntCost = 0;
+  let prepCost = 0;
+  let bakeCost = 0;
   let batchesBaked = 0;
   let tablesCleaned = 0;
   let totalTips = 0;
@@ -109,11 +113,14 @@ export function createKitchenEngine(page, {
     const initQty = menuRecipes.length === 1 ? 3 : 2;
     return menuRecipes.map(r => {
       const bp = getBatchProfile(r.id);
+      const unitCost = getUnitCost(r.id);
       return {
         recipeId: r.id,
         name: r.name,
         iconImg: r.iconImg,
         price: r.price,
+        unitCost,
+        batchCost: unitCost * bp.batchSize,
         stock: initQty,
         maxStock: MAX_STOCK_PER_RECIPE,
         batchSize: bp.batchSize,
@@ -245,9 +252,17 @@ export function createKitchenEngine(page, {
     stop();
     const undeliveredCount = (page.data.ovens || []).filter(o => o.state === 'working' || o.state === 'ready').length
       + (page.data.heldItem ? 1 : 0);
+    const grossCoins = page.data.shiftGrossCoins || 0;
+    const totalCost = prepCost + bakeCost;
+    const netCoins = grossCoins - totalCost;
     if (typeof onShiftEnd === 'function') {
       onShiftEnd({
-        earnedCoins: page.data.shiftCoins,
+        earnedCoins: netCoins,
+        grossCoins,
+        prepCost,
+        bakeCost,
+        totalCost,
+        burntCost,
         earnedRep: page.data.shiftRep,
         servedCount: page.data.shiftServed,
         totalTips,
@@ -269,6 +284,8 @@ export function createKitchenEngine(page, {
     lostCustomers = 0;
     declinedCustomers = 0;
     burntCount = 0;
+    burntCost = 0;
+    bakeCost = 0;
     batchesBaked = 0;
     tablesCleaned = 0;
     totalTips = 0;
@@ -277,6 +294,7 @@ export function createKitchenEngine(page, {
     msgHoldTicks = 0;
 
     const displayStock = buildInitialDisplayStock();
+    prepCost = displayStock.reduce((sum, d) => sum + d.stock * d.unitCost, 0);
     const ovens = [
       makeEmptyOven('oven_1', '红砖批量烤炉 1', '烤炉 1'),
       makeEmptyOven('oven_2', '红砖批量烤炉 2', '烤炉 2')
@@ -295,7 +313,9 @@ export function createKitchenEngine(page, {
       pauseManual: false,
       pauseHidden: false,
       shiftTimeLeft: SHIFT_SECONDS,
-      shiftCoins: 0,
+      shiftGrossCoins: 0,
+      shiftCost: prepCost,
+      shiftCoins: -prepCost,
       shiftTips: 0,
       shiftRep: 0,
       shiftServed: 0,
@@ -371,7 +391,8 @@ export function createKitchenEngine(page, {
         const warnTick = Math.floor(OVEN_BURN_TICKS * 0.55);
         if (nextOver >= OVEN_BURN_TICKS) {
           burntCount += 1;
-          customMsg = `💨 【${o.shortName}】整盘烤糊了！点击烤炉一键清渣`;
+          burntCost += (o.batchCost || 0);
+          customMsg = `💨 【${o.shortName}】整盘烤糊浪费 ${o.batchCost || 0} 金币原料！点击烤炉清渣`;
           return Object.assign({}, o, { state: 'burnt', nearBurn: false, overcook: nextOver });
         }
         const isNearBurn = nextOver >= warnTick;
@@ -520,11 +541,17 @@ export function createKitchenEngine(page, {
     }
 
     const o = ovens[ovenIdx];
+    const cost = slot.batchCost || (getUnitCost(slot.recipeId) * slot.batchSize);
+    bakeCost += cost;
+    const totalCost = prepCost + bakeCost;
+    const nextNet = (page.data.shiftGrossCoins || 0) - totalCost;
+
     ovens[ovenIdx] = Object.assign({}, o, {
       recipeId: slot.recipeId,
       recipeName: slot.name,
       recipeIcon: slot.iconImg,
       batchSize: slot.batchSize,
+      batchCost: cost,
       duration: slot.batchDuration,
       progress: 6,
       overcook: 0,
@@ -532,14 +559,19 @@ export function createKitchenEngine(page, {
       state: 'working'
     });
 
+    page.setData({ shiftCost: totalCost, shiftCoins: nextNet });
+    if (typeof onBakeStartEffect === 'function') {
+      onBakeStartEffect({ ovenId: o.id, cost, recipeName: slot.name });
+    }
+
     syncGuide(
       page.data.heldItem,
       displayStock,
       ovens,
       page.data.seats,
-      `🔥 【${o.shortName}】开始批量烤制 ${slot.name} ×${slot.batchSize}（约 ${(slot.batchDuration / 10).toFixed(1)}s）！`
+      `🔥 【${o.shortName}】投入原料 -${cost} 🪙，批量烤制 ${slot.name} ×${slot.batchSize}！`
     );
-    return { ok: true, ovenId: o.id, recipeId: slot.recipeId };
+    return { ok: true, ovenId: o.id, recipeId: slot.recipeId, cost };
   }
 
   function tapOven(ovenId) {
@@ -617,8 +649,11 @@ export function createKitchenEngine(page, {
         onCheckoutEffect({ seatId, basePrice: seat.price, tip, earned, customerName: seat.name });
       }
 
+      const nextGross = (page.data.shiftGrossCoins || 0) + earned;
+      const totalCost = prepCost + bakeCost;
       page.setData({
-        shiftCoins: page.data.shiftCoins + earned,
+        shiftGrossCoins: nextGross,
+        shiftCoins: nextGross - totalCost,
         shiftTips: page.data.shiftTips + tip,
         shiftRep: page.data.shiftRep + rep,
         shiftServed: page.data.shiftServed + 1,

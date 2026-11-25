@@ -69,8 +69,14 @@ function getKitchenFlow(recipeId) {
   return KITCHEN_FLOWS[recipeId] || KITCHEN_FLOWS.madeleine;
 }
 
+function getUnitCost(recipeId) {
+  const flow = getKitchenFlow(recipeId);
+  return Math.round(flow.basePrice * 0.35);
+}
+
 export {
   KITCHEN_FLOWS,
   STATION_META,
-  getKitchenFlow
+  getKitchenFlow,
+  getUnitCost
 };
