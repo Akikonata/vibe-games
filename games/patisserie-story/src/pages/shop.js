@@ -482,10 +482,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
             <div class="eating-fx-float"><span>😋</span><span>💗</span></div>
             <div class="eating-prog-pill"><div class="eating-prog-fill" style="width:${s.eatProgress || 10}%;"></div></div>
             <img class="dining-chibi-guest is-eating mode-fit" src="${s.chibiImg}?v=2" alt="${s.name}" />
-            <div class="table-plated-dish">
-              <div class="table-porcelain-plate"></div>
-              <img class="table-served-dish mode-fit" src="${s.wantedIcon}" alt="" />
-            </div>
+            <img class="table-clean-plate mode-fit" src="assets/images/kitchen/prop_clean_plate.png" alt="" />
+            <img class="table-served-dish mode-fit" src="${s.wantedIcon}" alt="" />
           `;
         } else if (st === 'bill') {
           slot.innerHTML = `
@@ -612,7 +610,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       if (carryEl) {
         carryEl.innerHTML = h
           ? `<div class="coco-serving-tray">
-               <div class="coco-tray-base"></div>
+               <img class="coco-tray-plate mode-fit" src="assets/images/kitchen/prop_clean_plate.png" alt="" />
                <img class="coco-tray-dish mode-fit" src="${h.recipeIcon}" alt="" />
              </div>`
           : '';
