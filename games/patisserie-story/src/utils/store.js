@@ -88,7 +88,7 @@ export function completeLevel(levelId, rank = 'A', score = 0) {
   }
   if (level.recipeId && !progress.unlockedRecipeIds.includes(level.recipeId)) {
     progress.unlockedRecipeIds.push(level.recipeId);
-    if (progress.menuRecipeIds.length < 3) {
+    if (progress.menuRecipeIds.length < 6) {
       progress.menuRecipeIds.push(level.recipeId);
     }
   }
@@ -147,7 +147,7 @@ export function buyShopUpgrade(upgradeId, cost) {
 
 export function saveMenuRecipeIds(ids) {
   const progress = loadProgress();
-  progress.menuRecipeIds = ids.slice(0, 3);
+  progress.menuRecipeIds = ids.slice(0, 6);
   storage.set(STORAGE_KEY, progress);
   return progress;
 }

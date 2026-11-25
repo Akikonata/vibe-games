@@ -13,7 +13,7 @@ import {
   saveMenuRecipeIds,
   hasSeenTutorial,
   markTutorialSeen
-} from '../utils/store.js?v=20261126p';
+} from '../utils/store.js?v=20261126w';
 import { createTutorialCardHtml, spawnFloatText } from '../utils/tutorial.js';
 import { showToast } from '../../../../shared/web-ui.js';
 
@@ -252,7 +252,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
 
     let menuIds = progress.menuRecipeIds.filter(id => progress.unlockedRecipeIds.includes(id));
     if (menuIds.length === 0 && unlockedRecipes.length > 0) {
-      menuIds = unlockedRecipes.slice(0, 3).map(r => r.id);
+      menuIds = unlockedRecipes.slice(0, 6).map(r => r.id);
       saveMenuRecipeIds(menuIds);
       unlockedRecipes.forEach(r => { r.selected = menuIds.includes(r.id); });
     }
@@ -283,20 +283,24 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     handsSig = '';
     pauseSig = '';
 
-    const displayMarkup = (d.displayStock || []).map((slot, idx) => `
+    const dispList = d.displayStock || [];
+    const isTwoTier = dispList.length > 3;
+
+    const displayMarkup = dispList.map((slot, idx) => `
       <button type="button" id="k-disp-${slot.recipeId}" class="display-bay-btn" data-action="tapDisplay" data-id="${slot.recipeId}" data-idx="${idx}" aria-label="${slot.name}，当前库存 ${slot.stock} 份">
-        <div class="display-cake-stand">
-          <img class="display-cake-img mode-fit" src="${slot.iconImg}" alt="" />
+        <div class="display-shelf-unit">
+          <img class="display-shelf-plate mode-fit" src="assets/images/kitchen/prop_clean_plate.png" alt="" />
+          <img class="display-cake-img is-back mode-fit" src="${slot.iconImg}" alt="" />
+          <img class="display-cake-img is-front mode-fit" src="${slot.iconImg}" alt="" />
         </div>
-        <span class="display-bay-name">${getShortRecipeName({ id: slot.recipeId, name: slot.name })}</span>
-        <span id="k-disp-qty-${slot.recipeId}" class="display-qty-pill">×${slot.stock}</span>
+        <span id="k-disp-qty-${slot.recipeId}" class="display-shelf-tag">${getShortRecipeName({ id: slot.recipeId, name: slot.name })} ×${slot.stock}</span>
       </button>
     `).join('');
 
-    const batchBtnsMarkup = (d.displayStock || []).map(slot => `
+    const batchBtnsMarkup = dispList.map(slot => `
       <button type="button" id="k-batch-${slot.recipeId}" class="batch-bake-btn" data-action="startBatch" data-id="${slot.recipeId}" aria-label="批量烤制${slot.name} +${slot.batchSize}份，原料成本 ${slot.batchCost} 金币">
         <img class="batch-btn-img mode-fit" src="${slot.iconImg}" alt="" />
-        <span class="batch-btn-txt">${getShortRecipeName({ id: slot.recipeId, name: slot.name })} <b>+${slot.batchSize}</b> <small style="color:#8C5830;">-${slot.batchCost}🪙</small></span>
+        <span class="batch-btn-txt">${getShortRecipeName({ id: slot.recipeId, name: slot.name })} <b>+${slot.batchSize}</b> <small style="color:#8C5830;">-${slot.batchCost}</small></span>
       </button>
     `).join('');
 
@@ -339,7 +343,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
 
     root.innerHTML = `
       <div class="kitchen-scene is-zoned-25d ${upgClasses}">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=4" alt="" />
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=5" alt="" />
         ${sceneUpgradesMarkup}
 
         <!-- 顶部悬浮半透明营收 HUD -->
@@ -367,13 +371,16 @@ export function mountShopPage(root, _params, { navigate } = {}) {
           `).join('')}
         </div>
 
-        <!-- 独立拆分的前景柜台层（z:14，与背景同尺寸 mode-fill 严丝合缝），实现可可跨区真实前后遮挡！ -->
-        <img class="counter-25d-fg mode-fill" src="assets/images/kitchen/prop_display_counter_fg.png?v=3" alt="" aria-hidden="true" />
+        <!-- 独立拆分的柜体层板层（z:13，位于餐区可可前、柜内甜点后） -->
+        <img class="counter-25d-fg mode-fill" src="assets/images/kitchen/prop_display_counter_fg.png?v=4" alt="" aria-hidden="true" />
 
-        <!-- 区域 2：中腰玻璃甜点展示柜（预置库存 + 告急/售罄预警，直接摆在玻璃柜内） -->
-        <div class="zone-display-case" role="group" aria-label="玻璃甜点展示柜库存">
+        <!-- 区域 2：中腰双层 6 格玻璃甜点展示柜内层（z:14，甜点直接摆在瓷盘与层板上，不再是外挂卡片！） -->
+        <div class="zone-display-case ${isTwoTier ? 'is-two-tier' : ''}" role="group" aria-label="双层玻璃甜点展示柜库存">
           ${displayMarkup}
         </div>
+
+        <!-- 独立拆分的前玻璃反光与黄铜立柱前景层（z:15，pointer-events:none，真正罩在甜点前面！） -->
+        <img class="counter-25d-glass mode-fill" src="assets/images/kitchen/prop_counter_glass_front.png?v=1" alt="" aria-hidden="true" />
 
         <!-- 吧台木板沿上的单行实时提示 -->
         <div id="k-tip" class="zoned-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
@@ -390,9 +397,9 @@ export function mountShopPage(root, _params, { navigate } = {}) {
           <!-- 底部大理石操作台面上的双批量烤炉 + 指定补烤选单 -->
           <div class="zone-marble-bench" aria-label="后厨烘焙大理石台">
             ${ovensMarkup}
-            <div class="bench-batch-center" role="group" aria-label="后厨批量补烤甜点">
+            <div class="bench-batch-center ${isTwoTier ? 'is-multi' : ''}" role="group" aria-label="后厨批量补烤甜点">
               <span class="bench-batch-title">🔥 批量补烤</span>
-              <div class="bench-batch-list">${batchBtnsMarkup}</div>
+              <div class="bench-batch-list ${isTwoTier ? 'is-multi' : ''}">${batchBtnsMarkup}</div>
             </div>
           </div>
 
@@ -526,8 +533,9 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       const nextSig = `${slot.stock}:${stockClass}`;
       if (displaySigs[slot.recipeId] !== nextSig) {
         displaySigs[slot.recipeId] = nextSig;
-        qtyEl.textContent = slot.stock <= 0 ? '🔥 售罄' : (slot.stock === 1 ? '⚠️ 余1' : `×${slot.stock}`);
-        qtyEl.className = `display-qty-pill ${stockClass}`;
+        const shortN = getShortRecipeName({ id: slot.recipeId, name: slot.name });
+        qtyEl.textContent = slot.stock <= 0 ? `${shortN} 售罄` : (slot.stock === 1 ? `${shortN} 余1` : `${shortN} ×${slot.stock}`);
+        qtyEl.className = `display-shelf-tag ${stockClass}`;
       }
 
       if (batchBtn) {
@@ -713,8 +721,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       mainSectionHtml = `
         <div class="card prep-card">
           <div class="prep-head">
-            <span class="prep-title">🥐 今日展示柜上架（选 1~3 道，开店自带预置库存）</span>
-            <span class="prep-count">已选 ${d.menuRecipes.length} / 3</span>
+            <span class="prep-title">🥐 今日双层展示柜上架（选 1~6 道，开店自带预置库存）</span>
+            <span class="prep-count">已选 ${d.menuRecipes.length} / 6</span>
           </div>
           ${d.unlockedRecipes.length > 0
             ? `<div class="menu-grid">${d.unlockedRecipes.map(r => `
@@ -758,7 +766,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
             <span class="upg-preview-sub">购入后立即呈现在门面与营业内景</span>
           </div>
           <div class="upg-preview-stage ${ownedIds.map(id => `has-upg-${id}`).join(' ')}">
-            <img class="upg-preview-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=4" alt="糖屋装潢预览" />
+            <img class="upg-preview-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=5" alt="糖屋装潢预览" />
             ${hasOwned('crystal_lamp') ? `
               <div class="scene-upg-chandelier is-mini"><div class="chandelier-warm-wash"></div><img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_chandelier.png" alt="" /></div>
             ` : ''}
@@ -1039,7 +1047,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         if (ids.length <= 1) { showToast('至少保留 1 道上架甜点哦'); return; }
         ids = ids.filter(x => x !== id);
       } else {
-        if (ids.length >= 3) { showToast('今日菜单最多同时上架 3 道甜点'); return; }
+        if (ids.length >= 6) { showToast('双层展示柜最多同时上架 6 道甜点'); return; }
         ids.push(id);
       }
       saveMenuRecipeIds(ids);
@@ -1073,7 +1081,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       launchKitchenShift({ tutorialMode: false, practiceMode: true });
     } else if (action === 'tapDisplay') {
       const idx = Number(target.dataset.idx) || 0;
-      moveCocoTo(`disp_${Math.min(2, idx)}`, '🧁');
+      moveCocoTo(`disp_${idx % 3}`, '🧁');
       pulseProp(`#k-disp-${target.dataset.id}`);
       kitchen?.tapDisplay(target.dataset.id);
     } else if (action === 'tapOven') {

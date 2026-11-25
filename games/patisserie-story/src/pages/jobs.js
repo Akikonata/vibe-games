@@ -5,7 +5,7 @@ import { PART_TIME_JOBS } from '../data/part_time_jobs.js';
 import { RECIPES } from '../data/recipes.js';
 import { computeShopBonuses } from '../data/shop_upgrades.js';
 import { getUnitCost } from '../data/kitchen_recipes.js?v=20261126p';
-import { loadProgress, recordPartTimeJob } from '../utils/store.js?v=20261126p';
+import { loadProgress, recordPartTimeJob } from '../utils/store.js?v=20261126w';
 import { spawnFloatText } from '../utils/tutorial.js';
 import { showToast } from '../../../../shared/web-ui.js';
 
@@ -54,7 +54,7 @@ export function computeRequiredOpeningPrepCost(progress) {
   const bonuses = computeShopBonuses(progress.purchasedUpgradeIds || []);
   const unlockedIds = progress.unlockedRecipeIds || [];
   let menuIds = (progress.menuRecipeIds || []).filter(id => unlockedIds.includes(id));
-  if (menuIds.length === 0 && unlockedIds.length > 0) menuIds = unlockedIds.slice(0, 3);
+  if (menuIds.length === 0 && unlockedIds.length > 0) menuIds = unlockedIds.slice(0, 6);
   if (menuIds.length === 0) return 0;
 
   const initStock = menuIds.length === 1 ? 3 : 2;
