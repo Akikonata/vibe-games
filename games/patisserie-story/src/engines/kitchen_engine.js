@@ -4,7 +4,7 @@
 // + 中腰玻璃展示柜预置库存 + 后厨大理石台双烤炉批量补烤
 
 import { CHARACTERS } from '../data/characters.js';
-import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js';
+import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js?v=20261126p';
 
 const CUSTOMER_POOL = [
   { npcId: 'lillian', chibiKey: 'lillian' },

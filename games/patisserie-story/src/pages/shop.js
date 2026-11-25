@@ -3,8 +3,8 @@
 
 import { RECIPES } from '../data/recipes.js';
 import { SHOP_UPGRADES, computeShopBonuses } from '../data/shop_upgrades.js';
-import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js';
-import { createKitchenEngine } from '../engines/kitchen_engine.js';
+import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js?v=20261126p';
+import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261126p';
 import {
   loadProgress,
   getShopTierTitle,
