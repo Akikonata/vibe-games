@@ -1646,14 +1646,14 @@
 .page-shop .coco-25d-carry {
   position: absolute;
   top: 49.5%;
-  left: 41.5%;
+  left: 58.5%;
   transform: translate(-50%, -50%);
   z-index: 4;
   pointer-events: none;
 }
 
 .page-shop .coco-25d-actor.face-left .coco-25d-carry {
-  left: 58.5%;
+  left: 41.5%;
 }
 
 /* 可可双手掌心正上方托着的镶金托盘 + 甜点（随左右朝向自动镜像对齐双掌，不挡脸不掉膝盖） */
