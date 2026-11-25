@@ -1645,11 +1645,43 @@
 
 .page-shop .coco-25d-carry {
   position: absolute;
-  top: 48%;
+  top: 63%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 4;
   pointer-events: none;
+}
+
+/* 可可双手端着的木质镶金托盘 + 小巧甜点（落位腰际双手处，绝不遮脸！） */
+.page-shop .coco-serving-tray {
+  position: relative;
+  width: 40px;
+  height: 26px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.page-shop .coco-tray-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 42%, #FFFDF7 0%, #F4E8D4 58%, #B5753C 62%, #7D461C 100%);
+  border: 1.5px solid #E5B97C;
+  box-shadow: 0 3px 5px rgba(38, 16, 4, 0.42);
+}
+
+.page-shop .coco-tray-dish {
+  position: relative;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 5px;
+  filter: drop-shadow(0 2px 2px rgba(42, 18, 6, 0.36));
 }
 
 .page-shop .dish-vis.sz-carry {
@@ -2168,15 +2200,41 @@
   animation: chibiEatBob 0.38s ease-in-out infinite alternate;
 }
 
-.page-shop .table-served-dish {
+/* 享用中：骨瓷小餐盘 + 摆盘甜点（2.5D 椭圆俯角匹配桌面，与吃完后的残渣盘自然衔接） */
+.page-shop .table-plated-dish {
   position: absolute;
   left: 68%;
-  bottom: 55px;
+  bottom: 54px;
   transform: translateX(-50%);
-  width: 28px;
+  width: 32px;
   height: 28px;
   z-index: 6;
-  filter: drop-shadow(0 2px 2px rgba(48, 22, 6, 0.42));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.page-shop .table-porcelain-plate {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 17px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 44%, #FFFFFF 0%, #FFF7E8 62%, #E5D1B3 85%, #C9A97E 100%);
+  border: 1.5px solid #D9B06A;
+  box-shadow: 0 2px 3px rgba(48, 22, 6, 0.42), inset 0 0 0 2px rgba(255, 255, 255, 0.72);
+}
+
+.page-shop .table-served-dish {
+  position: relative;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 5px;
+  filter: drop-shadow(0 2px 2px rgba(48, 22, 6, 0.38));
   animation: dishNibble 0.55s ease-in-out infinite alternate;
   pointer-events: none;
 }
@@ -2283,8 +2341,8 @@
 }
 
 @keyframes dishNibble {
-  0% { transform: translateX(-50%) scale(1); }
-  100% { transform: translateX(-50%) scale(0.92); }
+  0% { transform: scale(1); }
+  100% { transform: scale(0.92); }
 }
 
 .page-shop .zoned-coco-bar {
