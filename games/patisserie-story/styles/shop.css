@@ -858,7 +858,7 @@
 .page-shop .sprite-cream { width: 118px; height: 118px; }
 
 .page-shop .pos-pantry { left: 50%; top: 72%; z-index: 14; }
-.page-shop .sprite-pantry { width: 132px; height: 132px; }
+.page-shop .sprite-pantry { width: 132px; height: 132px; position: relative; z-index: 1; }
 
 .page-shop .pos-decor { left: 80%; top: 75%; }
 .page-shop .sprite-decor { width: 120px; height: 120px; }
@@ -921,7 +921,9 @@
 
 /* 原料篮甜点标识 */
 .page-shop .pantry-badge-pill {
-  margin-top: -16px;
+  position: relative;
+  z-index: 3;
+  margin-top: -14px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -941,9 +943,11 @@
 }
 
 .page-shop .pantry-picks {
-  margin-top: -22px;
+  position: relative;
+  z-index: 3;
+  margin-top: -14px;
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .page-shop .pantry-pick-orb {
