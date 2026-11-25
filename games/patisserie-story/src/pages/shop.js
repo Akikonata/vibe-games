@@ -86,19 +86,23 @@ export function mountShopPage(root) {
   let handsSig = '';
   let pauseSig = '';
 
-  // 2.5D 可可地板走位状态（在陶砖过道与餐区/展示柜/大理石烤台间移动）
+  // 2.5D 可可多段寻路走位状态（跨区必须经由右侧柜台小门进出，绝不穿墙/穿玻璃柜！）
   let cocoPos = { x: 50, y: 69, facing: 1 };
   let cocoWalkTimer = null;
+  let cocoPathRunId = 0;
+
+  const GATE_SOUTH = { x: 87.5, y: 64 };
+  const GATE_NORTH = { x: 87.5, y: 40 };
 
   const COCO_WAYPOINTS = {
-    seat_0: { x: 24, y: 39 },
-    seat_1: { x: 50, y: 39 },
-    seat_2: { x: 76, y: 39 },
-    disp_0: { x: 25, y: 63 },
-    disp_1: { x: 50, y: 63 },
-    disp_2: { x: 75, y: 63 },
-    oven_1: { x: 26, y: 74 },
-    oven_2: { x: 74, y: 74 },
+    seat_0: { x: 24, y: 38 },
+    seat_1: { x: 50, y: 38 },
+    seat_2: { x: 74, y: 38 },
+    disp_0: { x: 21, y: 63 },
+    disp_1: { x: 44, y: 63 },
+    disp_2: { x: 67, y: 63 },
+    oven_1: { x: 24, y: 74 },
+    oven_2: { x: 76, y: 74 },
     batch:  { x: 50, y: 74 }
   };
 
@@ -119,34 +123,62 @@ export function mountShopPage(root) {
     const scene = root.querySelector('.kitchen-scene');
     if (!wp || !actor) return;
 
-    const prevX = cocoPos.x;
-    const prevY = cocoPos.y;
-    const dx = wp.x - prevX;
-    const dy = wp.y - prevY;
-    const dist = Math.hypot(dx, dy);
-    const moved = dist > 2;
-    if (Math.abs(dx) > 1.5) cocoPos.facing = dx < 0 ? -1 : 1;
-    cocoPos.x = wp.x;
-    cocoPos.y = wp.y;
+    // 取消上一段未走完的路径，从当前视觉坐标无缝起新路径
+    cocoPathRunId += 1;
+    const runId = cocoPathRunId;
+    clearTimeout(cocoWalkTimer);
 
-    const walkMs = moved ? Math.max(260, Math.min(620, Math.round(dist * 11))) : 0;
-    actor.style.transitionDuration = `${walkMs}ms`;
-    actor.style.left = `${wp.x}%`;
-    actor.style.top = `${wp.y}%`;
-    actor.classList.toggle('face-left', cocoPos.facing < 0);
+    const currDining = cocoPos.y < 52;
+    const destDining = wp.y < 52;
+    const queue = [];
 
-    if (moved) {
-      actor.classList.add('is-walking');
-      spawnStepBurst(scene, prevX, prevY + 3, '💨', 'dust');
-      clearTimeout(cocoWalkTimer);
-      cocoWalkTimer = setTimeout(() => {
+    if (!currDining && destDining) {
+      // 后厨 -> 餐区：先走到右侧门南口 -> 穿过右侧柜台门 -> 走到目标餐桌
+      queue.push(GATE_SOUTH, GATE_NORTH, wp);
+    } else if (currDining && !destDining) {
+      // 餐区 -> 后厨：先走到右侧门北口 -> 穿回右侧柜台门 -> 走到展示柜或烤炉
+      queue.push(GATE_NORTH, GATE_SOUTH, wp);
+    } else {
+      queue.push(wp);
+    }
+
+    function stepNext(idx) {
+      if (runId !== cocoPathRunId || destroyed) return;
+      if (idx >= queue.length) {
         actor.classList.remove('is-walking');
-      }, walkMs);
+        if (burstEmoji && scene) {
+          spawnStepBurst(scene, cocoPos.x, cocoPos.y - 5, burstEmoji, 'spark');
+        }
+        return;
+      }
+
+      const next = queue[idx];
+      const dx = next.x - cocoPos.x;
+      const dy = next.y - cocoPos.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 2) {
+        stepNext(idx + 1);
+        return;
+      }
+
+      if (Math.abs(dx) > 1.2) cocoPos.facing = dx < 0 ? -1 : 1;
+      const prevX = cocoPos.x;
+      const prevY = cocoPos.y;
+      cocoPos.x = next.x;
+      cocoPos.y = next.y;
+
+      const segMs = Math.max(150, Math.min(460, Math.round(dist * 7.5)));
+      actor.style.transitionDuration = `${segMs}ms`;
+      actor.style.left = `${next.x}%`;
+      actor.style.top = `${next.y}%`;
+      actor.classList.toggle('face-left', cocoPos.facing < 0);
+      actor.classList.add('is-walking');
+      if (idx === 0) spawnStepBurst(scene, prevX, prevY + 3, '💨', 'dust');
+
+      cocoWalkTimer = setTimeout(() => stepNext(idx + 1), segMs);
     }
 
-    if (burstEmoji && scene) {
-      spawnStepBurst(scene, wp.x, wp.y - 5, burstEmoji, 'spark');
-    }
+    stepNext(0);
   }
 
   function pulseProp(selector) {
@@ -272,7 +304,7 @@ export function mountShopPage(root) {
 
     root.innerHTML = `
       <div class="kitchen-scene is-zoned-25d">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg" alt="" />
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=2" alt="" />
 
         <!-- 顶部悬浮半透明营收 HUD -->
         <div class="scene-hud">

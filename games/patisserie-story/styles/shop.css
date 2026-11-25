@@ -1865,18 +1865,18 @@
   border-radius: 999px;
 }
 
-/* 中腰：玻璃展示柜库存槽位（精确落入三格黄铜玻璃展示柜内） */
+/* 中腰：玻璃展示柜库存槽位（精确落入左侧三格黄铜玻璃展示柜内，右侧完整留出木栅进出小门） */
 .page-shop .zone-display-case {
   position: absolute;
   top: 41.5%;
-  left: 10%;
-  right: 10%;
+  left: 9%;
+  right: 23%;
   height: 11.5%;
   z-index: 15;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .page-shop .display-bay-btn {
