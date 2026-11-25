@@ -111,8 +111,8 @@ export function completeLevel(levelId, rank = 'A', score = 0) {
 
 export function recordBusinessDay({ earnedCoins = 0, earnedRep = 0 }) {
   const progress = loadProgress();
-  progress.coins += Math.round(earnedCoins);
-  progress.reputation += Math.round(earnedRep);
+  progress.coins = Math.max(0, progress.coins + Math.round(earnedCoins));
+  progress.reputation = Math.max(0, progress.reputation + Math.round(earnedRep));
   progress.day += 1;
   storage.set(STORAGE_KEY, progress);
   return progress;

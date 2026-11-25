@@ -126,6 +126,83 @@ export function mountShopPage(root) {
   let holdSig = '';
   let pauseSig = '';
 
+  // 2.5D 可可走位与步骤动画状态
+  let cocoPos = { x: 50, y: 52, facing: 1 };
+  let cocoWalkTimer = null;
+
+  const COCO_WAYPOINTS = {
+    pantry:  { x: 50, y: 63 },
+    oven_1:  { x: 35, y: 45 },
+    oven_2:  { x: 65, y: 45 },
+    cream_1: { x: 34, y: 63 },
+    decor_1: { x: 66, y: 63 },
+    hold:    { x: 34, y: 74 },
+    trash:   { x: 66, y: 74 },
+    seat_0:  { x: 34, y: 36 },
+    seat_1:  { x: 50, y: 36 },
+    seat_2:  { x: 66, y: 36 }
+  };
+
+  function moveCocoTo(targetKey, burstEmoji = '') {
+    const wp = COCO_WAYPOINTS[targetKey];
+    const actor = root.querySelector('#k-coco-actor');
+    const scene = root.querySelector('.kitchen-scene');
+    if (!wp || !actor) return;
+
+    const prevX = cocoPos.x;
+    const prevY = cocoPos.y;
+    const dx = wp.x - prevX;
+    const dy = wp.y - prevY;
+    const moved = Math.hypot(dx, dy) > 2;
+    if (Math.abs(dx) > 1.5) cocoPos.facing = dx < 0 ? -1 : 1;
+    cocoPos.x = wp.x;
+    cocoPos.y = wp.y;
+
+    actor.style.left = `${wp.x}%`;
+    actor.style.top = `${wp.y}%`;
+    actor.classList.toggle('face-left', cocoPos.facing < 0);
+
+    if (moved) {
+      actor.classList.add('is-walking');
+      spawnStepBurst(scene, prevX, prevY + 4, '💨', 'dust');
+      clearTimeout(cocoWalkTimer);
+      cocoWalkTimer = setTimeout(() => {
+        actor.classList.remove('is-walking');
+        actor.classList.add('is-acting');
+        setTimeout(() => actor.classList.remove('is-acting'), 260);
+      }, 280);
+    } else {
+      actor.classList.remove('is-acting');
+      void actor.offsetWidth;
+      actor.classList.add('is-acting');
+      setTimeout(() => actor.classList.remove('is-acting'), 260);
+    }
+
+    if (burstEmoji && scene) {
+      spawnStepBurst(scene, wp.x, wp.y - 5, burstEmoji, 'spark');
+    }
+  }
+
+  function pulseProp(selector) {
+    const el = root.querySelector(selector);
+    if (!el) return;
+    el.classList.remove('anim-bump');
+    void el.offsetWidth;
+    el.classList.add('anim-bump');
+    setTimeout(() => el.classList.remove('anim-bump'), 320);
+  }
+
+  function spawnStepBurst(container, xPct, yPct, emoji, kind = 'spark') {
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = `k25d-fx fx-${kind}`;
+    el.style.left = `${xPct}%`;
+    el.style.top = `${yPct}%`;
+    el.textContent = emoji;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
+
   const pageProxy = {
     data: {
       activeTab: 'counter',
@@ -260,8 +337,8 @@ export function mountShopPage(root) {
     `).join('');
 
     root.innerHTML = `
-      <div class="kitchen-scene">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/kitchen_scene_bg.jpg" alt="" />
+      <div class="kitchen-scene is-25d">
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/kitchen_25d_bg.jpg" alt="" />
 
         <!-- 顶部悬浮半透明营收 HUD + 暂停/帮助语义按钮 -->
         <div class="scene-hud">
@@ -278,20 +355,27 @@ export function mountShopPage(root) {
         <div id="k-tut-coach"></div>
         <div id="k-tut-finger" class="tut-finger-pointer" aria-hidden="true" style="display:none;">👇</div>
 
-        <!-- 吧台后方：3 位二次元立绘顾客直接站立点单 -->
+        <!-- 吧台窗口：3 位顾客与可婉拒订单卡 -->
         <div class="scene-customers">
-          ${[0, 1, 2].map(id => `<button type="button" id="k-seat-${id}" class="scene-customer is-empty" data-action="tapSeat" data-id="${id}" aria-label="空座位" disabled></button>`).join('')}
+          ${[0, 1, 2].map(id => `<div id="k-seat-wrap-${id}" class="scene-customer-wrap"><button type="button" id="k-seat-${id}" class="scene-customer is-empty" data-action="tapSeat" data-id="${id}" aria-label="空座位" disabled></button><button type="button" id="k-decline-${id}" class="cust-decline-btn" data-action="declineSeat" data-id="${id}" aria-label="婉拒顾客空出座位" title="不接待（空出座位，口碑-5）" style="display:none;">✕ 婉拒</button></div>`).join('')}
         </div>
 
         <!-- 吧台沿上的轻盈提示条 -->
         <div id="k-tip" class="scene-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
 
-        <!-- 大理石与橡木实景工作台 -->
+        <!-- 2.5D U型大理石与橡木实景工作台 + 可可主厨地板走位层 -->
         <div class="scene-workbench">
           ${stationsMarkup}
           ${pantryMarkup}
 
-          <!-- 底部左：大理石暂存碟 -->
+          <!-- 中央木地板上自由跑动的 2.5D Q版可可主厨 -->
+          <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:52%;" aria-hidden="true">
+            <div class="coco-25d-shadow"></div>
+            <img class="coco-25d-sprite mode-fit" src="assets/images/kitchen/coco_chef_25d.png" alt="" />
+            <div id="k-coco-carry" class="coco-25d-carry"></div>
+          </div>
+
+          <!-- 左下：大理石暂存碟 -->
           <button type="button" id="k-hold" class="scene-prop pos-hold" data-action="tapHold" aria-label="大理石暂存台：空闲" title="暂存台">
             <div class="hold-saucer">
               <div id="k-hold-vis" class="hold-vis-wrap" style="display:none;"></div>
@@ -305,7 +389,7 @@ export function mountShopPage(root) {
             <div id="k-hands" class="tray-held-slot"></div>
           </div>
 
-          <!-- 底部右：复古回收铜桶 -->
+          <!-- 右下：复古回收铜桶 -->
           <button type="button" id="k-trash" class="scene-prop pos-trash" data-action="tapTrash" aria-label="回收铜桶：丢弃手中物品" title="丢弃">
             <img class="prop-sprite sprite-trash mode-fit" src="assets/images/kitchen/prop_copper_bin.png" alt="" />
             <span class="prop-mini-label">回收桶</span>
@@ -316,6 +400,7 @@ export function mountShopPage(root) {
         <div id="k-pause-mask"></div>
       </div>
     `;
+    cocoPos = { x: 50, y: 52, facing: 1 };
     kitchenMounted = true;
   }
 
@@ -339,14 +424,19 @@ export function mountShopPage(root) {
       pauseBtn.setAttribute('aria-label', d.isPaused ? '继续营业' : '暂停营业');
     }
 
-    // 1. 增量更新前厅 3 位立绘顾客
+    // 1. 增量更新前厅 3 位立绘顾客 + 婉拒按钮
     (d.seats || []).forEach((s, idx) => {
       const slot = root.querySelector(`#k-seat-${s.id}`);
+      const decBtn = root.querySelector(`#k-decline-${s.id}`);
       if (!slot) return;
       const isGlow = d.highlightTarget === 'seat_' + s.id;
       slot.className = `scene-customer ${s.occupied ? 'is-occupied' : 'is-empty'} ${isGlow ? 'is-scene-glow' : ''}`;
       slot.disabled = !s.occupied;
       slot.setAttribute('aria-label', s.occupied ? `顾客${s.name}：想要${s.wantedName}${isGlow ? '，点击上菜' : ''}` : '空座位');
+      if (decBtn) {
+        decBtn.style.display = s.occupied ? 'inline-flex' : 'none';
+        decBtn.setAttribute('aria-label', s.occupied ? `不接待${s.name}（空出座位，口碑-5）` : '空座位');
+      }
       const sig = s.occupied ? `1:${s.npcId}:${s.wantedId}:${isGlow ? 1 : 0}` : '0';
       if (seatSigs[idx] !== sig) {
         seatSigs[idx] = sig;
@@ -382,6 +472,7 @@ export function mountShopPage(root) {
     if (handsSig !== nextHandsSig) {
       handsSig = nextHandsSig;
       const handsEl = root.querySelector('#k-hands');
+      const carryEl = root.querySelector('#k-coco-carry');
       if (handsEl) {
         handsEl.innerHTML = h
           ? `${renderDishVisualHtml(h, 'sz-tray')}
@@ -390,6 +481,9 @@ export function mountShopPage(root) {
                <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''} ${h.stepIndex > 0 && !h.isFinished && !h.isBurnt ? 'semi' : ''}">${nextStepText}</span>
              </div>`
           : '<span class="tray-empty-txt">空手 · 点原料篮取料</span>';
+      }
+      if (carryEl) {
+        carryEl.innerHTML = h ? renderDishVisualHtml(h, 'sz-carry') : '';
       }
     }
 
@@ -421,13 +515,20 @@ export function mountShopPage(root) {
             ? `<span class="prop-pill guide-next">${NEXT_STATION_HINT[st.type] || '👉 放这里'}</span>`
             : '<span class="prop-state-tag idle">空闲</span>';
         } else if (st.state === 'working') {
+          const workFx = st.type === 'oven'
+            ? '<div class="st-anim-steam"><span>♨️</span><span>✨</span></div>'
+            : (st.type === 'cream'
+              ? '<div class="st-anim-swirl"><span>🧁</span><span>💫</span></div>'
+              : '<div class="st-anim-snow"><span>❄️</span><span>✨</span></div>');
           ov.innerHTML = `
+            ${workFx}
             ${renderDishVisualHtml(st.item, 'sz-station')}
             <div class="prop-prog-track"><div class="prop-prog-fill" style="width:${st.progress}%;"></div></div>
             <span class="prop-state-tag working">制作中 <b class="prog-num">${st.progress}%</b></span>
           `;
         } else if (st.state === 'ready' && st.nearBurn) {
           ov.innerHTML = `
+            <div class="st-anim-smoke warn"><span>💨</span><span>🔥</span></div>
             ${renderDishVisualHtml(st.item, 'sz-station', 'ready-pop')}
             <span class="prop-pill near-burn">🔥 快烤糊!</span>
           `;
@@ -438,6 +539,7 @@ export function mountShopPage(root) {
           `;
         } else {
           ov.innerHTML = `
+            <div class="st-anim-smoke burnt"><span>💨</span><span>💨</span></div>
             ${renderDishVisualHtml(st.item, 'sz-station')}
             <span class="prop-pill burnt">💨 已烤糊</span>
           `;
@@ -643,9 +745,10 @@ export function mountShopPage(root) {
             <div class="summary-rows">
               <div class="sum-row"><span>今日成功出餐</span><span class="sum-val">${s.served} 份</span></div>
               <div class="sum-row"><span>${s.isPractice ? '练习模拟收益' : '营业焦糖金币'}</span><span class="sum-val">${s.isPractice ? `模拟 +${s.simCoins || 0} / 实际入账 0` : `+${s.coins}`} 🪙</span></div>
-              <div class="sum-row"><span>${s.isPractice ? '练习模拟口碑' : '新增店铺口碑'}</span><span class="sum-val">${s.isPractice ? `模拟 +${s.simRep || 0} / 实际入账 0` : `+${s.rep}`} ⭐</span></div>
+              <div class="sum-row"><span>${s.isPractice ? '练习模拟口碑' : '新增店铺口碑'}</span><span class="sum-val ${!s.isPractice && s.rep < 0 ? 'warn' : ''}">${s.isPractice ? `模拟 ${s.simRep >= 0 ? '+' : ''}${s.simRep || 0} / 实际入账 0` : `${s.rep >= 0 ? '+' : ''}${s.rep}`} ⭐</span></div>
               <div class="sum-divider"></div>
               <div class="sum-row sub"><span>流失顾客</span><span class="sum-val ${s.lost > 0 ? 'warn' : ''}">${s.lost} 位</span></div>
+              <div class="sum-row sub"><span>婉拒顾客（每次 -5 口碑）</span><span class="sum-val ${(s.declined || 0) > 0 ? 'warn' : ''}">${s.declined || 0} 位</span></div>
               <div class="sum-row sub"><span>烤糊次数</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
               <div class="sum-row sub"><span>打烊未交付</span><span class="sum-val ${s.undelivered > 0 ? 'warn' : ''}">${s.undelivered} 份</span></div>
             </div>
@@ -699,7 +802,18 @@ export function mountShopPage(root) {
           kind: 'gold'
         });
       },
-      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, lostCustomers, burntCount, undeliveredCount, isPractice }) => {
+      onDeclineEffect: ({ seatId, repPenalty }) => {
+        const scene = root.querySelector('.kitchen-scene');
+        const xMap = [18, 50, 82];
+        moveCocoTo(`seat_${seatId}`, '🚪');
+        spawnFloatText(scene, {
+          xPct: xMap[seatId] || 50,
+          yPct: 20,
+          text: repPenalty > 0 ? `婉拒 · 口碑 -${repPenalty} ⭐` : '已婉拒（练习）',
+          kind: 'red'
+        });
+      },
+      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, lostCustomers, declinedCustomers = 0, burntCount, undeliveredCount, isPractice }) => {
         if (!isPractice) {
           recordBusinessDay({ earnedCoins, earnedRep });
         }
@@ -723,6 +837,7 @@ export function mountShopPage(root) {
             simCoins: earnedCoins,
             simRep: earnedRep,
             lost: lostCustomers,
+            declined: declinedCustomers,
             burnt: burntCount,
             undelivered: undeliveredCount,
             isPractice,
@@ -837,22 +952,41 @@ export function mountShopPage(root) {
       const before = pageProxy.data.heldItem;
       const waitingSeat = (pageProxy.data.seats || []).find(s => s.occupied);
       const targetId = (waitingSeat && waitingSeat.wantedId) || (pageProxy.data.menuRecipes[0] && pageProxy.data.menuRecipes[0].id);
+      moveCocoTo('pantry', '✨');
+      pulseProp('.pantry-basket-btn');
       if (targetId) kitchen?.pickRaw(targetId);
       if (!before && pageProxy.data.heldItem) {
-        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 64, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
+        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
       }
     } else if (action === 'pickRaw') {
       const before = pageProxy.data.heldItem;
+      moveCocoTo('pantry', '✨');
+      pulseProp('.pantry-basket-btn');
       kitchen?.pickRaw(target.dataset.id);
       if (!before && pageProxy.data.heldItem) {
-        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 64, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
+        spawnFloatText(root.querySelector('.kitchen-scene'), { xPct: 50, yPct: 68, text: `🥣 ${getShortRecipeName({ id: pageProxy.data.heldItem.recipeId, name: pageProxy.data.heldItem.recipeName })}`, kind: 'cream' });
       }
     } else if (action === 'tapStation') {
-      kitchen?.tapStation(target.dataset.id);
-    } else if (action === 'tapHold') kitchen?.tapHold();
-    else if (action === 'tapTrash') kitchen?.tapTrash();
-    else if (action === 'tapSeat') kitchen?.tapSeat(Number(target.dataset.id));
-    else if (action === 'closeSummary') pageProxy.setData({ daySummary: null });
+      const stId = target.dataset.id;
+      const fx = stId.startsWith('oven') ? '🔥' : (stId.startsWith('cream') ? '🧁' : '✨');
+      moveCocoTo(stId, fx);
+      pulseProp(`#k-st-${stId}`);
+      kitchen?.tapStation(stId);
+    } else if (action === 'tapHold') {
+      moveCocoTo('hold', '🍽️');
+      pulseProp('#k-hold');
+      kitchen?.tapHold();
+    } else if (action === 'tapTrash') {
+      moveCocoTo('trash', '💨');
+      pulseProp('#k-trash');
+      kitchen?.tapTrash();
+    } else if (action === 'tapSeat') {
+      const seatId = Number(target.dataset.id);
+      moveCocoTo(`seat_${seatId}`, '🍰');
+      kitchen?.tapSeat(seatId);
+    } else if (action === 'declineSeat') {
+      kitchen?.declineSeat(Number(target.dataset.id));
+    } else if (action === 'closeSummary') pageProxy.setData({ daySummary: null });
     else if (action === 'buyUpgrade') {
       const upg = SHOP_UPGRADES.find(u => u.id === target.dataset.id);
       if (!upg) return;

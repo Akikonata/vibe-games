@@ -7,6 +7,7 @@ import { getKitchenFlow, STATION_META } from '../data/kitchen_recipes.js';
 
 const CUSTOMER_POOL = ['lillian', 'theo', 'bart', 'emily', 'casper', 'madeleine'];
 const SHIFT_SECONDS = 45;
+const DECLINE_REP_PENALTY = 5;
 
 export function createKitchenEngine(page, {
   menuRecipes,
@@ -15,6 +16,8 @@ export function createKitchenEngine(page, {
   practiceMode = false,
   onTutorialDone,
   onServeEffect,
+  onDeclineEffect,
+  onActionEffect,
   onShiftEnd
 }) {
   let timer = null;
@@ -25,8 +28,10 @@ export function createKitchenEngine(page, {
   let msgHoldTicks = 0;
 
   let lostCustomers = 0;
+  let declinedCustomers = 0;
   let burntCount = 0;
   let discardedCount = 0;
+  let refillTimers = [0, 0, 0];
 
   function isPaused() {
     return pauseReasons.size > 0;
@@ -158,6 +163,7 @@ export function createKitchenEngine(page, {
         earnedRep: page.data.shiftRep,
         servedCount: page.data.shiftServed,
         lostCustomers,
+        declinedCustomers,
         burntCount,
         undeliveredCount,
         discardedCount,
@@ -171,8 +177,10 @@ export function createKitchenEngine(page, {
     tick = 0;
     ended = false;
     lostCustomers = 0;
+    declinedCustomers = 0;
     burntCount = 0;
     discardedCount = 0;
+    refillTimers = [0, 0, 0];
     pauseReasons.clear();
     msgHoldTicks = 0;
 
@@ -329,7 +337,17 @@ export function createKitchenEngine(page, {
         return Object.assign({}, s, { patience: nextP });
       });
 
-      if (!frozenClock && seats.every(s => !s.occupied)) {
+      // 婉拒后短暂空位缓冲（约 1.5s 后补入新客人）
+      for (let i = 0; i < 3; i++) {
+        if (refillTimers[i] > 0) {
+          refillTimers[i] -= 1;
+          if (refillTimers[i] === 0 && !seats[i].occupied) {
+            seats = spawnCustomerInto(seats);
+          }
+        }
+      }
+
+      if (!frozenClock && seats.every(s => !s.occupied) && refillTimers.every(t => t <= 0)) {
         seats = spawnCustomerInto(seats);
       } else if (!frozenClock && tick > 0 && tick % 35 === 0) {
         seats = spawnCustomerInto(seats);
@@ -557,6 +575,41 @@ export function createKitchenEngine(page, {
     );
   }
 
+  // 婉拒顾客：主动空出座位，但会扣除口碑并重置连击
+  function declineSeat(seatId) {
+    if (ended || isPaused()) return;
+    const seats = page.data.seats.slice();
+    const seat = seats[seatId];
+    if (!seat || !seat.occupied) return;
+
+    declinedCustomers += 1;
+    seats[seatId] = { id: seatId, occupied: false };
+    refillTimers[seatId] = 15; // 1.5s 后自动迎来下一位新客人
+
+    const nextRep = practiceMode ? page.data.shiftRep : (page.data.shiftRep - DECLINE_REP_PENALTY);
+    page.setData({
+      shiftRep: nextRep,
+      shiftCombo: 0
+    });
+
+    if (typeof onDeclineEffect === 'function') {
+      onDeclineEffect({
+        seatId,
+        customerName: seat.name,
+        repPenalty: practiceMode ? 0 : DECLINE_REP_PENALTY
+      });
+    }
+
+    syncGuide(
+      page.data.heldItem,
+      page.data.stations,
+      seats,
+      practiceMode
+        ? `🚪 已婉拒 ${seat.name} 空出座位（练习不扣真实口碑，稍后将迎来新客）`
+        : `🚪 已婉拒 ${seat.name} 空出座位，口碑 -${DECLINE_REP_PENALTY}、连击清零`
+    );
+  }
+
   return {
     start,
     stop,
@@ -570,6 +623,7 @@ export function createKitchenEngine(page, {
     tapStation,
     tapHold,
     tapTrash,
-    tapSeat
+    tapSeat,
+    declineSeat
   };
 }
