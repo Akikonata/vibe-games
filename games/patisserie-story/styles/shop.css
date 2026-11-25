@@ -667,3 +667,393 @@
   font-weight: 700;
   color: #B56125;
 }
+
+
+/* ==========================================
+   纯图片化实景厨房舞台（全屏实景图 + 零按钮框交互道具）
+   ========================================== */
+.page-shop .kitchen-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  overflow: hidden;
+  background: #4A2816;
+}
+
+.page-shop .kitchen-scene-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page-shop .scene-hud {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  right: 10px;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(58, 28, 10, 0.84);
+  border: 1.5px solid rgba(223, 176, 110, 0.88);
+  color: #FFF7E8;
+  font-size: 13px;
+  font-weight: 800;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(32, 12, 4, 0.32);
+}
+
+.page-shop .scene-hud .hud-time,
+.page-shop .scene-hud .hud-served {
+  color: #FFF7E8;
+}
+
+.page-shop .scene-hud .hud-coins {
+  color: #FFD966;
+}
+
+/* 吧台后方的 3 位动漫顾客（无白框，直接站在橡木吧台后） */
+.page-shop .scene-customers {
+  position: absolute;
+  top: 7%;
+  left: 2%;
+  right: 2%;
+  height: 30%;
+  z-index: 8;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.page-shop .scene-customer {
+  position: relative;
+  width: 31%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.14s ease;
+}
+
+.page-shop .scene-customer:active {
+  transform: scale(0.95);
+}
+
+.page-shop .cust-portrait {
+  width: 106px;
+  height: auto;
+  max-height: 148px;
+  object-fit: contain;
+  margin-bottom: -14px;
+  filter: drop-shadow(0 6px 10px rgba(42, 18, 6, 0.36));
+}
+
+.page-shop .cust-bubble {
+  position: absolute;
+  top: 10px;
+  right: 4px;
+  z-index: 12;
+  background: rgba(255, 252, 245, 0.96);
+  border: 2px solid #A86B38;
+  border-radius: 14px;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 4px 10px rgba(42, 18, 6, 0.28);
+}
+
+.page-shop .cust-want-img {
+  width: 34px;
+  height: 34px;
+}
+
+.page-shop .cust-patience {
+  width: 38px;
+  height: 5px;
+  border-radius: 999px;
+  background: #E8D5BC;
+  overflow: hidden;
+}
+
+.page-shop .cust-patience-fill {
+  height: 100%;
+  background: #5B8C4E;
+  transition: width 0.1s linear;
+}
+
+.page-shop .cust-patience-fill.low {
+  background: #D94534;
+}
+
+/* 吧台木沿上的轻盈引导条 */
+.page-shop .scene-tip-pill {
+  position: absolute;
+  top: 37.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 16;
+  max-width: 92%;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: rgba(66, 32, 12, 0.86);
+  border: 1.5px solid #E5B97C;
+  color: #FFF7E8;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 12px rgba(32, 12, 4, 0.3);
+  pointer-events: none;
+}
+
+/* 大理石实景工作台：纯透明手绘道具直接摆在台面上 */
+.page-shop .scene-workbench {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.page-shop .scene-prop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.14s ease, filter 0.18s ease;
+}
+
+.page-shop .scene-prop:active {
+  transform: translate(-50%, -50%) scale(0.93);
+}
+
+.page-shop .prop-sprite {
+  display: block;
+  filter: drop-shadow(0 8px 10px rgba(58, 28, 10, 0.36));
+}
+
+.page-shop .pos-oven-1 { left: 26%; top: 53%; }
+.page-shop .pos-oven-2 { left: 74%; top: 53%; }
+.page-shop .sprite-oven { width: 146px; height: 146px; }
+
+.page-shop .pos-cream { left: 20%; top: 75%; }
+.page-shop .sprite-cream { width: 118px; height: 118px; }
+
+.page-shop .pos-pantry { left: 50%; top: 72%; z-index: 14; }
+.page-shop .sprite-pantry { width: 132px; height: 132px; }
+
+.page-shop .pos-decor { left: 80%; top: 75%; }
+.page-shop .sprite-decor { width: 120px; height: 120px; }
+
+.page-shop .pos-hold { left: 15%; top: 91%; }
+.page-shop .pos-trash { left: 87%; top: 90%; }
+.page-shop .sprite-trash { width: 76px; height: 76px; }
+
+/* 道具内部加工进度与成品状态叠加 */
+.page-shop .prop-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  gap: 4px;
+}
+
+.page-shop .prop-dish-img {
+  width: 54px;
+  height: 54px;
+  filter: drop-shadow(0 4px 6px rgba(36, 16, 6, 0.5));
+}
+
+.page-shop .prop-dish-img.ready-pop {
+  animation: sceneBounce 0.8s ease-in-out infinite alternate;
+}
+
+.page-shop .prop-dish-img.burnt-tint {
+  filter: grayscale(0.85) brightness(0.45) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+}
+
+.page-shop .prop-prog-track {
+  width: 68px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(42, 18, 6, 0.78);
+  border: 1.5px solid #FFF4DC;
+  overflow: hidden;
+}
+
+.page-shop .prop-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFE07D, #E87D24);
+}
+
+.page-shop .prop-pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #FFF;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.page-shop .prop-pill.ready { background: #4E8A44; }
+.page-shop .prop-pill.burnt { background: #C43B2B; }
+
+/* 原料篮甜点标识 */
+.page-shop .pantry-badge-pill {
+  margin-top: -16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px 2px 5px;
+  border-radius: 999px;
+  background: rgba(255, 251, 244, 0.94);
+  border: 1.5px solid #B5753C;
+  font-size: 11px;
+  font-weight: 800;
+  color: #5E3015;
+  box-shadow: 0 3px 8px rgba(42, 18, 6, 0.25);
+}
+
+.page-shop .pantry-mini-dessert {
+  width: 22px;
+  height: 22px;
+}
+
+.page-shop .pantry-picks {
+  margin-top: -22px;
+  display: flex;
+  gap: 6px;
+}
+
+.page-shop .pantry-pick-orb {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 251, 244, 0.96);
+  border: 2px solid #B5753C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(42, 18, 6, 0.32);
+  cursor: pointer;
+}
+
+.page-shop .pantry-orb-img {
+  width: 30px;
+  height: 30px;
+}
+
+/* 底部暂存碟 & 可可手中托盘 */
+.page-shop .hold-saucer {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 252, 246, 0.92) 60%, rgba(224, 200, 170, 0.92) 100%);
+  border: 2.5px solid #B58150;
+  box-shadow: 0 6px 12px rgba(42, 18, 6, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-shop .hold-food-img {
+  width: 44px;
+  height: 44px;
+}
+
+.page-shop .hold-mini-tag {
+  font-size: 11px;
+  font-weight: 800;
+  color: #8C5C38;
+}
+
+.page-shop .scene-coco-tray {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px 5px 6px;
+  border-radius: 999px;
+  background: rgba(255, 251, 244, 0.92);
+  border: 2px solid #B5753C;
+  box-shadow: 0 6px 16px rgba(42, 18, 6, 0.35);
+  pointer-events: none;
+}
+
+.page-shop .tray-coco-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #8C4E22;
+}
+
+.page-shop .tray-held-slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 72px;
+}
+
+.page-shop .tray-food-img {
+  width: 40px;
+  height: 40px;
+}
+
+.page-shop .tray-status-dot {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #F4E0C4;
+  color: #6E3A18;
+}
+
+.page-shop .tray-status-dot.ready { background: #DCECD5; color: #2D5A27; }
+.page-shop .tray-status-dot.burnt { background: #FADBD8; color: #A93226; }
+
+.page-shop .tray-empty-txt {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8C5E3C;
+}
+
+/* 纯图片金光引导动画（无需丑陋方框） */
+.page-shop .is-scene-glow {
+  filter: drop-shadow(0 0 14px rgba(255, 214, 92, 0.98)) drop-shadow(0 0 4px rgba(255, 248, 210, 0.95));
+  animation: scenePulse 0.95s ease-in-out infinite alternate;
+}
+
+@keyframes scenePulse {
+  0% { filter: drop-shadow(0 0 8px rgba(255, 208, 76, 0.85)); }
+  100% { filter: drop-shadow(0 0 18px rgba(255, 224, 118, 1)) brightness(1.07); }
+}
+
+@keyframes sceneBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}

@@ -119,71 +119,88 @@ export function mountShopPage(root) {
     stationSigs = {};
     holdSig = '';
 
-    const pantryHtml = d.menuRecipes.map(m => `
-      <div class="pantry-btn" data-action="pickRaw" data-id="${m.id}">
-        <div class="pantry-visual">
-          <img class="pantry-basket-art mode-fit" src="assets/images/kitchen/station_pantry.svg" alt="原料篮" />
-          <img class="pantry-icon mode-fit" src="${m.iconImg}" alt="${m.name}" />
-        </div>
-        <span class="pantry-name">${m.name}</span>
-        <span class="pantry-flow">${m.flowText}</span>
-      </div>
-    `).join('');
+    const PROP_IMG = {
+      oven: 'assets/images/kitchen/prop_oven.png',
+      cream: 'assets/images/kitchen/prop_cream_station.png',
+      decor: 'assets/images/kitchen/prop_decor_station.png'
+    };
 
-    const stationsHtml = d.stations.map(st => `
-      <div id="k-st-${st.id}" class="station-cell state-idle" data-action="tapStation" data-id="${st.id}">
-        <img class="station-art mode-fit" src="assets/images/kitchen/station_${st.type}.svg" alt="${st.name}" />
-        <div id="k-st-ov-${st.id}" class="station-overlay"></div>
-        <span class="station-label">${st.name}</span>
+    const STATION_POS = {
+      oven_1: 'pos-oven-1',
+      oven_2: 'pos-oven-2',
+      cream_1: 'pos-cream',
+      decor_1: 'pos-decor'
+    };
+
+    // 如果今日上架 1 道甜点，直接点大竹篮就能拿；2~3 道则在竹篮口挂上圆润甜点吊牌任选
+    const singleMenu = d.menuRecipes.length === 1 ? d.menuRecipes[0] : null;
+    const pantryMarkup = singleMenu
+      ? `<div class="scene-prop pos-pantry is-pantry-item" data-action="pickRaw" data-id="${singleMenu.id}">
+           <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="原料篮" />
+           <div class="pantry-badge-pill">
+             <img class="pantry-mini-dessert mode-fit" src="${singleMenu.iconImg}" alt="" />
+             <span>原料篮</span>
+           </div>
+         </div>`
+      : `<div class="scene-prop pos-pantry is-pantry-multi">
+           <img class="prop-sprite sprite-pantry mode-fit" src="assets/images/kitchen/prop_pantry_basket.png" alt="原料篮" />
+           <div class="pantry-picks">
+             ${d.menuRecipes.map(m => `
+               <div class="pantry-pick-orb is-pantry-item" data-action="pickRaw" data-id="${m.id}" title="${m.name}">
+                 <img class="pantry-orb-img mode-fit" src="${m.iconImg}" alt="${m.name}" />
+               </div>
+             `).join('')}
+           </div>
+         </div>`;
+
+    const stationsMarkup = d.stations.map(st => `
+      <div id="k-st-${st.id}" class="scene-prop ${STATION_POS[st.id] || ''} state-idle" data-action="tapStation" data-id="${st.id}">
+        <img class="prop-sprite sprite-${st.type} mode-fit" src="${PROP_IMG[st.type]}" alt="${st.name}" />
+        <div id="k-st-ov-${st.id}" class="prop-overlay"></div>
       </div>
     `).join('');
 
     root.innerHTML = `
-      <div class="scrollarea">
-        <div class="caramel-canopy">
-          <div class="awning-bar"></div>
-          <div class="caramel-drip-edge"></div>
-          <div class="canopy-vine-left"><div class="leaf-pill"></div><div class="leaf-pill alt"></div></div>
-          <div class="canopy-vine-right"><div class="leaf-pill"></div><div class="leaf-pill alt"></div></div>
+      <div class="kitchen-scene">
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/kitchen_scene_bg.jpg" alt="星月糖屋后厨" />
+
+        <!-- 顶部悬浮半透明营收 HUD -->
+        <div class="scene-hud">
+          <span id="k-time" class="hud-time">⏱ ${d.shiftTimeLeft}s</span>
+          <span id="k-coins" class="hud-coins">🪙 +${d.shiftCoins}</span>
+          <span id="k-served" class="hud-served">出餐 ${d.shiftServed} · x${d.shiftCombo}</span>
         </div>
-        <div class="page-wrap shop-wrap">
-          <div class="kitchen-hud">
-            <span id="k-time" class="hud-time">⏱ ${d.shiftTimeLeft}s</span>
-            <span id="k-coins" class="hud-coins">🪙 +${d.shiftCoins}</span>
-            <span id="k-served" class="hud-served">出餐 ${d.shiftServed} · 连击x${d.shiftCombo}</span>
-          </div>
 
-          <div class="cafe-dining">
-            ${[0, 1, 2].map(id => `<div id="k-seat-${id}" class="seat-slot" data-action="tapSeat" data-id="${id}"></div>`).join('')}
-          </div>
+        <!-- 吧台后方：3 位二次元立绘顾客直接站立点单 -->
+        <div class="scene-customers">
+          ${[0, 1, 2].map(id => `<div id="k-seat-${id}" class="scene-customer" data-action="tapSeat" data-id="${id}"></div>`).join('')}
+        </div>
 
-          <div class="coco-hands-bar">
-            <img class="hands-coco mode-fill" src="assets/images/coco_avatar.png" alt="可可" />
-            <div id="k-hands" class="hands-slot"></div>
-          </div>
+        <!-- 吧台沿上的轻盈单行提示条 -->
+        <div id="k-tip" class="scene-tip-pill">${d.serviceMsg}</div>
 
-          <div id="k-tip" class="kitchen-tip-bar">${d.serviceMsg}</div>
+        <!-- 大理石与橡木实景工作台：全部纯图片化道具，零按钮框 -->
+        <div class="scene-workbench">
+          ${stationsMarkup}
+          ${pantryMarkup}
 
-          <div class="kitchen-floor card">
-            <!-- 原料篮置顶于操作区，配手绘竹篮图，一眼可见且永不吞点击 -->
-            <div class="pantry-section">
-              <span class="pantry-title">🧺 原料篮（点击拿取生面糊）</span>
-              <div class="pantry-row">${pantryHtml}</div>
+          <!-- 底部左：大理石暂存碟 -->
+          <div id="k-hold" class="scene-prop pos-hold" data-action="tapHold" title="暂存台">
+            <div class="hold-saucer">
+              <img id="k-hold-img" class="hold-food-img mode-fit" style="display:none;" alt="" />
+              <span id="k-hold-lbl" class="hold-mini-tag">暂存</span>
             </div>
+          </div>
 
-            <div class="stations-grid">${stationsHtml}</div>
+          <!-- 底部中：可可手中托盘实景状态 -->
+          <div class="scene-coco-tray">
+            <img class="tray-coco-avatar mode-fill" src="assets/images/coco_avatar.png" alt="可可" />
+            <div id="k-hands" class="tray-held-slot"></div>
+          </div>
 
-            <div class="utility-row">
-              <div id="k-hold" class="util-station" data-action="tapHold">
-                <img class="util-art mode-fit" src="assets/images/kitchen/station_hold.svg" alt="" />
-                <img id="k-hold-img" class="util-hold-item mode-fit" style="display:none;" alt="" />
-                <span id="k-hold-lbl" class="util-label">大理石暂存台</span>
-              </div>
-              <div id="k-trash" class="util-station" data-action="tapTrash">
-                <img class="util-art mode-fit" src="assets/images/kitchen/station_trash.svg" alt="" />
-                <span class="util-label">回收铜桶（丢弃）</span>
-              </div>
-            </div>
+          <!-- 底部右：复古回收铜桶 -->
+          <div id="k-trash" class="scene-prop pos-trash" data-action="tapTrash" title="丢弃">
+            <img class="prop-sprite sprite-trash mode-fit" src="assets/images/kitchen/prop_copper_bin.png" alt="回收铜桶" />
           </div>
         </div>
       </div>
@@ -197,29 +214,27 @@ export function mountShopPage(root) {
     const coinsEl = root.querySelector('#k-coins');
     if (coinsEl) coinsEl.textContent = `🪙 +${d.shiftCoins}`;
     const servedEl = root.querySelector('#k-served');
-    if (servedEl) servedEl.textContent = `出餐 ${d.shiftServed} · 连击x${d.shiftCombo}`;
+    if (servedEl) servedEl.textContent = `出餐 ${d.shiftServed} · x${d.shiftCombo}`;
     const tipEl = root.querySelector('#k-tip');
     if (tipEl && tipEl.textContent !== d.serviceMsg) tipEl.textContent = d.serviceMsg;
 
-    // 1. 增量更新前厅 3 座位
+    // 1. 增量更新前厅 3 位立绘顾客
     (d.seats || []).forEach((s, idx) => {
       const slot = root.querySelector(`#k-seat-${s.id}`);
       if (!slot) return;
-      slot.className = `seat-slot ${s.occupied ? 'is-occupied' : ''} ${d.highlightTarget === 'seat_' + s.id ? 'is-glow' : ''}`;
+      slot.className = `scene-customer ${s.occupied ? 'is-occupied' : 'is-empty'} ${d.highlightTarget === 'seat_' + s.id ? 'is-scene-glow' : ''}`;
       const sig = s.occupied ? `1:${s.npcId}:${s.wantedId}` : '0';
       if (seatSigs[idx] !== sig) {
         seatSigs[idx] = sig;
         slot.innerHTML = s.occupied
-          ? `<div class="seat-order-bubble">
-               <img class="seat-order-img mode-fit" src="${s.wantedIcon}" alt="" />
-               <div class="seat-patience-track"><div class="seat-patience-fill" style="width:${s.patience}%;"></div></div>
+          ? `<div class="cust-bubble">
+               <img class="cust-want-img mode-fit" src="${s.wantedIcon}" alt="" />
+               <div class="cust-patience"><div class="cust-patience-fill" style="width:${s.patience}%;"></div></div>
              </div>
-             <img class="seat-npc-img mode-widthfix" src="${s.portrait}" alt="${s.name}" />
-             <span class="seat-name">${s.name}</span>`
-          : `<img class="seat-chair-img mode-fit" src="assets/images/kitchen/empty_chair.svg" alt="" />
-             <span class="seat-empty-text">空位</span>`;
+             <img class="cust-portrait mode-widthfix" src="${s.portrait}" alt="${s.name}" />`
+          : '';
       } else if (s.occupied) {
-        const fill = slot.querySelector('.seat-patience-fill');
+        const fill = slot.querySelector('.cust-patience-fill');
         if (fill) {
           fill.style.width = `${s.patience}%`;
           fill.classList.toggle('low', s.patience < 35);
@@ -235,21 +250,19 @@ export function mountShopPage(root) {
       const handsEl = root.querySelector('#k-hands');
       if (handsEl) {
         handsEl.innerHTML = h
-          ? `<img class="hands-item-img mode-fit" src="${h.displayImg}" alt="" />
-             <div class="hands-item-meta">
-               <span class="hands-item-name">${h.recipeName}</span>
-               <span class="hands-item-tag ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''}">${h.statusLabel}</span>
-             </div>`
-          : '<span class="hands-empty">👐 空手 · 点击原料篮拿生面糊或点击成品取餐</span>';
+          ? `<img class="tray-food-img mode-fit" src="${h.displayImg}" alt="" />
+             <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''}">${h.isFinished ? '✨成品' : (h.isBurnt ? '💨糊了' : '加工中')}</span>`
+          : '<span class="tray-empty-txt">空手</span>';
       }
     }
 
-    // 3. 增量更新 4 个厨房工位（绝不重建按钮本身）
+    // 3. 增量更新 4 个实景工位道具
+    const STATION_POS = { oven_1: 'pos-oven-1', oven_2: 'pos-oven-2', cream_1: 'pos-cream', decor_1: 'pos-decor' };
     (d.stations || []).forEach(st => {
       const cell = root.querySelector(`#k-st-${st.id}`);
       const ov = root.querySelector(`#k-st-ov-${st.id}`);
       if (!cell || !ov) return;
-      cell.className = `station-cell state-${st.state} ${d.highlightTarget === st.id ? 'is-glow' : ''}`;
+      cell.className = `scene-prop ${STATION_POS[st.id] || ''} state-${st.state} ${d.highlightTarget === st.id ? 'is-scene-glow' : ''}`;
       const sig = st.item ? `${st.state}:${st.item.recipeId}:${st.item.displayImg}` : 'idle';
       if (stationSigs[st.id] !== sig) {
         stationSigs[st.id] = sig;
@@ -257,35 +270,35 @@ export function mountShopPage(root) {
           ov.innerHTML = '';
         } else if (st.state === 'working') {
           ov.innerHTML = `
-            <img class="station-food mode-fit" src="${st.item.displayImg}" alt="" />
-            <div class="station-prog-track"><div class="station-prog-fill" style="width:${st.progress}%;"></div></div>
+            <img class="prop-dish-img mode-fit" src="${st.item.displayImg}" alt="" />
+            <div class="prop-prog-track"><div class="prop-prog-fill" style="width:${st.progress}%;"></div></div>
           `;
         } else if (st.state === 'ready') {
           ov.innerHTML = `
-            <img class="station-food mode-fit" src="${st.item.displayImg}" alt="" />
-            <span class="station-badge ready">✨ 点我取餐</span>
+            <img class="prop-dish-img ready-pop mode-fit" src="${st.item.displayImg}" alt="" />
+            <span class="prop-pill ready">✨ 取餐</span>
           `;
         } else {
           ov.innerHTML = `
-            <img class="station-food mode-fit" src="${st.item.displayImg}" alt="" />
-            <span class="station-badge burnt">💨 糊了</span>
+            <img class="prop-dish-img burnt-tint mode-fit" src="${st.item.displayImg}" alt="" />
+            <span class="prop-pill burnt">💨 糊了</span>
           `;
         }
       } else if (st.state === 'working') {
-        const fill = ov.querySelector('.station-prog-fill');
+        const fill = ov.querySelector('.prop-prog-fill');
         if (fill) fill.style.width = `${st.progress}%`;
       }
     });
 
-    // 4. 更新原料篮、暂存台、回收桶高亮
+    // 4. 更新原料篮、暂存碟、铜桶发光提示
     const pantryGlow = d.highlightTarget === 'pantry';
-    root.querySelectorAll('.pantry-btn').forEach(btn => {
-      btn.classList.toggle('is-glow', pantryGlow);
+    root.querySelectorAll('.is-pantry-item').forEach(el => {
+      el.classList.toggle('is-scene-glow', pantryGlow);
     });
 
     const holdEl = root.querySelector('#k-hold');
     if (holdEl) {
-      holdEl.classList.toggle('is-glow', d.highlightTarget === 'hold');
+      holdEl.classList.toggle('is-scene-glow', d.highlightTarget === 'hold');
       const nextHoldSig = d.holdItem ? `${d.holdItem.recipeId}:${d.holdItem.displayImg}` : 'empty';
       if (holdSig !== nextHoldSig) {
         holdSig = nextHoldSig;
@@ -294,16 +307,16 @@ export function mountShopPage(root) {
         if (d.holdItem) {
           img.src = d.holdItem.displayImg;
           img.style.display = 'block';
-          lbl.textContent = `暂存：${d.holdItem.recipeName}`;
+          lbl.style.display = 'none';
         } else {
           img.style.display = 'none';
-          lbl.textContent = '大理石暂存台';
+          lbl.style.display = 'block';
         }
       }
     }
 
     const trashEl = root.querySelector('#k-trash');
-    if (trashEl) trashEl.classList.toggle('is-glow', d.highlightTarget === 'trash');
+    if (trashEl) trashEl.classList.toggle('is-scene-glow', d.highlightTarget === 'trash');
   }
 
   function render() {

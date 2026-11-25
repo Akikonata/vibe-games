@@ -158,7 +158,7 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
               stepIndex: st.item.stepIndex + 1
             });
             doneItem.isFinished = doneItem.stepIndex >= doneItem.steps.length;
-            doneItem.displayImg = doneItem.isFinished ? doneItem.recipeIcon : 'assets/images/kitchen/raw_bowl.svg';
+            doneItem.displayImg = doneItem.isFinished ? doneItem.recipeIcon : 'assets/images/kitchen/prop_raw_bowl.png';
             doneItem.statusLabel = doneItem.isFinished ? '成品可上菜' : '半成品';
             return Object.assign({}, st, {
               item: doneItem,
@@ -241,7 +241,7 @@ function createKitchenEngine(page, { menuRecipes, bonuses, onShiftEnd }) {
       recipeId: recipe.id,
       recipeName: recipe.name,
       recipeIcon: recipe.iconImg,
-      displayImg: 'assets/images/kitchen/raw_bowl.svg',
+      displayImg: 'assets/images/kitchen/prop_raw_bowl.png',
       steps: flow.steps,
       stepIndex: 0,
       isFinished: false,
