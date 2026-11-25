@@ -303,6 +303,38 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
       return;
     }
 
+    // 情况 1.5：手里正拿着东西时点击【已完成】或【烤糊】的工位 -> 智能顺手换锅 / 自动暂存 / 清理残渣，绝不卡死
+    if (held && st.state === 'ready') {
+      const taken = st.item;
+      // 1.5a 手里的物品正好需要进这个工位 -> 无缝取出成品并把手里这份放进去加工！
+      if (!held.isBurnt && !held.isFinished && held.steps[held.stepIndex] === st.type) {
+        stations[idx] = Object.assign({}, st, {
+          item: held,
+          progress: 6,
+          overcook: 0,
+          state: 'working'
+        });
+        syncGuide(taken, stations, page.data.seats, `✨ 取出【${taken.recipeName}】，顺手放入【${held.recipeName}】加工！`);
+        return;
+      }
+      // 1.5b 暂存台空着 -> 自动把手里的物品暂放到大理石暂存台，同时取出这份成品！
+      if (!page.data.holdItem) {
+        stations[idx] = makeEmptyStation(st.id, st.type, st.name);
+        page.setData({ holdItem: held });
+        syncGuide(taken, stations, page.data.seats, `✨ 已将【${held.recipeName}】暂放托盘，取出【${taken.recipeName}】！`);
+        return;
+      }
+      // 1.5c 双手与暂存台都满 -> 明确提示而非无响应
+      flashMsg('双手和暂存台都满啦！先上菜或放进空闲工位再取餐哦！');
+      return;
+    }
+
+    if (held && st.state === 'burnt') {
+      stations[idx] = makeEmptyStation(st.id, st.type, st.name);
+      syncGuide(held, stations, page.data.seats, `🗑️ 已清理【${st.name}】烤糊的残渣，空出工位啦！`);
+      return;
+    }
+
     // 情况 2：手里拿着物品点击空闲工位 -> 放入加工
     if (held && st.state === 'idle') {
       if (held.isBurnt) {
@@ -331,6 +363,11 @@ export function createKitchenEngine(page, { menuRecipes, bonuses, tutorialMode =
 
     if (st.state === 'working') {
       flashMsg(`⏳ 【${st.name}】正在制作中，稍等马上就好！`);
+      return;
+    }
+
+    if (!held && st.state === 'idle') {
+      flashMsg('双手空空！先点击中间【原料篮】拿起甜点生面糊吧～');
     }
   }
 
