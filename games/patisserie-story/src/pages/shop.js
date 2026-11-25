@@ -168,6 +168,8 @@ export function mountShopPage(root) {
       cocoPos.y = next.y;
 
       const segMs = Math.max(260, Math.min(780, Math.round(dist * 14)));
+      // 真实 2.5D Y轴深度排序：在餐区(y<52)时走在展示柜(z:14)后面，回到后厨(y>=52)时走在展示柜前面！
+      actor.style.zIndex = next.y < 52 ? '11' : '18';
       actor.style.transitionDuration = `${segMs}ms`;
       actor.style.left = `${next.x}%`;
       actor.style.top = `${next.y}%`;
@@ -321,18 +323,20 @@ export function mountShopPage(root) {
 
         <div id="k-tut-coach"></div>
 
-        <!-- 区域 1：上部阳光餐区（独立拆分 4 层：木地板 -> 独立木椅 -> 纯坐姿Q版人物 -> 独立蕾丝圆桌 -> 甜点/残渣盘） -->
+        <!-- 区域 1：上部阳光餐区（每桌单椅宽间距，彻底告别相邻椅子重叠） -->
         <div class="zone-dining" aria-label="餐区">
           ${[0, 1, 2].map(id => `
             <div id="k-seat-wrap-${id}" class="dining-table-slot">
               <img class="furn-chair-left mode-fit" src="assets/images/kitchen/prop_cafe_chair.png" alt="" aria-hidden="true" />
-              <img class="furn-chair-right mode-fit" src="assets/images/kitchen/prop_cafe_chair.png" alt="" aria-hidden="true" />
               <img class="furn-table-center mode-fit" src="assets/images/kitchen/prop_cafe_table.png" alt="" aria-hidden="true" />
               <button type="button" id="k-seat-${id}" class="dining-seat-btn is-empty" data-action="tapSeat" data-id="${id}" aria-label="空餐桌" disabled></button>
               <button type="button" id="k-decline-${id}" class="cust-decline-btn" data-action="declineSeat" data-id="${id}" aria-label="婉拒顾客空出餐桌" title="不接待（空出餐桌，口碑-5）" style="display:none;">✕ 婉拒</button>
             </div>
           `).join('')}
         </div>
+
+        <!-- 独立拆分的前景柜台层（z:14，与背景同尺寸 mode-fill 严丝合缝），实现可可跨区真实前后遮挡！ -->
+        <img class="counter-25d-fg mode-fill" src="assets/images/kitchen/prop_display_counter_fg.png?v=2" alt="" aria-hidden="true" />
 
         <!-- 区域 2：中腰玻璃甜点展示柜（预置库存 + 告急/售罄预警，直接摆在玻璃柜内） -->
         <div class="zone-display-case" role="group" aria-label="玻璃甜点展示柜库存">
@@ -342,14 +346,15 @@ export function mountShopPage(root) {
         <!-- 吧台木板沿上的单行实时提示 -->
         <div id="k-tip" class="zoned-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
 
-        <!-- 区域 3：后厨陶砖过道（可可自由跑动） + 底部大理石烘焙台面（烤炉与补烤选单稳稳放在台上） -->
-        <div class="zone-kitchen-floor">
-          <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:69%;" aria-hidden="true">
-            <div class="coco-25d-shadow"></div>
-            <div class="coco-25d-sprite-sheet"></div>
-            <div id="k-coco-carry" class="coco-25d-carry"></div>
-          </div>
+        <!-- 2.5D Q版可可主厨（直挂场景根层，按 Y 坐标动态切换 z-index：餐区 z:11 在柜台后，后厨 z:18 在柜台前） -->
+        <div id="k-coco-actor" class="coco-25d-actor" style="left:50%;top:69%;z-index:18;" aria-hidden="true">
+          <div class="coco-25d-shadow"></div>
+          <div class="coco-25d-sprite-sheet"></div>
+          <div id="k-coco-carry" class="coco-25d-carry"></div>
+        </div>
 
+        <!-- 区域 3：后厨大理石烘焙台面 + 最底部手持条 -->
+        <div class="zone-kitchen-floor">
           <!-- 底部大理石操作台面上的双批量烤炉 + 指定补烤选单 -->
           <div class="zone-marble-bench" aria-label="后厨烘焙大理石台">
             ${ovensMarkup}
