@@ -304,7 +304,7 @@ export function mountShopPage(root) {
 
     root.innerHTML = `
       <div class="kitchen-scene is-zoned-25d">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=2" alt="" />
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=3" alt="" />
 
         <!-- 顶部悬浮半透明营收 HUD -->
         <div class="scene-hud">
@@ -319,10 +319,13 @@ export function mountShopPage(root) {
 
         <div id="k-tut-coach"></div>
 
-        <!-- 区域 1：上部阳光餐区（3 张欧式圆桌，人物真实坐在桌旁） -->
+        <!-- 区域 1：上部阳光餐区（独立拆分 4 层：木地板 -> 独立木椅 -> 纯坐姿Q版人物 -> 独立蕾丝圆桌 -> 甜点/残渣盘） -->
         <div class="zone-dining" aria-label="餐区">
           ${[0, 1, 2].map(id => `
             <div id="k-seat-wrap-${id}" class="dining-table-slot">
+              <img class="furn-chair-left mode-fit" src="assets/images/kitchen/prop_cafe_chair.png" alt="" aria-hidden="true" />
+              <img class="furn-chair-right mode-fit" src="assets/images/kitchen/prop_cafe_chair.png" alt="" aria-hidden="true" />
+              <img class="furn-table-center mode-fit" src="assets/images/kitchen/prop_cafe_table.png" alt="" aria-hidden="true" />
               <button type="button" id="k-seat-${id}" class="dining-seat-btn is-empty" data-action="tapSeat" data-id="${id}" aria-label="空餐桌" disabled></button>
               <button type="button" id="k-decline-${id}" class="cust-decline-btn" data-action="declineSeat" data-id="${id}" aria-label="婉拒顾客空出餐桌" title="不接待（空出餐桌，口碑-5）" style="display:none;">✕ 婉拒</button>
             </div>
@@ -430,19 +433,19 @@ export function mountShopPage(root) {
               ${isOutOfStock ? '<span class="order-oos-tag">缺货</span>' : ''}
             </div>
             ${isGlow ? '<span class="cust-serve-tag">🍰 端上桌</span>' : ''}
-            <img class="dining-chibi-guest mode-fit" src="${s.chibiImg}" alt="${s.name}" />
+            <img class="dining-chibi-guest mode-fit" src="${s.chibiImg}?v=2" alt="${s.name}" />
           `;
         } else if (st === 'eating') {
           slot.innerHTML = `
             <div class="eating-fx-float"><span>😋</span><span>💗</span></div>
             <div class="eating-prog-pill"><div class="eating-prog-fill" style="width:${s.eatProgress || 10}%;"></div></div>
-            <img class="dining-chibi-guest is-eating mode-fit" src="${s.chibiImg}" alt="${s.name}" />
+            <img class="dining-chibi-guest is-eating mode-fit" src="${s.chibiImg}?v=2" alt="${s.name}" />
             <img class="table-served-dish mode-fit" src="${s.wantedIcon}" alt="" />
           `;
         } else if (st === 'bill') {
           slot.innerHTML = `
             <span class="bill-ready-pill">🪙 结账 +小费</span>
-            <img class="dining-chibi-guest mode-fit" src="${s.chibiImg}" alt="${s.name}" />
+            <img class="dining-chibi-guest mode-fit" src="${s.chibiImg}?v=2" alt="${s.name}" />
             <img class="table-dirty-plate mode-fit" src="assets/images/kitchen/prop_dirty_plate.png" alt="餐盘" />
           `;
         } else if (st === 'dirty') {
