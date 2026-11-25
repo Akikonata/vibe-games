@@ -29,6 +29,19 @@ vibe-games/
         └── assets/images/      # 141 份手绘 SVG 与实景立绘/场景资源
 ```
 
+## GitHub Pages 发布
+
+本站直接发布 `dev` 分支根目录，无需安装依赖或构建。根目录的 `.nojekyll` 用于跳过 Jekyll 处理。
+
+1. 将本地提交推送到 GitHub：`git push -u origin dev`。
+2. 在仓库 **Settings → Pages → Build and deployment** 中，选择 **Deploy from a branch**，分支选择 **dev**，目录选择 **/(root)**，点击 **Save**。
+3. 等待 **Actions → pages build and deployment** 成功后访问：
+   - 游戏大厅：https://akikonata.github.io/vibe-games/
+   - 糖心蛇蛇：https://akikonata.github.io/vibe-games/games/sweet-snake/
+   - 甜点屋物语：https://akikonata.github.io/vibe-games/games/patisserie-story/
+
+后续推送到 `dev` 会自动更新网站。仅创建 GitHub 仓库不会发布网站，必须完成代码推送和 Pages 发布源设置。
+
 ## 本地运行
 
 由于使用了原生 ES Modules（`<script type="module">`），请通过任意本地静态服务器打开（避免 `file://` CORS 限制）：
