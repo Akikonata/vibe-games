@@ -163,8 +163,8 @@ const LEVELS = [
     npcId: 'bart',
     recipeId: 'basque_cheesecake',
     minigameType: 'whisk_dash',
-    minigameTitle: '极速打发与高温抓拍',
-    targetDesc: '打散奶酪气泡并抓准高温焦糖表层的出炉瞬间',
+    minigameTitle: '230°C 巴斯克高温出炉',
+    targetDesc: '盯紧三烤位焦糖火候，金色区点击出炉（B级过关：≥3份且焦糊<4；A级：≥72%分、满6份且焦糊≤1；S级：≥90%分、满6份且0焦糊）',
     prerequisiteIds: ['main_3'],
     introDialogue: [
       { speaker: 'coco', emotion: 'surprised', text: '暴风雨封锁了旧港，进口香草和可可全数延误……可今晚还有客人预约！' },

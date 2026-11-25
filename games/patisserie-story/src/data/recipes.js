@@ -108,7 +108,7 @@ const RECIPES = [
     chapterType: 'main',
     origin: '西班牙 · 圣塞巴斯蒂安',
     minigameType: 'whisk_dash',
-    minigameLabel: '极速打发与高温抓拍',
+    minigameLabel: '230°C 巴斯克高温出炉',
     shopReward: '本地牧场直供铭牌',
     tagline: '不完美却最治愈的焦香流心',
     history: '1990 年，西班牙北部巴斯克地区圣塞巴斯蒂安的 La Viña 酒吧主厨圣地亚哥·里韦拉，为了做出“无需饼干底却风味极致”的甜点，大胆采用超高温短时烘烤，烤出深褐色焦糖外皮。',
