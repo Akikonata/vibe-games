@@ -829,8 +829,8 @@
   pointer-events: none;
 }
 
-/* 语义化 button 全局复位与键盘焦点态（营业页所有互动区） */
-.page-shop button {
+/* 语义化 button 零权重复位与键盘焦点态（绝不覆盖 .btn-primary / .tab-btn / .menu-item 等已有按钮样式） */
+:where(.page-shop button) {
   appearance: none;
   -webkit-appearance: none;
   font: inherit;
