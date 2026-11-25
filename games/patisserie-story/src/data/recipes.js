@@ -159,7 +159,7 @@ const RECIPES = [
 ];
 
 RECIPES.forEach(item => {
-  item.iconImg = `assets/images/desserts/${item.id}.svg`;
+  item.iconImg = `assets/images/desserts/${item.id}.png`;
 });
 
 export {
