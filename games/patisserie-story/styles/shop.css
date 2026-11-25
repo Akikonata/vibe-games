@@ -2111,6 +2111,135 @@
 }
 
 /* 最底部紧凑手持状态条 */
+/* Q版人物真实坐在圆桌左侧椅位上 + 桌面上菜/吃东西动画/结账气泡/残渣餐盘清台 */
+.page-shop .dining-chibi-guest {
+  position: absolute;
+  left: -4px;
+  bottom: 10px;
+  width: clamp(50px, 14vw, 62px);
+  height: auto;
+  z-index: 12;
+  filter: drop-shadow(0 4px 6px rgba(42, 18, 6, 0.36));
+  pointer-events: none;
+}
+
+.page-shop .dining-chibi-guest.is-eating {
+  animation: chibiEatBob 0.38s ease-in-out infinite alternate;
+}
+
+.page-shop .table-served-dish {
+  position: absolute;
+  left: 52%;
+  bottom: 42px;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  z-index: 13;
+  filter: drop-shadow(0 2px 4px rgba(42, 18, 6, 0.36));
+  animation: dishNibble 0.55s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.page-shop .table-dirty-plate {
+  position: absolute;
+  left: 52%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 34px;
+  z-index: 13;
+  filter: drop-shadow(0 3px 5px rgba(42, 18, 6, 0.38));
+  pointer-events: none;
+}
+
+.page-shop .table-dirty-plate.is-dirty-wait {
+  animation: sceneBounce 0.9s ease-in-out infinite alternate;
+}
+
+.page-shop .eating-fx-float {
+  position: absolute;
+  top: 12px;
+  left: 38%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  font-size: 13px;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.page-shop .eating-fx-float span {
+  animation: riseSteam 0.95s ease-out infinite;
+}
+.page-shop .eating-fx-float span:nth-child(2) {
+  animation-delay: 0.42s;
+}
+
+.page-shop .eating-prog-pill {
+  position: absolute;
+  top: 34px;
+  left: 52%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(52, 24, 10, 0.72);
+  border: 1px solid #FFF4DC;
+  overflow: hidden;
+  z-index: 15;
+}
+
+.page-shop .eating-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD86E, #F28C28);
+  transition: width 0.1s linear;
+}
+
+.page-shop .bill-ready-pill {
+  position: absolute;
+  top: 10px;
+  left: 52%;
+  transform: translateX(-50%);
+  z-index: 16;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #FFD859, #E59819);
+  border: 1.5px solid #FFF9E2;
+  color: #4A2108;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(42, 18, 6, 0.34);
+  animation: sceneBounce 0.7s ease-in-out infinite alternate;
+}
+
+.page-shop .clean-table-pill {
+  position: absolute;
+  top: 18px;
+  left: 52%;
+  transform: translateX(-50%);
+  z-index: 16;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #4A7D9B;
+  border: 1.5px solid #E6F6FF;
+  color: #FFF;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(24, 46, 62, 0.34);
+}
+
+@keyframes chibiEatBob {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-3px) rotate(4deg); }
+}
+
+@keyframes dishNibble {
+  0% { transform: translateX(-50%) scale(1); }
+  100% { transform: translateX(-50%) scale(0.92); }
+}
+
 .page-shop .zoned-coco-bar {
   position: absolute;
   left: 50%;

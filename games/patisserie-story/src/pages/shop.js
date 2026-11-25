@@ -356,41 +356,78 @@ export function mountShopPage(root) {
       pauseBtn.setAttribute('aria-label', d.isPaused ? '继续营业' : '暂停营业');
     }
 
-    // 1. 增量更新餐区 3 张圆桌的入座顾客 + 婉拒按钮
+    // 1. 增量更新餐区 3 张圆桌（5 态：空桌 / Q版入座点单 / 桌旁吃东西动画 / 举手结账收小费 / 残渣餐盘清台）
     (d.seats || []).forEach((s, idx) => {
       const slot = root.querySelector(`#k-seat-${s.id}`);
       const decBtn = root.querySelector(`#k-decline-${s.id}`);
       if (!slot) return;
+      const st = s.status || 'empty';
       const isGlow = d.highlightTarget === 'seat_' + s.id;
-      const stockEntry = s.occupied ? (d.displayStock || []).find(x => x.recipeId === s.wantedId) : null;
+      const stockEntry = st === 'ordering' ? (d.displayStock || []).find(x => x.recipeId === s.wantedId) : null;
       const isOutOfStock = !!(stockEntry && stockEntry.stock <= 0);
-      slot.className = `dining-seat-btn ${s.occupied ? 'is-occupied' : 'is-empty'} ${isGlow ? 'is-scene-glow' : ''}`;
-      slot.disabled = !s.occupied;
-      slot.setAttribute('aria-label', s.occupied
+
+      slot.className = `dining-seat-btn st-${st} ${isGlow ? 'is-scene-glow' : ''}`;
+      slot.disabled = st === 'empty';
+
+      const ariaDesc = st === 'ordering'
         ? `餐桌${s.id + 1} ${s.name}：想要${s.wantedName}${isOutOfStock ? '（库存不足）' : ''}${isGlow ? '，点击上菜' : ''}`
-        : `空餐桌${s.id + 1}`);
+        : (st === 'eating'
+          ? `餐桌${s.id + 1} ${s.name}正在享用${s.wantedName}`
+          : (st === 'bill'
+            ? `餐桌${s.id + 1} ${s.name}用完餐待结账，点击收款与小费`
+            : (st === 'dirty'
+              ? `餐桌${s.id + 1} 有残渣餐盘，点击清台`
+              : `空餐桌${s.id + 1}`)));
+      slot.setAttribute('aria-label', ariaDesc);
+
       if (decBtn) {
-        decBtn.style.display = s.occupied ? 'inline-flex' : 'none';
-        decBtn.setAttribute('aria-label', s.occupied ? `不接待${s.name}（空出餐桌，口碑-5）` : '空餐桌');
+        decBtn.style.display = st === 'ordering' ? 'inline-flex' : 'none';
+        decBtn.setAttribute('aria-label', st === 'ordering' ? `不接待${s.name}（空出餐桌，口碑-5）` : '空餐桌');
       }
-      const sig = s.occupied ? `1:${s.npcId}:${s.wantedId}:${isGlow ? 1 : 0}:${isOutOfStock ? 1 : 0}` : '0';
+
+      const sig = `${st}:${s.npcId || ''}:${s.wantedId || ''}:${isGlow ? 1 : 0}:${isOutOfStock ? 1 : 0}`;
       if (seatSigs[idx] !== sig) {
         seatSigs[idx] = sig;
-        slot.innerHTML = s.occupied
-          ? `<div class="dining-order-bubble ${isOutOfStock ? 'is-soldout' : ''}">
-               <img class="cust-want-img mode-fit" src="${s.wantedIcon}" alt="" />
-               <div class="cust-patience"><div class="cust-patience-fill ${s.patience < 35 ? 'low' : ''}" style="width:${Math.max(0, Math.round(s.patience))}%;"></div></div>
-               ${isOutOfStock ? '<span class="order-oos-tag">缺货</span>' : ''}
-             </div>
-             ${isGlow ? '<span class="cust-serve-tag">🍰 端上桌</span>' : ''}
-             <img class="dining-guest-portrait mode-widthfix" src="${s.portrait}" alt="${s.name}" />`
-          : '';
-      } else if (s.occupied) {
+        if (st === 'empty') {
+          slot.innerHTML = '';
+        } else if (st === 'ordering') {
+          slot.innerHTML = `
+            <div class="dining-order-bubble ${isOutOfStock ? 'is-soldout' : ''}">
+              <img class="cust-want-img mode-fit" src="${s.wantedIcon}" alt="" />
+              <div class="cust-patience"><div class="cust-patience-fill ${s.patience < 35 ? 'low' : ''}" style="width:${Math.max(0, Math.round(s.patience))}%;"></div></div>
+              ${isOutOfStock ? '<span class="order-oos-tag">缺货</span>' : ''}
+            </div>
+            ${isGlow ? '<span class="cust-serve-tag">🍰 端上桌</span>' : ''}
+            <img class="dining-chibi-guest mode-fit" src="${s.chibiImg}" alt="${s.name}" />
+          `;
+        } else if (st === 'eating') {
+          slot.innerHTML = `
+            <div class="eating-fx-float"><span>😋</span><span>💗</span></div>
+            <div class="eating-prog-pill"><div class="eating-prog-fill" style="width:${s.eatProgress || 10}%;"></div></div>
+            <img class="dining-chibi-guest is-eating mode-fit" src="${s.chibiImg}" alt="${s.name}" />
+            <img class="table-served-dish mode-fit" src="${s.wantedIcon}" alt="" />
+          `;
+        } else if (st === 'bill') {
+          slot.innerHTML = `
+            <span class="bill-ready-pill">🪙 结账 +小费</span>
+            <img class="dining-chibi-guest mode-fit" src="${s.chibiImg}" alt="${s.name}" />
+            <img class="table-dirty-plate mode-fit" src="assets/images/kitchen/prop_dirty_plate.png" alt="餐盘" />
+          `;
+        } else if (st === 'dirty') {
+          slot.innerHTML = `
+            <span class="clean-table-pill">🧹 点此清台</span>
+            <img class="table-dirty-plate is-dirty-wait mode-fit" src="assets/images/kitchen/prop_dirty_plate.png" alt="残渣餐盘" />
+          `;
+        }
+      } else if (st === 'ordering') {
         const fill = slot.querySelector('.cust-patience-fill');
         if (fill) {
           fill.style.width = `${Math.max(0, Math.round(s.patience))}%`;
           fill.classList.toggle('low', s.patience < 35);
         }
+      } else if (st === 'eating') {
+        const eFill = slot.querySelector('.eating-prog-fill');
+        if (eFill) eFill.style.width = `${s.eatProgress || 10}%`;
       }
     });
 
@@ -635,6 +672,8 @@ export function mountShopPage(root) {
               <div class="sum-row"><span>${s.isPractice ? '练习模拟收益' : '营业焦糖金币'}</span><span class="sum-val">${s.isPractice ? `模拟 +${s.simCoins || 0} / 实际入账 0` : `+${s.coins}`} 🪙</span></div>
               <div class="sum-row"><span>${s.isPractice ? '练习模拟口碑' : '新增店铺口碑'}</span><span class="sum-val ${!s.isPractice && s.rep < 0 ? 'warn' : ''}">${s.isPractice ? `模拟 ${s.simRep >= 0 ? '+' : ''}${s.simRep || 0} / 实际入账 0` : `${s.rep >= 0 ? '+' : ''}${s.rep}`} ⭐</span></div>
               <div class="sum-divider"></div>
+              <div class="sum-row sub"><span>累计服务小费</span><span class="sum-val">+${s.totalTips || 0} 🪙</span></div>
+              <div class="sum-row sub"><span>餐桌擦拭清台</span><span class="sum-val">${s.tablesCleaned || 0} 次</span></div>
               <div class="sum-row sub"><span>后厨批量补烤</span><span class="sum-val">${s.batchesBaked || 0} 炉</span></div>
               <div class="sum-row sub"><span>流失顾客</span><span class="sum-val ${s.lost > 0 ? 'warn' : ''}">${s.lost} 位</span></div>
               <div class="sum-row sub"><span>婉拒顾客（每次 -5 口碑）</span><span class="sum-val ${(s.declined || 0) > 0 ? 'warn' : ''}">${s.declined || 0} 位</span></div>
@@ -680,14 +719,34 @@ export function mountShopPage(root) {
         markTutorialSeen('kitchen');
         showToast('🎉 上手啦！正式营业 45 秒开始！', 1600);
       },
-      onServeEffect: ({ seatId, earned }) => {
+      onServeEffect: ({ seatId }) => {
         const scene = root.querySelector('.kitchen-scene');
         const xMap = [22, 50, 78];
         spawnFloatText(scene, {
           xPct: xMap[seatId] || 50,
           yPct: 24,
-          text: practiceMode ? '🎓 已端上桌!' : `+${earned} 🪙 💗`,
+          text: '🍰 享用中 😋',
+          kind: 'cream'
+        });
+      },
+      onCheckoutEffect: ({ seatId, basePrice, tip }) => {
+        const scene = root.querySelector('.kitchen-scene');
+        const xMap = [22, 50, 78];
+        spawnFloatText(scene, {
+          xPct: xMap[seatId] || 50,
+          yPct: 22,
+          text: practiceMode ? `🎓 +${basePrice}(小费+${tip})` : `+${basePrice} 🪙 小费+${tip}!`,
           kind: 'gold'
+        });
+      },
+      onCleanEffect: ({ seatId }) => {
+        const scene = root.querySelector('.kitchen-scene');
+        const xMap = [22, 50, 78];
+        spawnFloatText(scene, {
+          xPct: xMap[seatId] || 50,
+          yPct: 26,
+          text: '✨ 清台完成!',
+          kind: 'green'
         });
       },
       onHarvestEffect: ({ ovenId, added }) => {
@@ -710,7 +769,7 @@ export function mountShopPage(root) {
           kind: 'red'
         });
       },
-      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, lostCustomers, declinedCustomers = 0, burntCount, batchesBaked = 0, undeliveredCount, isPractice }) => {
+      onShiftEnd: ({ earnedCoins, earnedRep, servedCount, totalTips = 0, tablesCleaned = 0, lostCustomers, declinedCustomers = 0, burntCount, batchesBaked = 0, undeliveredCount, isPractice }) => {
         if (!isPractice) {
           recordBusinessDay({ earnedCoins, earnedRep });
         }
@@ -734,6 +793,8 @@ export function mountShopPage(root) {
             rep: isPractice ? 0 : earnedRep,
             simCoins: earnedCoins,
             simRep: earnedRep,
+            totalTips,
+            tablesCleaned,
             batchesBaked,
             lost: lostCustomers,
             declined: declinedCustomers,
