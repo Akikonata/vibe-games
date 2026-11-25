@@ -52,6 +52,40 @@ function getShortRecipeName(recipe) {
   return SHORT_RECIPE_NAMES[recipe.id] || (recipe.name || '').slice(0, 4);
 }
 
+function getDishStage(item) {
+  if (!item) return 'empty';
+  if (item.isBurnt) return 'burnt';
+  if (item.isFinished) return 'ready';
+  return item.stepIndex > 0 ? 'semi' : 'raw';
+}
+
+function renderDishVisualHtml(item, sizeClass = 'sz-station', extraImgClass = '') {
+  if (!item) return '';
+  const stage = getDishStage(item);
+  if (stage === 'raw') {
+    return `<div class="dish-vis is-raw ${sizeClass}">
+      <img class="dish-main-img ${extraImgClass} mode-fit" src="assets/images/kitchen/prop_raw_bowl.png" alt="" />
+      <img class="dish-sub-badge mode-fit" src="${item.recipeIcon}" alt="" />
+    </div>`;
+  }
+  if (stage === 'semi') {
+    const nextType = item.steps && item.steps[item.stepIndex];
+    const stageIcon = nextType === 'cream' ? '🧁' : (nextType === 'decor' ? '✨' : '🔥');
+    return `<div class="dish-vis is-semi ${sizeClass}">
+      <img class="dish-main-img semi-tint ${extraImgClass} mode-fit" src="${item.recipeIcon}" alt="" />
+      <span class="dish-stage-chip">${stageIcon}</span>
+    </div>`;
+  }
+  if (stage === 'burnt') {
+    return `<div class="dish-vis is-burnt ${sizeClass}">
+      <img class="dish-main-img burnt-tint ${extraImgClass} mode-fit" src="${item.recipeIcon}" alt="" />
+    </div>`;
+  }
+  return `<div class="dish-vis is-ready ${sizeClass}">
+    <img class="dish-main-img ${extraImgClass} mode-fit" src="${item.recipeIcon}" alt="" />
+  </div>`;
+}
+
 function buildSummaryAdvice({ served, lost, burnt, undelivered, isPractice }) {
   if (isPractice) {
     if (served > 0) return '已经跑通出餐动线啦！现在可以点「挂出营业牌」正式开张赚金币。';
@@ -257,7 +291,7 @@ export function mountShopPage(root) {
           <!-- 底部左：大理石暂存碟 -->
           <button type="button" id="k-hold" class="scene-prop pos-hold" data-action="tapHold" aria-label="大理石暂存台：空闲" title="暂存台">
             <div class="hold-saucer">
-              <img id="k-hold-img" class="hold-food-img mode-fit" style="display:none;" alt="" />
+              <div id="k-hold-vis" class="hold-vis-wrap" style="display:none;"></div>
               <span id="k-hold-lbl" class="hold-mini-tag">暂存台</span>
             </div>
           </button>
@@ -341,13 +375,13 @@ export function mountShopPage(root) {
           : (STEP_NAMES[h.steps[h.stepIndex]] || '加工中')))
       : '';
     const stageSuffix = h && !h.isFinished && !h.isBurnt && h.stepIndex > 0 ? ' (半成品)' : '';
-    const nextHandsSig = h ? `${h.recipeId}:${h.displayImg}:${nextStepText}:${stageSuffix}:${h.isFinished}:${h.isBurnt}` : 'empty';
+    const nextHandsSig = h ? `${h.recipeId}:${getDishStage(h)}:${h.stepIndex}:${nextStepText}` : 'empty';
     if (handsSig !== nextHandsSig) {
       handsSig = nextHandsSig;
       const handsEl = root.querySelector('#k-hands');
       if (handsEl) {
         handsEl.innerHTML = h
-          ? `<img class="tray-food-img mode-fit" src="${h.displayImg}" alt="" />
+          ? `${renderDishVisualHtml(h, 'sz-tray')}
              <div class="tray-text-col">
                <span class="tray-recipe-name">${getShortRecipeName({ id: h.recipeId, name: h.recipeName })}${stageSuffix}</span>
                <span class="tray-status-dot ${h.isFinished ? 'ready' : ''} ${h.isBurnt ? 'burnt' : ''} ${h.stepIndex > 0 && !h.isFinished && !h.isBurnt ? 'semi' : ''}">${nextStepText}</span>
@@ -375,7 +409,7 @@ export function mountShopPage(root) {
       cell.setAttribute('aria-label', `${st.shortName} · ${stateLabel}`);
 
       const sig = st.item
-        ? `${st.state}:${st.nearBurn ? 1 : 0}:${st.item.recipeId}:${st.item.displayImg}:${isGlow ? 1 : 0}`
+        ? `${st.state}:${st.nearBurn ? 1 : 0}:${st.item.recipeId}:${getDishStage(st.item)}:${st.item.stepIndex}:${isGlow ? 1 : 0}`
         : `idle:${isGlow ? 1 : 0}`;
       if (stationSigs[st.id] !== sig) {
         stationSigs[st.id] = sig;
@@ -385,23 +419,23 @@ export function mountShopPage(root) {
             : '<span class="prop-state-tag idle">空闲</span>';
         } else if (st.state === 'working') {
           ov.innerHTML = `
-            <img class="prop-dish-img mode-fit" src="${st.item.displayImg}" alt="" />
+            ${renderDishVisualHtml(st.item, 'sz-station')}
             <div class="prop-prog-track"><div class="prop-prog-fill" style="width:${st.progress}%;"></div></div>
             <span class="prop-state-tag working">制作中 <b class="prog-num">${st.progress}%</b></span>
           `;
         } else if (st.state === 'ready' && st.nearBurn) {
           ov.innerHTML = `
-            <img class="prop-dish-img ready-pop mode-fit" src="${st.item.displayImg}" alt="" />
+            ${renderDishVisualHtml(st.item, 'sz-station', 'ready-pop')}
             <span class="prop-pill near-burn">🔥 快烤糊!</span>
           `;
         } else if (st.state === 'ready') {
           ov.innerHTML = `
-            <img class="prop-dish-img ready-pop mode-fit" src="${st.item.displayImg}" alt="" />
+            ${renderDishVisualHtml(st.item, 'sz-station', 'ready-pop')}
             <span class="prop-pill ready">✨ 可取餐</span>
           `;
         } else {
           ov.innerHTML = `
-            <img class="prop-dish-img burnt-tint mode-fit" src="${st.item.displayImg}" alt="" />
+            ${renderDishVisualHtml(st.item, 'sz-station')}
             <span class="prop-pill burnt">💨 已烤糊</span>
           `;
         }
@@ -429,17 +463,18 @@ export function mountShopPage(root) {
     if (holdEl) {
       holdEl.classList.toggle('is-scene-glow', d.highlightTarget === 'hold');
       holdEl.setAttribute('aria-label', d.holdItem ? `暂存台：放着${d.holdItem.recipeName}，点击取回或交换` : '大理石暂存台：空闲');
-      const nextHoldSig = d.holdItem ? `${d.holdItem.recipeId}:${d.holdItem.displayImg}` : 'empty';
+      const nextHoldSig = d.holdItem ? `${d.holdItem.recipeId}:${getDishStage(d.holdItem)}:${d.holdItem.stepIndex}` : 'empty';
       if (holdSig !== nextHoldSig) {
         holdSig = nextHoldSig;
-        const img = root.querySelector('#k-hold-img');
+        const vis = root.querySelector('#k-hold-vis');
         const lbl = root.querySelector('#k-hold-lbl');
-        if (d.holdItem) {
-          img.src = d.holdItem.displayImg;
-          img.style.display = 'block';
+        if (d.holdItem && vis) {
+          vis.innerHTML = renderDishVisualHtml(d.holdItem, 'sz-hold');
+          vis.style.display = 'flex';
           lbl.style.display = 'none';
-        } else {
-          img.style.display = 'none';
+        } else if (vis) {
+          vis.innerHTML = '';
+          vis.style.display = 'none';
           lbl.style.display = 'block';
         }
       }

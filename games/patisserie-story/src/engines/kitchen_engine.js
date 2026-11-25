@@ -275,7 +275,7 @@ export function createKitchenEngine(page, {
               stepIndex: st.item.stepIndex + 1
             });
             doneItem.isFinished = doneItem.stepIndex >= doneItem.steps.length;
-            doneItem.displayImg = doneItem.isFinished ? doneItem.recipeIcon : 'assets/images/kitchen/prop_raw_bowl.png';
+            doneItem.displayImg = doneItem.recipeIcon;
             doneItem.statusLabel = doneItem.isFinished ? '成品可上菜' : '半成品';
             return Object.assign({}, st, {
               item: doneItem,
