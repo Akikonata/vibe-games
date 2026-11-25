@@ -1,0 +1,495 @@
+/* styles/jobs.css — 风铃湾兼职打工中心 & 3 大打工场景交互样式 */
+
+.page-jobs {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #F5E6D3 0%, #EAD4B8 100%);
+}
+
+.page-jobs .jobs-scroll {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page-jobs .jobs-wrap {
+  padding: 14px 12px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-jobs .jobs-status-card {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page-jobs .jobs-status-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.page-jobs .jobs-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-jobs .jobs-main-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #4A2511;
+}
+
+.page-jobs .jobs-sub-title {
+  font-size: 11px;
+  color: #845938;
+  font-weight: 600;
+}
+
+.page-jobs .jobs-balance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #FFF6DF;
+  border: 2px solid #D9A24B;
+  color: #5E3015;
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.page-jobs .jobs-balance-pill.is-debt {
+  background: #FDECE8;
+  border-color: #D4412E;
+  color: #B42718;
+}
+
+.page-jobs .jobs-alert-banner {
+  padding: 9px 11px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.page-jobs .jobs-alert-banner.is-debt {
+  background: #FCE6E1;
+  border: 1.5px solid #D94E3B;
+  color: #9C2415;
+}
+
+.page-jobs .jobs-alert-banner.is-short {
+  background: #FFF3D6;
+  border: 1.5px solid #E29B2B;
+  color: #824A08;
+}
+
+.page-jobs .jobs-alert-banner.is-ready {
+  background: #E8F4E4;
+  border: 1.5px solid #6BA25B;
+  color: #2D5A22;
+}
+
+.page-jobs .jobs-nav-row {
+  display: flex;
+  gap: 8px;
+}
+
+.page-jobs .jobs-back-shop-btn {
+  width: 100%;
+  font-size: 13px;
+  padding: 9px 12px;
+}
+
+.page-jobs .jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-jobs .job-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.page-jobs .job-card-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #D9BFA0;
+  overflow: hidden;
+}
+
+.page-jobs .job-card-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-jobs .job-diff-tag,
+.page-jobs .job-pay-tag {
+  position: absolute;
+  top: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(32, 14, 4, 0.28);
+}
+
+.page-jobs .job-diff-tag {
+  left: 8px;
+  background: rgba(68, 36, 16, 0.86);
+  color: #FFF6E5;
+  border: 1px solid #E5B97C;
+}
+
+.page-jobs .job-pay-tag {
+  right: 8px;
+  background: #FFF6D6;
+  color: #7D3F0A;
+  border: 1.5px solid #E2A238;
+}
+
+.page-jobs .job-card-body {
+  padding: 11px 13px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-jobs .job-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #4A2511;
+}
+
+.page-jobs .job-card-meta {
+  font-size: 11px;
+  color: #845938;
+  font-weight: 600;
+}
+
+.page-jobs .job-card-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #5F3B22;
+  line-height: 1.5;
+}
+
+.page-jobs .job-start-btn {
+  margin-top: 4px;
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+/* ====== 打工进行中舞台 ====== */
+.page-jobs .job-stage-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.page-jobs .job-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  min-height: 220px;
+  background: #C9A986;
+  overflow: hidden;
+}
+
+.page-jobs .job-stage-bg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.page-jobs .job-stage-hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  z-index: 4;
+}
+
+.page-jobs .job-hud-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(58, 28, 12, 0.86);
+  border: 1.5px solid #E5B97C;
+  color: #FFF7E8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.page-jobs .job-hud-pill.is-gold {
+  color: #FFE066;
+}
+
+.page-jobs .job-coco-badge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 999px;
+  background: rgba(255, 250, 240, 0.94);
+  border: 1.5px solid #B97B42;
+  font-size: 11px;
+  font-weight: 800;
+  color: #4A2511;
+  z-index: 4;
+}
+
+.page-jobs .job-coco-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid #B56125;
+}
+
+.page-jobs .job-quit-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(68, 36, 16, 0.86);
+  border: 1.5px solid #E5B97C;
+  color: #FFF5E2;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 4;
+}
+
+.page-jobs .job-work-card {
+  padding: 13px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #FFFBF4;
+}
+
+.page-jobs .work-order-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.page-jobs .work-order-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #4A2511;
+}
+
+.page-jobs .work-sub-tip {
+  font-size: 12px;
+  font-weight: 700;
+  color: #844C20;
+}
+
+/* 花店配花 */
+.page-jobs .florist-seq {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.page-jobs .florist-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #FFF3DE;
+  border: 1.5px solid #D4A36A;
+  font-size: 13px;
+  font-weight: 800;
+  color: #5A3014;
+}
+
+.page-jobs .florist-chip.is-next {
+  background: #FFE9B8;
+  border-color: #D97714;
+  box-shadow: 0 0 0 2px rgba(235, 146, 36, 0.35);
+}
+
+.page-jobs .florist-chip.is-done {
+  background: #E2F2DC;
+  border-color: #5C994B;
+  color: #2E6422;
+}
+
+.page-jobs .florist-arrow {
+  font-size: 12px;
+  font-weight: 800;
+  color: #A47348;
+}
+
+.page-jobs .florist-buckets {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.page-jobs .job-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 13px 8px;
+  border-radius: 14px;
+  background: #FFFDF8;
+  border: 2px solid #C99660;
+  box-shadow: 0 3px 0 #B57E48;
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+
+.page-jobs .job-action-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #B57E48;
+}
+
+.page-jobs .job-act-emoji {
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.page-jobs .job-act-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #4A2511;
+}
+
+/* 咖啡馆控温拉花 */
+.page-jobs .cafe-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-jobs .cafe-gauge-track {
+  position: relative;
+  width: 100%;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #D9E5EE 0%, #F4E1C6 50%, #F0C4B4 100%);
+  border: 2px solid #9A6638;
+  overflow: hidden;
+}
+
+.page-jobs .cafe-zone-good {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(114, 178, 92, 0.45);
+  border-left: 1.5px solid #4E8A3A;
+  border-right: 1.5px solid #4E8A3A;
+}
+
+.page-jobs .cafe-zone-perfect {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 200, 56, 0.72);
+  border-left: 1.5px solid #D97E0A;
+  border-right: 1.5px solid #D97E0A;
+}
+
+.page-jobs .cafe-needle {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 6px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #4A2108;
+  border: 1.5px solid #FFF8E6;
+  box-shadow: 0 0 6px rgba(42, 18, 6, 0.45);
+}
+
+.page-jobs .cafe-gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7D5438;
+}
+
+.page-jobs .cafe-pour-btn {
+  width: 100%;
+  padding: 13px 16px;
+  font-size: 15px;
+}
+
+/* 码头杂货铺分拣 */
+.page-jobs .harbor-crate-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #FFF5E2 0%, #F5E1C2 100%);
+  border: 2px dashed #B97C42;
+}
+
+.page-jobs .harbor-crate-emoji {
+  font-size: 38px;
+  line-height: 1.1;
+}
+
+.page-jobs .harbor-crate-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #4A2511;
+}
+
+.page-jobs .harbor-bins {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.page-jobs .harbor-bins .bin-dry { border-color: #C28C46; background: #FFF8EC; }
+.page-jobs .harbor-bins .bin-fresh { border-color: #6AA35A; background: #F2FAEE; }
+.page-jobs .harbor-bins .bin-bad { border-color: #D4523E; background: #FFF1EE; }
+
+/* 工资条弹窗 */
+.page-jobs .job-summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.page-jobs .job-summary-actions button {
+  width: 100%;
+}
+
+.page-jobs .sum-val.is-gold {
+  color: #C46B0A;
+  font-weight: 800;
+}

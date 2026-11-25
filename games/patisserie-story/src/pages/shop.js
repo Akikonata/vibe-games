@@ -73,7 +73,7 @@ function buildSummaryAdvice({ served, lost, declined, burnt, burntCost = 0, netC
   return '成本控制与翻台节奏都很稳健！升级展示柜提高售价后，单份毛利还会进一步扩大！';
 }
 
-export function mountShopPage(root) {
+export function mountShopPage(root, _params, { navigate } = {}) {
   let kitchen = null;
   let bonuses = null;
   let destroyed = false;
@@ -646,6 +646,15 @@ export function mountShopPage(root) {
     kitchenMounted = false;
     const prevScroll = root.querySelector('.scrollarea')?.scrollTop || 0;
 
+    const openingPrepCost = d.menuRecipes.reduce(
+      (sum, r) => sum + (d.menuRecipes.length === 1 ? 3 : 2) * (r.unitCost || 0),
+      0
+    );
+    const isInDebt = d.coins < 0;
+    const isShortOnPrep = d.menuRecipes.length > 0 && d.coins < openingPrepCost;
+    const blockedFromOpening = isInDebt || isShortOnPrep;
+    const deficitNeeded = Math.max(0, openingPrepCost - d.coins);
+
     const statsCardHtml = `
       <div class="card stats-card">
         <div class="stats-top">
@@ -653,7 +662,7 @@ export function mountShopPage(root) {
           <span class="day-pill">第 ${d.day} 天</span>
         </div>
         <div class="stats-row">
-          <div class="stat-chip"><span class="stat-label">🪙 焦糖金币</span><span class="stat-val">${d.coins}</span></div>
+          <div class="stat-chip"><span class="stat-label">🪙 焦糖金币</span><span class="stat-val" style="${isInDebt ? 'color:#C43424;' : ''}">${d.coins}${isInDebt ? '（赤字）' : ''}</span></div>
           <div class="stat-chip"><span class="stat-label">⭐ 糖屋口碑</span><span class="stat-val">${d.reputation}</span></div>
         </div>
         <div class="tab-bar" role="tablist">
@@ -683,12 +692,23 @@ export function mountShopPage(root) {
             : '<div class="empty-tip">柜台还没有可售卖的甜点哦！快去完成序章解锁第一道玛德琳吧～</div>'}
           ${d.menuRecipes.length > 0
             ? `<div style="margin-top:8px;padding:6px 10px;border-radius:10px;background:#FFF7E8;border:1px solid #E5C89E;font-size:11.5px;color:#6B3B18;text-align:center;">
-                 📦 开店预置备货：${d.menuRecipes.length === 1 ? '3' : '每款 2'} 份 · 初始原料成本 <b>🪙 ${d.menuRecipes.reduce((sum, r) => sum + (d.menuRecipes.length === 1 ? 3 : 2) * (r.unitCost || 0), 0)}</b>（卖完按需补烤）
+                 📦 开店预置备货：${d.menuRecipes.length === 1 ? '3' : '每款 2'} 份 · 初始原料成本 <b>🪙 ${openingPrepCost}</b>（卖完按需补烤）
+               </div>`
+            : ''}
+          ${blockedFromOpening
+            ? `<div style="margin-top:8px;padding:9px 11px;border-radius:10px;background:${isInDebt ? '#FCE6E1' : '#FFF3D6'};border:1.5px solid ${isInDebt ? '#D94E3B' : '#E29B2B'};font-size:12px;line-height:1.5;color:${isInDebt ? '#9C2415' : '#824A08'};font-weight:700;">
+                 ${isInDebt
+                   ? `🚨 账面余额为负（欠款 ${Math.abs(d.coins)} 🪙），原料商已暂停赊账！必须先去风铃湾镇上打工还清欠款并凑足 ${openingPrepCost} 🪙 备货本金（还差 ${deficitNeeded} 🪙），才能重新开店！`
+                   : `⚠️ 当前现金（${d.coins} 🪙）不足支付今日开店备货成本（${openingPrepCost} 🪙，还差 ${deficitNeeded} 🪙），请先去镇上打工赚点启动资金，或减少上架菜品。`}
                </div>`
             : ''}
           <div class="prep-cta-group">
-            <button type="button" class="btn-primary open-btn" data-action="startBusiness">🔔 挂出营业牌 · 进入糖屋迎客</button>
-            <button type="button" class="btn-secondary practice-btn" data-action="startPractice">🎓 练习引导（不消耗天数）</button>
+            ${blockedFromOpening
+              ? `<button type="button" class="btn-primary open-btn" data-action="goJobs">💼 去风铃湾打工赚钱（零成本凑本金）</button>
+                 <button type="button" class="btn-secondary practice-btn" data-action="startPractice">🎓 练习引导（免费不扣钱）</button>`
+              : `<button type="button" class="btn-primary open-btn" data-action="startBusiness">🔔 挂出营业牌 · 进入糖屋迎客</button>
+                 <button type="button" class="btn-secondary practice-btn" data-action="startPractice">🎓 练习引导（不消耗天数）</button>
+                 <button type="button" class="btn-secondary practice-btn" data-action="goJobs">💼 去风铃湾兼职打工（零成本外快）</button>`}
           </div>
         </div>
       `;
@@ -731,7 +751,10 @@ export function mountShopPage(root) {
               <div class="sum-row sub"><span>烤糊炉次${(s.burntCost || 0) > 0 ? `（浪费 ${s.burntCost} 🪙）` : ''}</span><span class="sum-val ${s.burnt > 0 ? 'warn' : ''}">${s.burnt} 次</span></div>
             </div>
             <div class="summary-advice">💡 ${s.advice}</div>
-            <button type="button" class="btn-primary summary-close-btn" data-action="closeSummary">${s.isPractice ? '返回营业准备' : '收下营收 · 迎接明天'}</button>
+            ${!s.isPractice && blockedFromOpening
+              ? `<button type="button" class="btn-primary summary-close-btn" data-action="goJobs">💼 资金${isInDebt ? '赤字' : '见底'} · 立即去镇上打工赚本金</button>`
+              : ''}
+            <button type="button" class="${!s.isPractice && blockedFromOpening ? 'btn-secondary' : 'btn-primary'} summary-close-btn" data-action="closeSummary">${s.isPractice ? '返回营业准备' : '收下营收 · 迎接明天'}</button>
           </div>
         </div>`
       : '';
@@ -957,9 +980,20 @@ export function mountShopPage(root) {
       }
       saveMenuRecipeIds(ids);
       refreshShop();
+    } else if (action === 'goJobs') {
+      if (typeof navigate === 'function') navigate('jobs');
+      else window.location.hash = '#/jobs';
     } else if (action === 'startBusiness') {
       if (pageProxy.data.menuRecipes.length === 0) {
         showToast('请先通过序章解锁玛德琳再开门营业！');
+        return;
+      }
+      const needPrep = pageProxy.data.menuRecipes.reduce(
+        (sum, r) => sum + (pageProxy.data.menuRecipes.length === 1 ? 3 : 2) * (r.unitCost || 0),
+        0
+      );
+      if (pageProxy.data.coins < 0 || pageProxy.data.coins < needPrep) {
+        showToast('资金不足支付备货成本，先去风铃湾打工赚钱吧！');
         return;
       }
       if (!hasSeenTutorial('kitchen')) {

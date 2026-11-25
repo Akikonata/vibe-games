@@ -24,6 +24,7 @@ function getDefaultSave() {
     coins: 120,
     reputation: 0,
     day: 1,
+    partTimeCount: 0,
     purchasedUpgradeIds: [],
     menuRecipeIds: []
   };
@@ -44,7 +45,8 @@ export function loadProgress() {
     menuRecipeIds: saved.menuRecipeIds || [],
     coins: typeof saved.coins === 'number' ? saved.coins : 120,
     reputation: typeof saved.reputation === 'number' ? saved.reputation : 0,
-    day: typeof saved.day === 'number' ? saved.day : 1
+    day: typeof saved.day === 'number' ? saved.day : 1,
+    partTimeCount: typeof saved.partTimeCount === 'number' ? saved.partTimeCount : 0
   });
 }
 
@@ -111,9 +113,19 @@ export function completeLevel(levelId, rank = 'A', score = 0) {
 
 export function recordBusinessDay({ earnedCoins = 0, earnedRep = 0 }) {
   const progress = loadProgress();
-  progress.coins = Math.max(0, progress.coins + Math.round(earnedCoins));
+  // 允许净利亏损导致现金流跌入负数（欠款赤字），此时需要去风铃湾打工赚回本金才能继续开店
+  progress.coins = progress.coins + Math.round(earnedCoins);
   progress.reputation = Math.max(0, progress.reputation + Math.round(earnedRep));
   progress.day += 1;
+  storage.set(STORAGE_KEY, progress);
+  return progress;
+}
+
+export function recordPartTimeJob({ earnedCoins = 0, earnedRep = 0 } = {}) {
+  const progress = loadProgress();
+  progress.coins = progress.coins + Math.max(0, Math.round(earnedCoins));
+  progress.reputation = Math.max(0, progress.reputation + Math.max(0, Math.round(earnedRep)));
+  progress.partTimeCount = (progress.partTimeCount || 0) + 1;
   storage.set(STORAGE_KEY, progress);
   return progress;
 }

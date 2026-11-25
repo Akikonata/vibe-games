@@ -168,9 +168,11 @@ export function mountHomePage(root, _params, { navigate }) {
                     <span class="coco-badge">🌿 贝雷帽学徒</span>
                   </div>
                   <span class="coco-quote">
-                    ${d.season1Finished
-                      ? '“收到神秘旅人的《皇家甜点手账》啦！快点右侧工具条去地图看看蒸汽火车站吧！”'
-                      : '“点右侧的小饼干工具条，就能开店营业、推进主线、逛风铃湾地图和翻食谱手账哦～”'}
+                    ${d.coins < 0
+                      ? `“呜呜…账面欠款 ${Math.abs(d.coins)} 🪙 了！快点右侧【打工】去风铃湾兼职赚回开店本金吧！”`
+                      : (d.season1Finished
+                        ? '“收到神秘旅人的《皇家甜点手账》啦！快点右侧工具条去地图看看蒸汽火车站吧！”'
+                        : '“点右侧的小饼干工具条，就能开店营业、镇上打工、推进主线和逛风铃湾地图哦～”')}
                   </span>
                 </div>
               </div>
@@ -198,6 +200,10 @@ export function mountHomePage(root, _params, { navigate }) {
           ${ui.toolbarOpen
             ? `<div class="side-biscuit-list">
                 <div class="biscuit-btn biscuit-honey" data-action="goShop"><div class="biscuit-inner"><span class="biscuit-icon">☕</span><span class="biscuit-name">营业</span></div></div>
+                <div class="biscuit-btn biscuit-butter" data-action="goJobs">
+                  ${d.coins < 0 ? '<div class="biscuit-dot"></div>' : ''}
+                  <div class="biscuit-inner"><span class="biscuit-icon">💼</span><span class="biscuit-name">打工</span></div>
+                </div>
                 <div class="biscuit-btn biscuit-butter" data-action="openMain">
                   ${d.nextMainLevel && d.nextMainLevel.unlocked ? '<div class="biscuit-dot"></div>' : ''}
                   <div class="biscuit-inner"><span class="biscuit-icon">🥐</span><span class="biscuit-name">主线</span></div>
@@ -229,6 +235,7 @@ export function mountHomePage(root, _params, { navigate }) {
     else if (action === 'openReplay') { ui.showReplayModal = true; render(); }
     else if (action === 'closeReplay') { ui.showReplayModal = false; render(); }
     else if (action === 'goShop') navigate('shop');
+    else if (action === 'goJobs') navigate('jobs');
     else if (action === 'goMap') navigate('map');
     else if (action === 'goRecipes') navigate('recipes');
     else if (action === 'replayCutscene') {

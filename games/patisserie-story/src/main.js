@@ -8,6 +8,7 @@ import { mountMapPage } from './pages/map.js';
 import { mountStoryPage } from './pages/story.js';
 import { mountMinigamePage } from './pages/minigame.js';
 import { mountShopPage } from './pages/shop.js';
+import { mountJobsPage } from './pages/jobs.js';
 import { mountRecipesPage } from './pages/recipes.js';
 
 const ROUTES = {
@@ -18,6 +19,7 @@ const ROUTES = {
   story:    { mount: mountStoryPage,    title: '甜点屋物语',   showNav: true, backTo: '#/home' },
   minigame: { mount: mountMinigamePage, title: '甜点制作挑战', showNav: true, backTo: '#/home' },
   shop:     { mount: mountShopPage,     title: '星月糖屋营业', showNav: true, backTo: '#/home' },
+  jobs:     { mount: mountJobsPage,     title: '风铃湾打工中心', showNav: true, backTo: '#/shop' },
   recipes:  { mount: mountRecipesPage,  title: '复古食谱手账', showNav: true, backTo: '#/home' }
 };
 
