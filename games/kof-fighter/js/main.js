@@ -148,7 +148,7 @@
     if (!shouldShow) clearTouchInput();
   }
 
-  // Multi-touch Virtual Joystick (8-way with deadzone)
+  // Multi-touch Virtual Joystick (8-way with deadzone & bulletproof iOS release guards)
   let joyPointerId = null;
 
   function resetJoystick() {
@@ -160,6 +160,12 @@
     joystickKnob.classList.remove('dragging');
     joystickKnob.style.transform = 'translate(0px, 0px)';
     Object.values(joyDirEls).forEach((el) => el.classList.remove('active'));
+  }
+
+  function releaseAllTouchControls() {
+    resetJoystick();
+    clearTouchInput();
+    document.querySelectorAll('.touch-btn.pressed').forEach((b) => b.classList.remove('pressed'));
   }
 
   function updateJoystickFromPoint(clientX, clientY) {
@@ -194,28 +200,41 @@
 
   joystickZone.addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    if (joyPointerId !== null) return;
     joyPointerId = e.pointerId;
-    joystickZone.setPointerCapture(e.pointerId);
+    try {
+      joystickZone.setPointerCapture(e.pointerId);
+    } catch (_) {}
     joystickKnob.classList.add('dragging');
     updateJoystickFromPoint(e.clientX, e.clientY);
   });
 
-  joystickZone.addEventListener('pointermove', (e) => {
-    if (e.pointerId !== joyPointerId) return;
-    e.preventDefault();
+  window.addEventListener('pointermove', (e) => {
+    if (joyPointerId === null || e.pointerId !== joyPointerId) return;
     updateJoystickFromPoint(e.clientX, e.clientY);
   });
 
-  joystickZone.addEventListener('pointerup', (e) => {
-    if (e.pointerId !== joyPointerId) return;
-    e.preventDefault();
+  const handleJoyRelease = (e) => {
+    if (joyPointerId === null || e.pointerId !== joyPointerId) return;
     resetJoystick();
-  });
+  };
 
-  joystickZone.addEventListener('pointercancel', (e) => {
-    if (e.pointerId !== joyPointerId) return;
-    resetJoystick();
+  window.addEventListener('pointerup', handleJoyRelease);
+  window.addEventListener('pointercancel', handleJoyRelease);
+  joystickZone.addEventListener('lostpointercapture', handleJoyRelease);
+
+  // Failsafe for iOS Safari / WeChat multi-touch: when zero fingers remain on screen, force reset!
+  window.addEventListener(
+    'touchend',
+    (e) => {
+      if (e.touches.length === 0) {
+        releaseAllTouchControls();
+      }
+    },
+    { passive: true }
+  );
+  window.addEventListener('touchcancel', releaseAllTouchControls, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) releaseAllTouchControls();
   });
 
   // Multi-touch Action Buttons
@@ -224,7 +243,8 @@
     const activePointers = new Set();
 
     const release = (pid) => {
-      activePointers.delete(pid);
+      if (pid !== undefined) activePointers.delete(pid);
+      else activePointers.clear();
       if (activePointers.size === 0) {
         touchInput[action] = false;
         btn.classList.remove('pressed');
@@ -234,22 +254,23 @@
     btn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       activePointers.add(e.pointerId);
-      btn.setPointerCapture(e.pointerId);
+      try {
+        btn.setPointerCapture(e.pointerId);
+      } catch (_) {}
       touchInput[action] = true;
       btn.classList.add('pressed');
     });
 
-    btn.addEventListener('pointerup', (e) => {
-      e.preventDefault();
-      release(e.pointerId);
+    window.addEventListener('pointerup', (e) => {
+      if (activePointers.has(e.pointerId)) release(e.pointerId);
     });
-
-    btn.addEventListener('pointercancel', (e) => release(e.pointerId));
+    window.addEventListener('pointercancel', (e) => {
+      if (activePointers.has(e.pointerId)) release(e.pointerId);
+    });
     btn.addEventListener('lostpointercapture', (e) => release(e.pointerId));
   });
 
-  // Prevent iOS Safari / WeChat browser scroll & bounce when touching joystick or buttons
-  touchControlsEl.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+  // Prevent scroll bounce only on touchmove (never block touchstart so Pointer Events fire cleanly on iOS!)
   touchControlsEl.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
   btnTouchToggle.addEventListener('click', () => {
