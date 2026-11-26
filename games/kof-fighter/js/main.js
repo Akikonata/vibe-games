@@ -248,6 +248,10 @@
     btn.addEventListener('lostpointercapture', (e) => release(e.pointerId));
   });
 
+  // Prevent iOS Safari / WeChat browser scroll & bounce when touching joystick or buttons
+  touchControlsEl.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+  touchControlsEl.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
   btnTouchToggle.addEventListener('click', () => {
     const order = ['auto', 'on', 'off'];
     touchMode = order[(order.indexOf(touchMode) + 1) % order.length];
@@ -301,6 +305,7 @@
     btnPause.classList.toggle('hidden', name !== 'battle');
     screenPause.classList.add('hidden');
     screenResult.classList.add('hidden');
+    document.body.classList.toggle('in-battle', name === 'battle');
     updateTouchControlsVisibility();
 
     if (name !== 'battle') {
