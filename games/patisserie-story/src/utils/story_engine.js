@@ -3,7 +3,7 @@
 
 import { LEVELS } from '../data/levels.js';
 import { RECIPES } from '../data/recipes.js';
-import { CHARACTERS, getPortraitPath } from '../data/characters.js';
+import { CHARACTERS, getPortraitPath } from '../data/characters.js?v=20261126z12';
 import { RANK_META, getOutroDialogue } from '../data/story_branches.js';
 
 function resolveStoryContext({ levelId, phase = 'intro', rank = 'A', score = 0 }) {

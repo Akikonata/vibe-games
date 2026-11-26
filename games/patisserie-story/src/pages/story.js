@@ -1,9 +1,10 @@
 // src/pages/story.js
 // RPG 视觉小说舞台（双人半身立绘 + S/A/B 支线剧情 + 食谱解锁奖励卡 + 自动衔接主线尾声漫画）
 
-import { resolveStoryContext, resolveDialogueFrame } from '../utils/story_engine.js';
+import { resolveStoryContext, resolveDialogueFrame } from '../utils/story_engine.js?v=20261126z12';
 import { setStoryFlag, hasStoryFlag } from '../utils/store.js';
 import { CUTSCENES } from '../data/cutscenes.js';
+import { attachLive2DController, getEmotionMeta, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261126z12';
 
 export function mountStoryPage(root, params, { navigate, setPageTitle }) {
   const ctx = resolveStoryContext({
@@ -29,8 +30,12 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
     dialogueList: ctx.dialogueList,
     currentIndex: 0,
     leftPortrait: ctx.initialLeftPortrait,
-    rightPortrait: ctx.initialRightPortrait
+    rightPortrait: ctx.initialRightPortrait,
+    leftEmotion: 'normal',
+    rightEmotion: 'normal'
   };
+
+  let stopLive2D = null;
 
   function advancePhase() {
     if (state.phase === 'intro') {
@@ -48,8 +53,15 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
     if (state.phase !== 'reward') {
       const frame = resolveDialogueFrame(state.dialogueList[state.currentIndex]);
       if (frame) {
-        if (frame.isCoco) state.leftPortrait = frame.portraitUrl;
-        else state.rightPortrait = frame.portraitUrl;
+        const curEmo = frame.emotion || 'normal';
+        if (frame.isCoco) {
+          state.leftPortrait = frame.portraitUrl;
+          state.leftEmotion = curEmo;
+        } else {
+          state.rightPortrait = frame.portraitUrl;
+          state.rightEmotion = curEmo;
+        }
+        const emoMeta = getEmotionMeta(curEmo);
 
         const nextCue = state.currentIndex + 1 < state.dialogueList.length
           ? '<span class="next-cue">点击继续 ▼</span>'
@@ -60,11 +72,17 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
         bodyHtml = `
           <div class="vn-theatre" data-action="nextLine">
             <div class="portraits-layer">
-              <div class="portrait-slot slot-left ${frame.activeSide === 'left' ? 'is-speaking' : 'is-listening'}">
-                <img class="character-bust mode-widthfix" src="${state.leftPortrait}" alt="可可" />
+              <div class="portrait-slot slot-left ${frame.activeSide === 'left' ? 'is-speaking' : 'is-listening'} l2d-react-${frame.activeSide === 'left' ? state.leftEmotion : 'idle'}">
+                <div class="l2d-rig" data-speaking="${frame.activeSide === 'left' ? '1' : '0'}" data-emotion="${state.leftEmotion}">
+                  ${buildEmotionFxHtml(state.leftEmotion, frame.activeSide === 'left')}
+                  <img class="character-bust mode-widthfix" src="${state.leftPortrait}" alt="可可" />
+                </div>
               </div>
-              <div class="portrait-slot slot-right ${frame.activeSide === 'right' ? 'is-speaking' : 'is-listening'}">
-                <img class="character-bust mode-widthfix" src="${state.rightPortrait}" alt="" />
+              <div class="portrait-slot slot-right ${frame.activeSide === 'right' ? 'is-speaking' : 'is-listening'} l2d-react-${frame.activeSide === 'right' ? state.rightEmotion : 'idle'}">
+                <div class="l2d-rig" data-speaking="${frame.activeSide === 'right' ? '1' : '0'}" data-emotion="${state.rightEmotion}">
+                  ${buildEmotionFxHtml(state.rightEmotion, frame.activeSide === 'right')}
+                  <img class="character-bust mode-widthfix" src="${state.rightPortrait}" alt="" />
+                </div>
               </div>
             </div>
 
@@ -72,6 +90,7 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
               <div class="nameplate-row ${frame.activeSide === 'right' ? 'align-right' : ''}">
                 <div class="nameplate" style="border-color: ${frame.speaker.themeColor};">
                   <span class="speaker-name">${frame.speaker.name}</span>
+                  <span class="speaker-emo">${emoMeta.badge}</span>
                 </div>
                 <span class="speaker-role">${frame.speaker.title}</span>
               </div>
@@ -176,5 +195,9 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
 
   root.addEventListener('click', onClick);
   render();
-  return () => root.removeEventListener('click', onClick);
+  stopLive2D = attachLive2DController(root);
+  return () => {
+    if (stopLive2D) stopLive2D();
+    root.removeEventListener('click', onClick);
+  };
 }

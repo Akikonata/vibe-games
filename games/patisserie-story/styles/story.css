@@ -374,3 +374,68 @@
   background: linear-gradient(180deg, #7C9A6D 0%, #537345 100%);
   color: #FFFDF8;
 }
+
+
+/* ==========================================
+   Live2D 风格动态立绘与表情反应动画
+   ========================================== */
+.l2d-rig {
+  position: relative;
+  width: 100%;
+  transform-origin: 50% 92%;
+  will-change: transform;
+}
+
+.l2d-emo-fx {
+  position: absolute;
+  top: 6%;
+  right: 12%;
+  display: flex;
+  gap: 4px;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 9;
+}
+
+.l2d-emo-fx span {
+  display: inline-block;
+  animation: l2dFxFloat 1.25s ease-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(42, 18, 6, 0.36));
+}
+
+.l2d-emo-fx span:nth-child(2) { animation-delay: 0.25s; }
+.l2d-emo-fx span:nth-child(3) { animation-delay: 0.5s; }
+
+@keyframes l2dFxFloat {
+  0%   { transform: translateY(6px) scale(0.75); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateY(-18px) scale(1.15); opacity: 0; }
+}
+
+.page-story .portrait-slot.l2d-react-happy {
+  animation: l2dHappyHop 0.42s ease-out;
+}
+.page-story .portrait-slot.l2d-react-surprised {
+  animation: l2dSurpriseJump 0.34s cubic-bezier(0.22, 1.4, 0.36, 1);
+}
+.page-story .portrait-slot.l2d-react-serious {
+  animation: l2dSeriousLean 0.36s ease-out;
+}
+
+@keyframes l2dHappyHop {
+  0%   { transform: scale(1.04) translateY(-4px); }
+  35%  { transform: scale(1.06) translateY(-14px); }
+  70%  { transform: scale(1.03) translateY(-3px); }
+  100% { transform: scale(1.04) translateY(-4px); }
+}
+
+@keyframes l2dSurpriseJump {
+  0%   { transform: scale(1.04) translateY(-4px); }
+  45%  { transform: scale(1.08) translateY(-18px); }
+  100% { transform: scale(1.04) translateY(-4px); }
+}
+
+@keyframes l2dSeriousLean {
+  0%   { transform: scale(1.0) translateY(0); }
+  100% { transform: scale(1.05) translateY(-5px); }
+}
