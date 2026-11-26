@@ -1029,5 +1029,7 @@
 }
 
 .page-minigame .fail-retry-btn {
-  width: 82%;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
