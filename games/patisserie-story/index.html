@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>甜点屋物语 · Maison Étoile</title>
-  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/base.css?v=20261126z16" />
   <link rel="stylesheet" href="styles/start.css?v=20261126z12" />
   <link rel="stylesheet" href="styles/intro.css" />
   <link rel="stylesheet" href="styles/home.css?v=20261126q" />
@@ -25,7 +25,18 @@
       </div>
     </header>
     <main id="page-root"></main>
+    <div id="app-preloader" class="app-preloader" role="status" aria-live="polite">
+      <div class="preloader-card">
+        <div class="preloader-crest">🐚</div>
+        <div class="preloader-title">星月糖屋 · Maison Étoile</div>
+        <div class="preloader-sub" id="preloader-msg">正在预热烤炉与手绘素材…</div>
+        <div class="preloader-track">
+          <div id="preloader-fill" class="preloader-fill" style="width: 0%;"></div>
+        </div>
+        <div id="preloader-pct" class="preloader-pct">0%</div>
+      </div>
+    </div>
   </div>
-  <script type="module" src="src/main.js?v=20261126z15"></script>
+  <script type="module" src="src/main.js?v=20261126z16"></script>
 </body>
 </html>

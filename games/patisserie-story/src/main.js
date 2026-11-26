@@ -10,6 +10,7 @@ import { mountMinigamePage } from './pages/minigame.js';
 import { mountShopPage } from './pages/shop.js?v=20261126z11';
 import { mountJobsPage } from './pages/jobs.js?v=20261126w';
 import { mountRecipesPage } from './pages/recipes.js';
+import { preloadCriticalAssets, preloadBackgroundAssets } from './utils/preloader.js?v=20261126z16';
 
 const ROUTES = {
   start:    { mount: mountStartPage,    title: '甜点屋物语',   showNav: false },
@@ -88,8 +89,35 @@ navBack.addEventListener('click', () => {
 
 window.addEventListener('hashchange', renderRoute);
 
-if (!window.location.hash) {
-  window.location.replace('#/start');
-} else {
-  renderRoute();
+async function bootstrapApp() {
+  const preloaderEl = document.getElementById('app-preloader');
+  const fillEl = document.getElementById('preloader-fill');
+  const pctEl = document.getElementById('preloader-pct');
+  const msgEl = document.getElementById('preloader-msg');
+
+  await preloadCriticalAssets(({ loaded, total, pct }) => {
+    if (fillEl) fillEl.style.width = `${pct}%`;
+    if (pctEl) pctEl.textContent = `${pct}%`;
+    if (msgEl) {
+      msgEl.textContent = pct >= 100
+        ? '✨ 糖屋准备就绪，正在推开木门…'
+        : `正在预热烤炉与手绘素材 (${loaded} / ${total})…`;
+    }
+  });
+
+  if (!window.location.hash) {
+    window.location.replace('#/start');
+  } else {
+    renderRoute();
+  }
+
+  if (preloaderEl) {
+    requestAnimationFrame(() => preloaderEl.classList.add('is-done'));
+    setTimeout(() => preloaderEl.remove(), 450);
+  }
+
+  // 进入游戏后静默后台预加载其余立绘、装潢道具与打工场景
+  preloadBackgroundAssets();
 }
+
+bootstrapApp();

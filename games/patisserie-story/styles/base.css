@@ -597,3 +597,92 @@ img.mode-widthfix { width: 100%; height: auto; }
   20% { opacity: 1; transform: translate(-50%, -12px) scale(1.12); }
   100% { opacity: 0; transform: translate(-50%, -52px) scale(1); }
 }
+
+
+/* ==========================================
+   焦糖奶油首屏素材预加载 Loading 遮罩
+   ========================================== */
+.app-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 35%, #FFF8EC 0%, #EFE0CC 60%, #DEC2A0 100%);
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.app-preloader.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.preloader-card {
+  width: 100%;
+  max-width: 300px;
+  padding: 24px 20px 20px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #FFFDF8 0%, #F7E9D6 100%);
+  border: 2px solid #D4A16A;
+  border-bottom: 5px solid #B37944;
+  box-shadow: 0 12px 28px rgba(74, 40, 22, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.preloader-crest {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #F8D798, #C98236);
+  border: 2px solid #6E3918;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 10px rgba(74, 40, 22, 0.22);
+}
+
+.preloader-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #4A2511;
+  letter-spacing: 0.8px;
+}
+
+.preloader-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #845938;
+}
+
+.preloader-track {
+  width: 100%;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: #E8D5BC;
+  border: 1.5px solid #C89662;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(74, 40, 22, 0.14);
+}
+
+.preloader-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #F4C466 0%, #D97E28 60%, #B85A18 100%);
+  transition: width 0.14s ease-out;
+}
+
+.preloader-pct {
+  font-size: 12px;
+  font-weight: 800;
+  color: #8C4E22;
+}
