@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | **糖心蛇蛇 (Sweet Snake)** | `games/sweet-snake/` | 50 关可爱贪吃蛇大冒险、6 款技能蛇蛇伙伴、糖果小屋商店、动态蛇蛇花园、道具与星级体系、完整 BGM 与音效（支持触控滑动 + 键盘方向键/WASD + 鼠标拖动） |
 | **甜点屋物语 (Patisserie Story)** | `games/patisserie-story/` | 焦糖古典欧风甜点屋经营 × RPG 视觉小说、11 道手绘欧洲经典甜点、5 大独立小游戏引擎（红砖烤炉 / 物理堆叠 / 三轨节拍 / 三口铜锅 / 接盘收集）、S/A/B 分歧剧情与过场漫画、2.5D 三分区实景糖屋营业（双层 6 格玻璃展示柜 / 桌边用餐清台 / 成本赤字与风铃湾打工中心 / 实景装潢升级）与食谱文化手账 |
+| **烈焰拳皇 '98 (King of Flames '98)** | `games/kof-fighter/` | SNK 街机风 2D 格斗游戏，支持 PVE（简单/普通/噩梦三档 AI）与 PVP 本地双人对战，含草薙京、八神庵、不知火舞、特瑞·博加德、夏尔米、布鲁·玛丽 6 位经典格斗家、手绘大场景、透明动作精灵与技能特效、搓招/连招取消/打康/超必杀及手机端 8 向虚拟摇杆 |
 
 ## 目录结构
 
@@ -39,6 +40,7 @@ vibe-games/
    - 游戏大厅：https://akikonata.github.io/vibe-games/
    - 糖心蛇蛇：https://akikonata.github.io/vibe-games/games/sweet-snake/
    - 甜点屋物语：https://akikonata.github.io/vibe-games/games/patisserie-story/
+   - 烈焰拳皇 '98：https://akikonata.github.io/vibe-games/games/kof-fighter/
 
 后续推送到 `dev` 会自动更新网站。仅创建 GitHub 仓库不会发布网站，必须完成代码推送和 Pages 发布源设置。
 

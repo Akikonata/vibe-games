@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>烈焰拳皇 '98 — KING OF FLAMES '98</title>
+  <link rel="stylesheet" href="css/style.css?v=6" />
+</head>
+<body>
+  <div id="arcade-shell">
+    <!-- Top Arcade Marquee Bar -->
+    <header class="arcade-header">
+      <div class="brand">
+        <a href="../../" class="chip-btn" style="text-decoration:none;" title="返回 Vibe Games 游戏大厅">← 大厅</a>
+        <span class="brand-badge">NEO·ARCADE</span>
+        <span class="brand-title">烈焰拳皇 '98 <small>KING OF FLAMES</small></span>
+      </div>
+      <div class="header-controls">
+        <button id="btn-touch-toggle" class="chip-btn" title="显示或隐藏触屏摇杆">
+          <svg class="ui-ico" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M12 12v5m-5 2h10l1.5 2h-13L7 19z"/></svg>
+          <span class="btn-label">摇杆: 自动</span>
+        </button>
+        <button id="btn-sound" class="chip-btn" title="切换音效">
+          <svg class="ui-ico" width="15" height="15" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+          <span class="btn-label">音效: 开</span>
+        </button>
+        <button id="btn-bgm" class="chip-btn" title="切换背景音乐">
+          <svg class="ui-ico" width="15" height="15" viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h5V3h-7z"/></svg>
+          <span class="btn-label">BGM: 开</span>
+        </button>
+        <button id="btn-controls" class="chip-btn" title="查看出招表与按键">
+          <svg class="ui-ico" width="15" height="15" viewBox="0 0 24 24"><path d="M6 7h12a4 4 0 0 1 4 4v3a3 3 0 0 1-5 2.2L15 14H9l-2 2.2A3 3 0 0 1 2 14v-3a4 4 0 0 1 4-4zm2 3v4m-2-2h4m6.5-1h.01M18 13h.01"/></svg>
+          <span class="btn-label">出招表</span>
+        </button>
+        <button id="btn-pause" class="chip-btn hidden" title="暂停游戏">
+          <svg class="ui-ico" width="15" height="15" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <span class="btn-label">暂停</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Viewport -->
+    <main class="stage-wrapper">
+      <canvas id="game-canvas" width="1120" height="580"></canvas>
+
+      <!-- In-Game Arcade HUD -->
+      <div id="battle-hud" class="hidden">
+        <div class="hud-top">
+          <!-- P1 Status -->
+          <div class="fighter-hud p1-hud">
+            <div class="portrait-box" id="p1-portrait"></div>
+            <div class="bars-col">
+              <div class="name-row">
+                <span class="player-tag p1-tag">1P</span>
+                <span class="fighter-name" id="p1-name">草薙京</span>
+                <div class="win-orbs" id="p1-wins">
+                  <span class="orb"></span><span class="orb"></span>
+                </div>
+              </div>
+              <div class="hp-frame">
+                <div class="hp-damage" id="p1-hp-dmg"></div>
+                <div class="hp-fill" id="p1-hp"></div>
+              </div>
+              <div class="guard-frame" title="防御槽">
+                <div class="guard-fill" id="p1-guard"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Center Timer -->
+          <div class="timer-box">
+            <div class="round-label" id="hud-round">ROUND 1</div>
+            <div class="timer-num" id="hud-timer">99</div>
+          </div>
+
+          <!-- P2 Status -->
+          <div class="fighter-hud p2-hud">
+            <div class="bars-col">
+              <div class="name-row">
+                <div class="win-orbs" id="p2-wins">
+                  <span class="orb"></span><span class="orb"></span>
+                </div>
+                <span class="fighter-name" id="p2-name">八神庵</span>
+                <span class="player-tag p2-tag" id="p2-tag">CPU</span>
+              </div>
+              <div class="hp-frame">
+                <div class="hp-damage" id="p2-hp-dmg"></div>
+                <div class="hp-fill" id="p2-hp"></div>
+              </div>
+              <div class="guard-frame" title="防御槽">
+                <div class="guard-fill" id="p2-guard"></div>
+              </div>
+            </div>
+            <div class="portrait-box" id="p2-portrait"></div>
+          </div>
+        </div>
+
+        <!-- Combo Counters -->
+        <div id="p1-combo" class="combo-display left hidden">
+          <div class="combo-count">0</div>
+          <div class="combo-label">HITS!</div>
+          <div class="combo-sub">COMBO</div>
+        </div>
+        <div id="p2-combo" class="combo-display right hidden">
+          <div class="combo-count">0</div>
+          <div class="combo-label">HITS!</div>
+          <div class="combo-sub">COMBO</div>
+        </div>
+
+        <!-- Center Announcement Banner -->
+        <div id="announce-banner" class="hidden">
+          <div class="announce-main" id="announce-main">ROUND 1</div>
+          <div class="announce-sub" id="announce-sub">READY</div>
+        </div>
+
+        <!-- Bottom Power Gauges -->
+        <div class="hud-bottom">
+          <div class="power-hud p1-power">
+            <div class="power-meta">
+              <span class="power-stocks" id="p1-stocks">MAX 0</span>
+              <span class="power-hint">O: 超必杀 (消耗1格)</span>
+            </div>
+            <div class="power-bar-frame">
+              <div class="power-fill" id="p1-power-fill"></div>
+            </div>
+          </div>
+
+          <div class="power-hud p2-power">
+            <div class="power-meta">
+              <span class="power-hint" id="p2-power-hint">6 / ;: 超必杀</span>
+              <span class="power-stocks" id="p2-stocks">MAX 0</span>
+            </div>
+            <div class="power-bar-frame">
+              <div class="power-fill" id="p2-power-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Virtual Joystick & Action Buttons -->
+        <div id="touch-controls" class="touch-controls hidden">
+          <div class="joystick-zone" id="joystick-zone" aria-label="虚拟摇杆">
+            <div class="joystick-base" id="joystick-base">
+              <span class="joy-dir up">▲</span>
+              <span class="joy-dir down">▼</span>
+              <span class="joy-dir left">◀</span>
+              <span class="joy-dir right">▶</span>
+              <div class="joystick-knob" id="joystick-knob"></div>
+            </div>
+          </div>
+
+          <div class="touch-pad" aria-label="攻击按键">
+            <div class="touch-row top-row">
+              <button type="button" class="touch-btn btn-heavy" data-action="hp">
+                <b>重拳</b><small>HP</small>
+              </button>
+              <button type="button" class="touch-btn btn-heavy" data-action="hk">
+                <b>重脚</b><small>HK</small>
+              </button>
+              <button type="button" class="touch-btn btn-super" id="touch-btn-super" data-action="super">
+                <b>超杀</b><small>MAX</small>
+              </button>
+            </div>
+            <div class="touch-row bottom-row">
+              <button type="button" class="touch-btn btn-light" data-action="lp">
+                <b>轻拳</b><small>LP</small>
+              </button>
+              <button type="button" class="touch-btn btn-light" data-action="lk">
+                <b>轻脚</b><small>LK</small>
+              </button>
+              <button type="button" class="touch-btn btn-roll" data-action="roll">
+                <b>回避</b><small>ROLL</small>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TITLE SCREEN -->
+      <section id="screen-title" class="overlay-screen">
+        <div class="title-bg-glow"></div>
+        <div class="title-content">
+          <div class="title-eyebrow">SNK STYLE ARCADE FIGHTING ENGINE</div>
+          <h1 class="game-logo">
+            <span class="logo-cn">烈焰拳皇</span>
+            <span class="logo-year">'98</span>
+          </h1>
+          <p class="logo-sub">KING OF FLAMES — PVE 街机挑战 &amp; PVP 本地双人对决</p>
+
+          <div class="mode-cards">
+            <button id="btn-mode-pve" class="mode-card primary">
+              <div class="mode-icon-badge p1-emblem">
+                <svg viewBox="0 0 24 24"><path d="M12 2c2.5 3.2 5 5.6 5 9.2a5 5 0 1 1-10 0c0-1.6.6-3.2 1.6-4.7.2 1.4 1.1 2.2 2 2.4C10 6.5 10.6 4.2 12 2z"/></svg>
+              </div>
+              <div class="mode-text">
+                <div class="mode-title">PVE 单人对战</div>
+                <div class="mode-desc">1P vs 智能 AI · 简单 / 普通 / 噩梦三档难度</div>
+              </div>
+            </button>
+            <button id="btn-mode-pvp" class="mode-card secondary">
+              <div class="mode-icon-badge p2-emblem">
+                <svg viewBox="0 0 24 24"><path d="M5 3l6 6-2 2-6-6V3h2zm14 0v2l-6 6-2-2 6-6h2zM8 14l2 2-5 5H3v-2l5-5zm8 0l5 5v2h-2l-5-5 2-2z"/></svg>
+              </div>
+              <div class="mode-text">
+                <div class="mode-title">PVP 双人对决</div>
+                <div class="mode-desc">同屏本地双人键盘对战 · 兼容小键盘与笔记本</div>
+              </div>
+            </button>
+          </div>
+
+          <div class="title-footer">
+            <span>支持搓招（↓↘→ / →↓↘ / ↓↙←）+ 方向快捷出招</span>
+            <span>•</span>
+            <span>防御 / 紧急回避 / 连招取消 / 爆气超必杀</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CHARACTER & STAGE SELECT SCREEN -->
+      <section id="screen-select" class="overlay-screen hidden">
+        <div class="select-container">
+          <div class="select-top">
+            <button id="btn-back-title" class="back-btn">← 返回主菜单</button>
+            <h2 id="select-heading">选择格斗家 — PVE 模式</h2>
+            <div id="difficulty-picker" class="difficulty-picker">
+              <span>AI 难度:</span>
+              <button class="diff-btn" data-diff="easy">简单</button>
+              <button class="diff-btn active" data-diff="normal">普通</button>
+              <button class="diff-btn" data-diff="hard">噩梦</button>
+            </div>
+          </div>
+
+          <div class="select-main">
+            <!-- P1 Preview -->
+            <div class="preview-panel p1-panel">
+              <div class="preview-badge p1-tag">1P 选手</div>
+              <div class="preview-avatar" id="sel-p1-avatar"></div>
+              <h3 id="sel-p1-name">草薙 炎</h3>
+              <div class="preview-style" id="sel-p1-style">苍炎武者 · 均衡强攻</div>
+              <div class="stat-bars" id="sel-p1-stats"></div>
+              <div class="move-preview" id="sel-p1-moves"></div>
+            </div>
+
+            <!-- Roster Grid & Stage Picker -->
+            <div class="center-select">
+              <div class="pick-prompt" id="pick-prompt">请为 1P 选择角色</div>
+              <div class="roster-grid" id="roster-grid"></div>
+
+              <div class="stage-picker">
+                <div class="stage-picker-label">战斗场景</div>
+                <div class="stage-pills" id="stage-pills"></div>
+              </div>
+
+              <button id="btn-start-match" class="start-btn">
+                <svg class="ui-ico" viewBox="0 0 24 24"><path d="M12 2c2.5 3.2 5 5.6 5 9.2a5 5 0 1 1-10 0c0-1.6.6-3.2 1.6-4.7.2 1.4 1.1 2.2 2 2.4C10 6.5 10.6 4.2 12 2z"/></svg>
+                <span>开始对战 FIGHT!</span>
+              </button>
+            </div>
+
+            <!-- P2 Preview -->
+            <div class="preview-panel p2-panel">
+              <div class="preview-badge p2-tag" id="sel-p2-badge">CPU 对手</div>
+              <div class="preview-avatar" id="sel-p2-avatar"></div>
+              <h3 id="sel-p2-name">八神 苍</h3>
+              <div class="preview-style" id="sel-p2-style">紫炎狂徒 · 极速压制</div>
+              <div class="stat-bars" id="sel-p2-stats"></div>
+              <div class="move-preview" id="sel-p2-moves"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAUSE OVERLAY -->
+      <section id="screen-pause" class="overlay-screen dim hidden">
+        <div class="modal-card small">
+          <h2>游戏已暂停</h2>
+          <div class="modal-actions vertical">
+            <button id="btn-resume" class="start-btn">继续战斗 RESUME</button>
+            <button id="btn-restart-round" class="secondary-btn">重新开始本局</button>
+            <button id="btn-pause-select" class="secondary-btn">重新选人</button>
+            <button id="btn-pause-title" class="secondary-btn">返回主菜单</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- MATCH RESULT OVERLAY -->
+      <section id="screen-result" class="overlay-screen dim hidden">
+        <div class="modal-card result-card">
+          <div class="result-kicker" id="result-kicker">VICTORY</div>
+          <h2 id="result-winner">1P 草薙 炎 获胜!</h2>
+          <p id="result-quote" class="result-quote">「火焰不会熄灭，这才是真正的格斗！」</p>
+          <div class="result-stats" id="result-stats"></div>
+          <div class="modal-actions">
+            <button id="btn-rematch" class="start-btn">再来一局 REMATCH</button>
+            <button id="btn-result-select" class="secondary-btn">更换角色</button>
+            <button id="btn-result-title" class="secondary-btn">返回主菜单</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTROLS / MOVE LIST MODAL -->
+      <section id="screen-controls" class="overlay-screen dim hidden">
+        <div class="modal-card wide">
+          <div class="modal-header">
+            <h2>🎮 操作说明与出招表</h2>
+            <button id="btn-close-controls" class="chip-btn">✕ 关闭</button>
+          </div>
+          <div class="controls-grid">
+            <div class="ctrl-box">
+              <h3 class="p1-text">1P 按键 (左侧)</h3>
+              <ul>
+                <li><b>移动 / 跳跃 / 下蹲：</b> <kbd>A</kbd> <kbd>D</kbd> <kbd>W</kbd> <kbd>S</kbd></li>
+                <li><b>轻拳 / 轻脚：</b> <kbd>J</kbd> / <kbd>K</kbd>（可连打起手）</li>
+                <li><b>重拳 / 重脚：</b> <kbd>U</kbd> / <kbd>I</kbd>（高伤 / 扫腿击倒）</li>
+                <li><b>紧急回避 (翻滚)：</b> <kbd>L</kbd>（短暂无敌，穿波脱身）</li>
+                <li><b>超必杀 (消耗1气)：</b> <kbd>O</kbd></li>
+                <li><b>防御：</b> 按住<b>后退方向</b>（下蹲+后退防下段）</li>
+              </ul>
+            </div>
+            <div class="ctrl-box">
+              <h3 class="p2-text">2P 按键 (右侧 · PVP)</h3>
+              <ul>
+                <li><b>移动 / 跳跃 / 下蹲：</b> <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></li>
+                <li><b>轻拳 / 轻脚：</b> <kbd>Num1</kbd> 或 <kbd>N</kbd> / <kbd>Num2</kbd> 或 <kbd>M</kbd></li>
+                <li><b>重拳 / 重脚：</b> <kbd>Num4</kbd> 或 <kbd>,</kbd> / <kbd>Num5</kbd> 或 <kbd>.</kbd></li>
+                <li><b>紧急回避 (翻滚)：</b> <kbd>Num3</kbd> 或 <kbd>/</kbd></li>
+                <li><b>超必杀 (消耗1气)：</b> <kbd>Num6</kbd> 或 <kbd>;</kbd></li>
+                <li><b>防御：</b> 按住<b>后退方向</b>（下蹲+后退防下段）</li>
+              </ul>
+            </div>
+          </div>
+          <div class="special-guide">
+            <h3>🔥 必杀技出招方式（支持传统搓招 + 快捷方向）</h3>
+            <div class="special-pills">
+              <div class="sp-item">
+                <b>必杀技 1 (飞行道具/波动)</b>
+                <span>搓招 <code>↓↘→ + 拳</code> 或快捷 <code>前 + 重拳</code></span>
+              </div>
+              <div class="sp-item">
+                <b>必杀技 2 (对空升龙/无敌)</b>
+                <span>搓招 <code>→↓↘ + 拳</code> 或快捷 <code>上/下 + 重拳</code></span>
+              </div>
+              <div class="sp-item">
+                <b>必杀技 3 (突进连击)</b>
+                <span>搓招 <code>↓↙← + 脚</code> 或快捷 <code>前/后 + 重脚</code></span>
+              </div>
+              <div class="sp-item">
+                <b>MAX 超必杀 (需1格气)</b>
+                <span>按 <code>O</code> (1P) 或 <code>Num6 / ;</code> (2P)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Quick Bottom Keybind Strip -->
+    <footer class="keybind-strip">
+      <span><b class="p1-text">1P:</b> WASD移动 · J/K轻攻 · U/I重攻 · L翻滚 · O超必杀</span>
+      <span class="divider">|</span>
+      <span><b class="p2-text">2P:</b> 方向键 · N/M(1/2)轻攻 · ,/.(4/5)重攻 · /(3)翻滚 · ;(6)超必杀</span>
+      <span class="divider">|</span>
+      <span><b>ESC</b> 暂停</span>
+    </footer>
+  </div>
+
+  <script src="js/audio.js?v=7"></script>
+  <script src="js/characters.js?v=7"></script>
+  <script src="js/stages.js?v=7"></script>
+  <script src="js/effects.js?v=7"></script>
+  <script src="js/fighter.js?v=7"></script>
+  <script src="js/ai.js?v=7"></script>
+  <script src="js/engine.js?v=7"></script>
+  <script src="js/main.js?v=7"></script>
+</body>
+</html>

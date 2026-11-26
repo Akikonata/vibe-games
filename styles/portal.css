@@ -226,6 +226,44 @@ body {
   box-shadow: 0 5px 0 #5e2c0e;
 }
 
+.card-kof {
+  border-color: #f97316;
+}
+
+.cover-kof {
+  background: #140d24;
+}
+
+.cover-kof-fighter {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  width: 144px;
+  height: 144px;
+  object-fit: cover;
+  object-position: center 15%;
+  border-radius: 14px 14px 0 0;
+  border: 2px solid rgba(251, 191, 36, 0.8);
+  border-bottom: none;
+  z-index: 2;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.65);
+  transition: transform 0.28s ease;
+}
+
+.game-card:hover .cover-kof-fighter {
+  transform: scale(1.05);
+}
+
+.card-kof .card-tags span {
+  background: #fff1e6;
+  color: #b91c1c;
+}
+
+.cta-kof {
+  background: linear-gradient(180deg, #f97316 0%, #dc2626 100%);
+  box-shadow: 0 5px 0 #7f1d1d;
+}
+
 .portal-footer {
   margin-top: 40px;
   text-align: center;
