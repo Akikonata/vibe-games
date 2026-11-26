@@ -128,6 +128,11 @@
   z-index: 3;
 }
 
+/* 可可立绘头身构图较近，在双人对话舞台缩小至 85% 贴底对齐，与婆婆及各位成年 NPC 头身比例自然和谐 */
+.page-story .slot-left .l2d-rig {
+  width: 85%;
+}
+
 .page-story .character-bust {
   width: 100%;
   display: block;
