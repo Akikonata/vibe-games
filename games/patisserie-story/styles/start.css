@@ -43,21 +43,23 @@
   pointer-events: none;
 }
 
-/* 可可立绘迎宾区（使用 absolute 贴底，绝不与 fixed 按钮抢占点击层） */
+/* 可可立绘迎宾区（向上提拉至按钮上方并底部柔光渐隐，构图更舒展） */
 .page-start .start-coco-wrap {
   position: absolute;
   left: 50%;
-  bottom: 0;
+  bottom: 84px;
   transform: translateX(-50%);
-  width: 270px;
+  width: 286px;
   z-index: 2;
   pointer-events: none;
-  filter: drop-shadow(0 6px 12px rgba(28, 12, 4, 0.45));
+  filter: drop-shadow(0 6px 12px rgba(28, 12, 4, 0.42));
 }
 
 .page-start .start-coco-img {
   width: 100%;
   display: block;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 100%);
 }
 
 .page-start .start-canopy {

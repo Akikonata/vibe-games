@@ -343,7 +343,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
 
     root.innerHTML = `
       <div class="kitchen-scene is-zoned-25d ${upgClasses}">
-        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=5" alt="" />
+        <img class="kitchen-scene-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=6" alt="" />
         ${sceneUpgradesMarkup}
 
         <!-- 顶部悬浮半透明营收 HUD -->
@@ -372,15 +372,15 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         </div>
 
         <!-- 独立拆分的柜体层板层（z:13，位于餐区可可前、柜内甜点后） -->
-        <img class="counter-25d-fg mode-fill" src="assets/images/kitchen/prop_display_counter_fg.png?v=4" alt="" aria-hidden="true" />
+        <img class="counter-25d-fg mode-fill" src="assets/images/kitchen/prop_display_counter_fg.png?v=5" alt="" aria-hidden="true" />
 
         <!-- 区域 2：中腰双层 6 格玻璃甜点展示柜内层（z:14，甜点直接摆在瓷盘与层板上，不再是外挂卡片！） -->
         <div class="zone-display-case ${isTwoTier ? 'is-two-tier' : ''}" role="group" aria-label="双层玻璃甜点展示柜库存">
           ${displayMarkup}
         </div>
 
-        <!-- 独立拆分的前玻璃反光与黄铜立柱前景层（z:15，pointer-events:none，真正罩在甜点前面！） -->
-        <img class="counter-25d-glass mode-fill" src="assets/images/kitchen/prop_counter_glass_front.png?v=1" alt="" aria-hidden="true" />
+        <!-- 独立拆分的前玻璃黄铜立柱前景层（z:15，无半透明矩形、不挡名称签，pointer-events:none） -->
+        <img class="counter-25d-glass mode-fill" src="assets/images/kitchen/prop_counter_glass_front.png?v=2" alt="" aria-hidden="true" />
 
         <!-- 吧台木板沿上的单行实时提示 -->
         <div id="k-tip" class="zoned-tip-pill" role="status" aria-live="polite">${d.serviceMsg}</div>
@@ -766,7 +766,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
             <span class="upg-preview-sub">购入后立即呈现在门面与营业内景</span>
           </div>
           <div class="upg-preview-stage ${ownedIds.map(id => `has-upg-${id}`).join(' ')}">
-            <img class="upg-preview-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=5" alt="糖屋装潢预览" />
+            <img class="upg-preview-bg mode-fill" src="assets/images/kitchen/patisserie_25d_zones.jpg?v=6" alt="糖屋装潢预览" />
             ${hasOwned('crystal_lamp') ? `
               <div class="scene-upg-chandelier is-mini"><div class="chandelier-warm-wash"></div><img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_chandelier.png" alt="" /></div>
             ` : ''}
