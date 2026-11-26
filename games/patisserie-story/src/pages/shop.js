@@ -438,12 +438,6 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       ${hasUpg('oak_counter') ? `
         <div class="scene-upg-oak-plaque" aria-hidden="true">✦ 法式橡木御制展示柜 ✦</div>
       ` : ''}
-      ${hasUpg('brass_espresso') ? `
-        <div class="scene-upg-espresso" aria-hidden="true">
-          <span class="espresso-steam">☕</span>
-          <img class="scene-upg-img mode-fit" src="assets/images/upgrades/prop_upg_espresso.png" alt="" />
-        </div>
-      ` : ''}
     `;
 
     root.innerHTML = `
@@ -500,8 +494,11 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         <!-- 区域 3：后厨大理石烘焙台面 + 左侧饮品现萃吧台 + 最底部手持条 -->
         <div class="zone-kitchen-floor">
           ${(d.menuDrinks || []).length > 0 ? `
-            <div class="zone-drink-bar" role="group" aria-label="饮品现萃吧台">
+            <div class="zone-drink-bar ${hasUpg('brass_espresso') ? 'has-espresso' : ''}" role="group" aria-label="饮品现萃吧台">
               <button type="button" id="k-brewer" class="brewer-main-btn state-idle" data-action="tapBrewer" aria-label="饮品现萃台">
+                ${hasUpg('brass_espresso')
+                  ? '<div class="brewer-machine-wrap"><span class="espresso-steam">☕</span><img class="brewer-machine-img mode-fit" src="assets/images/upgrades/prop_upg_espresso.png" alt="" /></div>'
+                  : ''}
                 <div id="k-brewer-ov" class="brewer-ov"><span class="brewer-tag">☕ 饮品吧</span></div>
               </button>
               <div class="brewer-picks">
