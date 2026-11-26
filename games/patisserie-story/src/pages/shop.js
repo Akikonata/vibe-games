@@ -1091,23 +1091,27 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       launchKitchenShift({ tutorialMode: false, practiceMode: true });
     } else if (action === 'tapDisplay') {
       const idx = Number(target.dataset.idx) || 0;
-      const prevHeld = pageProxy.data.heldItem;
-      // 走向展示柜取餐/放回途中，先保持出发前的手持状态；抵达展示柜后再更新手上托盘！
-      visualCarryOverride = prevHeld || null;
-      syncVisualCarry(prevHeld);
-      pulseProp(`#k-disp-${target.dataset.id}`);
-      kitchen?.tapDisplay(target.dataset.id);
+      const recipeId = target.dataset.id;
+      visualCarryOverride = undefined;
+      syncVisualCarry(pageProxy.data.heldItem);
       moveCocoTo(`disp_${idx % 3}`, '🧁', () => {
-        visualCarryOverride = undefined;
+        pulseProp(`#k-disp-${recipeId}`);
+        kitchen?.tapDisplay(recipeId);
         syncVisualCarry(pageProxy.data.heldItem);
       });
     } else if (action === 'tapOven') {
       const oId = target.dataset.id;
-      moveCocoTo(oId, '🔥');
-      pulseProp(`#k-oven-${oId}`);
-      kitchen?.tapOven(oId);
+      visualCarryOverride = undefined;
+      syncVisualCarry(pageProxy.data.heldItem);
+      moveCocoTo(oId, '🔥', () => {
+        pulseProp(`#k-oven-${oId}`);
+        kitchen?.tapOven(oId);
+      });
     } else if (action === 'startBatch') {
-      const res = kitchen?.startBatchBake(target.dataset.id);
+      const recipeId = target.dataset.id;
+      visualCarryOverride = undefined;
+      syncVisualCarry(pageProxy.data.heldItem);
+      const res = kitchen?.startBatchBake(recipeId);
       if (res && res.ok) {
         moveCocoTo(res.ovenId, '🔥');
         pulseProp(`#k-oven-${res.ovenId}`);
@@ -1116,15 +1120,10 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       }
     } else if (action === 'tapSeat') {
       const seatId = Number(target.dataset.id);
-      const prevHeld = pageProxy.data.heldItem;
-      // 上菜途中全程保持手上端着餐盘穿过柜台小门送到餐桌，抵达餐桌时再放下变空手！
-      if (prevHeld) {
-        visualCarryOverride = prevHeld;
-        syncVisualCarry(prevHeld);
-      }
-      kitchen?.tapSeat(seatId);
+      visualCarryOverride = undefined;
+      syncVisualCarry(pageProxy.data.heldItem);
       moveCocoTo(`seat_${seatId}`, '🍰', () => {
-        visualCarryOverride = undefined;
+        kitchen?.tapSeat(seatId);
         syncVisualCarry(pageProxy.data.heldItem);
       });
     } else if (action === 'declineSeat') {
