@@ -2054,7 +2054,12 @@
   filter: grayscale(0.5);
 }
 
-/* 选中/引导时直接给柜内甜点打暖金聚光，绝不套丑陋外框 */
+/* 选中/引导时直接给柜内甜点打暖金聚光，禁用父类 .is-scene-glow 的 translate(-50%,-50%) 位移动画！ */
+.page-shop .display-bay-btn.is-scene-glow {
+  animation: none;
+  filter: none;
+}
+
 .page-shop .display-bay-btn.is-selected .display-shelf-unit {
   filter: drop-shadow(0 0 6px rgba(255, 198, 56, 0.98)) drop-shadow(0 0 2px #FFF6C8);
   transform: scale(1.08);
