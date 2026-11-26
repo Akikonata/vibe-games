@@ -153,8 +153,8 @@
     }
 
     triggerSuperCutIn(fighter, moveName) {
-      let img = null;
-      if (fighter.config.portrait) {
+      let img = window.KOF.PORTRAITS && window.KOF.PORTRAITS[fighter.config.id];
+      if (!img && fighter.config.portrait) {
         img = new Image();
         img.src = fighter.config.portrait;
       }

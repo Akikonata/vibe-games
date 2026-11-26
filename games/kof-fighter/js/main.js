@@ -350,7 +350,7 @@
 
       card.innerHTML = `
         <div class="roster-icon" style="background: linear-gradient(135deg, ${ch.colors.primary}, ${ch.colors.secondary});">
-          <img class="portrait-img" src="${ch.portrait}" alt="${ch.name}" onerror="this.style.display='none'" />
+          <img class="portrait-img" src="${ch.portrait}" alt="${ch.name}" loading="eager" decoding="sync" onerror="this.style.display='none'" />
           <span class="portrait-fallback">${ch.badge}</span>
         </div>
         <div class="roster-info">
@@ -404,7 +404,7 @@
     const avatar = $(`sel-${slot}-avatar`);
     avatar.style.background = `linear-gradient(135deg, ${ch.colors.primary}cc, ${ch.colors.secondary}cc)`;
     avatar.innerHTML = `
-      <img class="preview-portrait-img" src="${ch.portrait}" alt="${ch.name}" onerror="this.style.display='none'" />
+      <img class="preview-portrait-img" src="${ch.portrait}" alt="${ch.name}" loading="eager" decoding="sync" onerror="this.style.display='none'" />
       <span class="preview-portrait-label">${ch.enName}</span>
     `;
     $(`sel-${slot}-name`).textContent = ch.name;
@@ -443,11 +443,11 @@
 
       const p1Port = $('p1-portrait');
       p1Port.style.background = `linear-gradient(135deg, ${p1.config.colors.primary}, ${p1.config.colors.secondary})`;
-      p1Port.innerHTML = `<img class="portrait-img" src="${p1.config.portrait}" alt="${p1.config.name}" onerror="this.style.display='none'" /><span class="portrait-fallback">${p1.config.badge}</span>`;
+      p1Port.innerHTML = `<img class="portrait-img" src="${p1.config.portrait}" alt="${p1.config.name}" loading="eager" decoding="sync" onerror="this.style.display='none'" /><span class="portrait-fallback">${p1.config.badge}</span>`;
 
       const p2Port = $('p2-portrait');
       p2Port.style.background = `linear-gradient(135deg, ${p2.config.colors.primary}, ${p2.config.colors.secondary})`;
-      p2Port.innerHTML = `<img class="portrait-img" src="${p2.config.portrait}" alt="${p2.config.name}" onerror="this.style.display='none'" /><span class="portrait-fallback">${p2.config.badge}</span>`;
+      p2Port.innerHTML = `<img class="portrait-img" src="${p2.config.portrait}" alt="${p2.config.name}" loading="eager" decoding="sync" onerror="this.style.display='none'" /><span class="portrait-fallback">${p2.config.badge}</span>`;
     },
 
     onTick(p1, p2, roundNumber, timer) {
@@ -654,12 +654,20 @@
     const loaderPct = $('loader-pct');
     const loaderStatus = $('loader-status');
 
-    const queue = [{ src: 'assets/ui/title-bg.jpg', img: null }];
+    // Retain all preloaded Image instances in memory so mobile browsers never evict decoded portraits/stages
+    window.KOF.PORTRAITS = window.KOF.PORTRAITS || {};
+    window.KOF.UI_IMAGES = window.KOF.UI_IMAGES || {};
+    const titleImg = new Image();
+    window.KOF.UI_IMAGES.titleBg = titleImg;
+
+    const queue = [{ src: 'assets/ui/title-bg.jpg', img: titleImg }];
     window.KOF.STAGES.forEach((st) => {
       queue.push({ src: st.thumb, img: window.KOF.STAGE_IMAGES && window.KOF.STAGE_IMAGES[st.id] });
     });
     window.KOF.CHARACTERS.forEach((ch) => {
-      queue.push({ src: ch.portrait, img: null });
+      const pImg = new Image();
+      window.KOF.PORTRAITS[ch.id] = pImg;
+      queue.push({ src: ch.portrait, img: pImg });
       queue.push({ src: ch.sprite, img: window.KOF.SPRITES && window.KOF.SPRITES[ch.id] });
     });
 
