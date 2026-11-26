@@ -57,6 +57,8 @@
       this.bustX = 0;
       this.bustVx = 0;
       this.wasGrounded = true;
+      this.walkPhase = 0;
+      this.lastStepIndex = -1;
       if (!Fighter.bustCanvas && typeof document !== 'undefined') {
         Fighter.bustCanvas = document.createElement('canvas');
         Fighter.bustCanvas.width = 96;
@@ -340,9 +342,22 @@
             const isForward = moveDir === this.facing;
             this.vx = moveDir * this.config.stats.walkSpeed * (isForward ? 1.05 : 0.82);
             this.state = 'walk';
+            // Advance human gait phase based on actual ground distance traveled
+            this.walkPhase += Math.abs(this.vx) * 0.068;
+            const stepIdx = Math.floor(this.walkPhase / Math.PI);
+            if (stepIdx !== this.lastStepIndex) {
+              this.lastStepIndex = stepIdx;
+              engine.effects.spawnDust(this.x - moveDir * 14, this.floorY, moveDir, 2);
+              if (this.config.gender === 'female') this.bustVy += isForward ? 1.8 : 1.1;
+              if (window.KOF.audio && window.KOF.audio.footstep) {
+                window.KOF.audio.footstep();
+              }
+            }
           } else {
             this.vx = 0;
             this.state = 'idle';
+            this.walkPhase = 0;
+            this.lastStepIndex = -1;
           }
         }
       } else {
@@ -669,13 +684,22 @@
     }
 
     getSpriteFrameIndex() {
-      // 0 = Idle, 1 = Walk/Dash/Jump/Roll, 2 = Normal Attack, 3 = Special/Super/Victory
+      // 0 = Idle/Plant, 1 = Forward Stride/Dash/Jump/Roll, 2 = Normal Attack, 3 = Special/Super/Victory
       if (this.state === 'attack' && this.currentMoveKey) {
         if (this.currentMoveKey === 'super' || this.currentMoveKey.startsWith('sp')) return 3;
         return 2;
       }
       if (this.state === 'victory') return 3;
-      if (this.state === 'walk' || this.state === 'jump' || this.state === 'roll') return 1;
+      if (this.state === 'jump' || this.state === 'roll') return 1;
+      if (this.state === 'walk') {
+        const walkingForward = this.vx * this.facing > 0;
+        if (!walkingForward) {
+          // Cautious backward guard-step: stay in guarded stance (never sprint forward while moving back!)
+          return 0;
+        }
+        // Rhythmic human forward walk cycle: alternate planted stance (0) <-> push-off stride (1)
+        return Math.sin(this.walkPhase) >= 0 ? 1 : 0;
+      }
       return 0;
     }
 
@@ -899,10 +923,24 @@
           scaleX = 1 - breath * 0.018;
           musclePump = Math.max(0, breath) * 0.045;
         } else if (this.state === 'walk') {
-          const stride = Math.sin(this.animTime * 0.36);
-          offsetY = -Math.abs(stride) * 10;
-          rot = 0.075 + stride * 0.035;
-          scaleY = 1 + Math.abs(stride) * 0.03;
+          const walkingForward = this.vx * this.facing > 0;
+          const strideSin = Math.sin(this.walkPhase);
+          const lift = Math.abs(strideSin);
+          if (walkingForward) {
+            // Natural bipedal forward walk: knee-dip at foot plant, lift & lean on push-off
+            offsetY = -lift * 9;
+            offsetX = strideSin * 4;
+            rot = 0.045 + lift * 0.055;
+            scaleY = 0.965 + lift * 0.06;
+            scaleX = 1.03 - lift * 0.045;
+          } else {
+            // Cautious KOF back-step: guarded heel-toe rhythm
+            offsetY = -lift * 6;
+            offsetX = -strideSin * 3;
+            rot = -0.04 - lift * 0.03;
+            scaleY = 0.97 + lift * 0.045;
+            scaleX = 1.02 - lift * 0.03;
+          }
         } else if (this.state === 'jump') {
           scaleY = this.vy < 0 ? 1.07 : 0.96;
           scaleX = this.vy < 0 ? 0.95 : 1.04;

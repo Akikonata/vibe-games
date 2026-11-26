@@ -113,6 +113,10 @@
       this.playNoise(0.14, 0.22, 420, 'lowpass');
     }
 
+    footstep() {
+      this.playNoise(0.035, 0.045, 520, 'lowpass');
+    }
+
     block() {
       this.playTone(720, 320, 0.08, 'triangle', 0.18);
       this.playNoise(0.06, 0.15, 2400, 'highpass');
