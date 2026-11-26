@@ -86,11 +86,14 @@ export function mountShopPage(root, _params, { navigate } = {}) {
   let handsSig = '';
   let pauseSig = '';
 
-  // 2.5D 可可多段寻路走位状态（跨区必须经由右侧柜台小门进出，绝不穿墙/穿玻璃柜！）
+  // 2.5D 可可多段寻路走位与串行任务队列（必须做完当前事，再依次执行下一件事！）
   let cocoPos = { x: 50, y: 72, facing: 1 };
   let cocoWalkTimer = null;
+  let cocoNextTaskTimer = null;
   let cocoPathRunId = 0;
-  // 视觉端盘同步覆盖（undef = 跟随真实 heldItem；null = 走到展示柜前先保持空手；obj = 送餐路上全程端着餐盘直到抵达餐桌！）
+  let cocoBusy = false;
+  let cocoCurrentTaskKey = '';
+  let cocoTaskQueue = [];
   let visualCarryOverride = undefined;
 
   const GATE_SOUTH = { x: 87.5, y: 68 };
@@ -129,6 +132,60 @@ export function mountShopPage(root, _params, { navigate } = {}) {
            <img class="coco-tray-dish mode-fit" src="${shown.recipeIcon}" alt="" />
          </div>`
       : '';
+  }
+
+  function clearCocoQueue() {
+    cocoPathRunId += 1;
+    clearTimeout(cocoWalkTimer);
+    clearTimeout(cocoNextTaskTimer);
+    cocoTaskQueue = [];
+    cocoBusy = false;
+    cocoCurrentTaskKey = '';
+    visualCarryOverride = undefined;
+  }
+
+  function runNextCocoTask() {
+    if (destroyed || cocoBusy) return;
+    const task = cocoTaskQueue.shift();
+    if (!task) return;
+    cocoBusy = true;
+    cocoCurrentTaskKey = task.key || '';
+    moveCocoTo(task.targetKey, task.burstEmoji || '', () => {
+      if (destroyed) return;
+      try {
+        if (typeof task.run === 'function') task.run();
+      } finally {
+        syncVisualCarry(pageProxy.data.heldItem);
+        cocoBusy = false;
+        cocoCurrentTaskKey = '';
+        if (cocoTaskQueue.length > 0) {
+          cocoNextTaskTimer = setTimeout(runNextCocoTask, 80);
+        }
+      }
+    });
+  }
+
+  function enqueueCocoTask(task) {
+    if (destroyed || !pageProxy.data.isOpen) return;
+    // 防止手抖连续点同一个目标重复排队
+    const lastKey = cocoTaskQueue.length > 0
+      ? cocoTaskQueue[cocoTaskQueue.length - 1].key
+      : (cocoBusy ? cocoCurrentTaskKey : '');
+    if (task.key && task.key === lastKey) return;
+    if (cocoTaskQueue.length >= 5) {
+      showToast('可可待办已满（最多排队 5 件事），稍等片刻哦！', 1100);
+      return;
+    }
+    cocoTaskQueue.push(task);
+    if (cocoBusy) {
+      const scene = root.querySelector('.kitchen-scene');
+      const wp = COCO_WAYPOINTS[task.targetKey];
+      if (scene && wp) {
+        spawnStepBurst(scene, wp.x, Math.max(16, wp.y - 6), `📋${cocoTaskQueue.length}`, 'spark');
+      }
+    } else {
+      runNextCocoTask();
+    }
   }
 
   function moveCocoTo(targetKey, burstEmoji = '', onArrive = null) {
@@ -431,7 +488,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         <div id="k-pause-mask"></div>
       </div>
     `;
-    cocoPos = { x: 50, y: 69, facing: 1 };
+    clearCocoQueue();
+    cocoPos = { x: 50, y: 72, facing: 1 };
     kitchenMounted = true;
   }
 
@@ -1092,39 +1150,49 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     } else if (action === 'tapDisplay') {
       const idx = Number(target.dataset.idx) || 0;
       const recipeId = target.dataset.id;
-      visualCarryOverride = undefined;
-      syncVisualCarry(pageProxy.data.heldItem);
-      moveCocoTo(`disp_${idx % 3}`, '🧁', () => {
-        pulseProp(`#k-disp-${recipeId}`);
-        kitchen?.tapDisplay(recipeId);
-        syncVisualCarry(pageProxy.data.heldItem);
+      enqueueCocoTask({
+        key: `disp:${recipeId}`,
+        targetKey: `disp_${idx % 3}`,
+        burstEmoji: '🧁',
+        run: () => {
+          pulseProp(`#k-disp-${recipeId}`);
+          kitchen?.tapDisplay(recipeId);
+        }
       });
     } else if (action === 'tapOven') {
       const oId = target.dataset.id;
-      visualCarryOverride = undefined;
-      syncVisualCarry(pageProxy.data.heldItem);
-      moveCocoTo(oId, '🔥', () => {
-        pulseProp(`#k-oven-${oId}`);
-        kitchen?.tapOven(oId);
+      enqueueCocoTask({
+        key: `oven:${oId}`,
+        targetKey: oId,
+        burstEmoji: '🔥',
+        run: () => {
+          pulseProp(`#k-oven-${oId}`);
+          kitchen?.tapOven(oId);
+        }
       });
     } else if (action === 'startBatch') {
       const recipeId = target.dataset.id;
-      visualCarryOverride = undefined;
-      syncVisualCarry(pageProxy.data.heldItem);
-      const res = kitchen?.startBatchBake(recipeId);
-      if (res && res.ok) {
-        moveCocoTo(res.ovenId, '🔥');
-        pulseProp(`#k-oven-${res.ovenId}`);
-      } else {
-        moveCocoTo('batch');
-      }
+      const ovens = pageProxy.data.ovens || [];
+      const idleOven = ovens.find(o => o.state === 'idle');
+      const targetOvenKey = idleOven ? idleOven.id : 'batch';
+      enqueueCocoTask({
+        key: `batch:${recipeId}`,
+        targetKey: targetOvenKey,
+        burstEmoji: '🔥',
+        run: () => {
+          const res = kitchen?.startBatchBake(recipeId);
+          if (res && res.ok) pulseProp(`#k-oven-${res.ovenId}`);
+        }
+      });
     } else if (action === 'tapSeat') {
       const seatId = Number(target.dataset.id);
-      visualCarryOverride = undefined;
-      syncVisualCarry(pageProxy.data.heldItem);
-      moveCocoTo(`seat_${seatId}`, '🍰', () => {
-        kitchen?.tapSeat(seatId);
-        syncVisualCarry(pageProxy.data.heldItem);
+      enqueueCocoTask({
+        key: `seat:${seatId}`,
+        targetKey: `seat_${seatId}`,
+        burstEmoji: '🍰',
+        run: () => {
+          kitchen?.tapSeat(seatId);
+        }
       });
     } else if (action === 'declineSeat') {
       kitchen?.declineSeat(Number(target.dataset.id));
@@ -1148,6 +1216,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
   refreshShop();
   return () => {
     destroyed = true;
+    clearCocoQueue();
     kitchen?.stop?.();
     root.removeEventListener('click', onClick);
     document.removeEventListener('visibilitychange', onVisibilityChange);
