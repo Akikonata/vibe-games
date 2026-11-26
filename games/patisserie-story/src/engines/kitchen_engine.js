@@ -12,7 +12,7 @@ const CUSTOMER_POOL = [
   { npcId: 'bart',    chibiKey: 'bart' },
   { npcId: 'emily',   chibiKey: 'emily' }
 ];
-const SHIFT_SECONDS = 55;
+const SHIFT_SECONDS = 90;
 const EAT_DURATION_TICKS = 26; // 2.6s 享用甜点动画时长
 const DECLINE_REP_PENALTY = 5;
 const MAX_STOCK_PER_RECIPE = 5;

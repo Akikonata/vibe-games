@@ -4,7 +4,7 @@
 import { RECIPES } from '../data/recipes.js';
 import { SHOP_UPGRADES, computeShopBonuses } from '../data/shop_upgrades.js';
 import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js?v=20261126p';
-import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261126p';
+import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261126z';
 import {
   loadProgress,
   getShopTierTitle,
@@ -206,7 +206,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       isPaused: false,
       pauseManual: false,
       pauseHidden: false,
-      shiftTimeLeft: 45,
+      shiftTimeLeft: 90,
       shiftCoins: 0,
       shiftRep: 0,
       shiftServed: 0,
@@ -863,7 +863,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       practiceMode,
       onTutorialDone: () => {
         markTutorialSeen('kitchen');
-        showToast('🎉 上手啦！正式营业 45 秒开始！', 1600);
+        showToast('🎉 上手啦！正式营业 90 秒开始！', 1600);
       },
       onServeEffect: ({ seatId }) => {
         const scene = root.querySelector('.kitchen-scene');
