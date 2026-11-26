@@ -1533,9 +1533,33 @@ kbd {
   filter: brightness(1.25);
 }
 
-/* Lift bottom power HUD slightly when touch controls are active */
+/* When touch controls are active, dock power gauges cleanly below top HP/Guard bars so they never block fighters or touch controls */
 #battle-hud.touch-active .hud-bottom {
-  margin-bottom: 146px;
+  position: absolute;
+  top: 62px;
+  left: 60px;
+  right: 60px;
+  bottom: auto;
+  margin-bottom: 0;
+  gap: 86px;
+}
+
+#battle-hud.touch-active .power-hud {
+  width: 34%;
+  gap: 2px;
+}
+
+#battle-hud.touch-active .power-meta {
+  font-size: 10px;
+}
+
+#battle-hud.touch-active .power-stocks {
+  font-size: 11px;
+}
+
+#battle-hud.touch-active .power-bar-frame {
+  height: 9px;
+  border-width: 1.5px;
 }
 
 /* Mobile & Narrow Viewport Responsiveness */
@@ -1730,11 +1754,19 @@ kbd {
   }
 
   #battle-hud.touch-active .hud-bottom {
-    margin-bottom: 120px;
+    top: 52px;
+    left: 52px;
+    right: 52px;
+    gap: 66px;
+    margin-bottom: 0;
+  }
+
+  #battle-hud.touch-active .power-hud {
+    width: 42%;
   }
 
   .combo-display {
-    top: 76px;
+    top: 96px;
   }
 
   .combo-count {
