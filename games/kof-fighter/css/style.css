@@ -546,13 +546,73 @@ body {
 #screen-title {
   background:
     radial-gradient(circle at 50% 42%, rgba(12, 10, 22, 0.35) 0%, rgba(6, 7, 14, 0.86) 80%),
-    url('../assets/ui/title-bg.png') center / cover no-repeat;
+    url('../assets/ui/title-bg.jpg') center / cover no-repeat;
 }
 
 #screen-select {
   background:
     linear-gradient(180deg, rgba(10, 12, 24, 0.84) 0%, rgba(8, 10, 18, 0.94) 100%),
-    url('../assets/ui/title-bg.png') center / cover no-repeat;
+    url('../assets/ui/title-bg.jpg') center / cover no-repeat;
+}
+
+/* Arcade Asset Preloader Overlay */
+#screen-loader {
+  z-index: 40;
+  background: radial-gradient(circle at 50% 40%, #1c122e 0%, #070910 80%);
+}
+
+.loader-card {
+  width: min(440px, 90%);
+  text-align: center;
+  background: linear-gradient(180deg, rgba(24, 30, 48, 0.94), rgba(10, 13, 24, 0.98));
+  border: 1.5px solid rgba(251, 191, 36, 0.45);
+  border-radius: 14px;
+  padding: 26px 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.78), 0 0 28px rgba(249, 115, 22, 0.2);
+}
+
+.loader-title {
+  font-size: 26px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, #fff, #fde047 55%, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+
+.loader-sub {
+  font-size: 12px;
+  color: #cbd5e1;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.loader-track {
+  height: 14px;
+  background: rgba(8, 10, 18, 0.9);
+  border: 1.5px solid rgba(251, 191, 36, 0.65);
+  transform: skewX(-16deg);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.loader-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #f97316, #fde047, #ef4444);
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.7);
+  transition: width 0.14s ease-out;
+}
+
+.loader-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fde047;
+  font-variant-numeric: tabular-nums;
 }
 
 .title-content {

@@ -52,16 +52,17 @@
     return false;
   }
 
-  const osakaImg = loadStageImage('assets/stages/osaka.png');
-  const shrineImg = loadStageImage('assets/stages/shrine.png');
-  const harborImg = loadStageImage('assets/stages/harbor.png');
+  const osakaImg = loadStageImage('assets/stages/osaka.jpg');
+  const shrineImg = loadStageImage('assets/stages/shrine.jpg');
+  const harborImg = loadStageImage('assets/stages/harbor.jpg');
+  window.KOF.STAGE_IMAGES = { osaka: osakaImg, shrine: shrineImg, harbor: harborImg };
 
   const STAGES = [
     {
       id: 'osaka',
       name: '大阪夜街',
       subtitle: 'NEO OSAKA ALLEY',
-      thumb: 'assets/stages/osaka.png',
+      thumb: 'assets/stages/osaka.jpg',
       draw(ctx, w, h, floorY, time, camX) {
         if (drawArtBackdrop(ctx, osakaImg, w, h, camX, 'rgba(244, 63, 94, 0.42)', floorY, time)) return;
 
@@ -79,7 +80,7 @@
       id: 'shrine',
       name: '神社烈焰',
       subtitle: 'KYOTO FLAME SHRINE',
-      thumb: 'assets/stages/shrine.png',
+      thumb: 'assets/stages/shrine.jpg',
       draw(ctx, w, h, floorY, time, camX) {
         if (drawArtBackdrop(ctx, shrineImg, w, h, camX, 'rgba(251, 146, 60, 0.5)', floorY, time)) return;
 
@@ -96,7 +97,7 @@
       id: 'harbor',
       name: '码头铁桥',
       subtitle: 'HARBOR STEEL BRIDGE',
-      thumb: 'assets/stages/harbor.png',
+      thumb: 'assets/stages/harbor.jpg',
       draw(ctx, w, h, floorY, time, camX) {
         if (drawArtBackdrop(ctx, harborImg, w, h, camX, 'rgba(251, 191, 36, 0.45)', floorY, time)) return;
 

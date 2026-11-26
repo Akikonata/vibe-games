@@ -609,7 +609,83 @@
   });
   $('btn-result-title').addEventListener('click', () => showScreen('title'));
 
-  // Boot
-  renderSelectScreen();
-  showScreen('title');
+  // Asset Preloader (ensures all portraits, 4-pose sprites, stages & title art are loaded before play!)
+  function preloadImage(src, existingImg) {
+    return new Promise((resolve) => {
+      const img = existingImg || new Image();
+      let settled = false;
+      const done = () => {
+        if (settled) return;
+        settled = true;
+        resolve(img);
+      };
+      const timer = setTimeout(done, 12000);
+      const finish = () => {
+        clearTimeout(timer);
+        if (img.decode) {
+          img.decode().catch(() => {}).finally(done);
+        } else {
+          done();
+        }
+      };
+
+      if (img.complete && img.naturalWidth > 0) {
+        finish();
+        return;
+      }
+      img.addEventListener('load', finish, { once: true });
+      img.addEventListener('error', () => {
+        clearTimeout(timer);
+        done();
+      }, { once: true });
+      if (!img.src) img.src = src;
+    });
+  }
+
+  async function preloadAllAssets() {
+    const loaderScreen = $('screen-loader');
+    const loaderFill = $('loader-fill');
+    const loaderCount = $('loader-count');
+    const loaderPct = $('loader-pct');
+    const loaderStatus = $('loader-status');
+
+    const queue = [{ src: 'assets/ui/title-bg.jpg', img: null }];
+    window.KOF.STAGES.forEach((st) => {
+      queue.push({ src: st.thumb, img: window.KOF.STAGE_IMAGES && window.KOF.STAGE_IMAGES[st.id] });
+    });
+    window.KOF.CHARACTERS.forEach((ch) => {
+      queue.push({ src: ch.portrait, img: null });
+      queue.push({ src: ch.sprite, img: window.KOF.SPRITES && window.KOF.SPRITES[ch.id] });
+    });
+
+    const total = queue.length;
+    let loaded = 0;
+
+    const updateProgress = () => {
+      const pct = Math.round((loaded / total) * 100);
+      if (loaderFill) loaderFill.style.width = `${pct}%`;
+      if (loaderCount) loaderCount.textContent = `${loaded} / ${total}`;
+      if (loaderPct) loaderPct.textContent = `${pct}%`;
+    };
+    updateProgress();
+
+    await Promise.all(
+      queue.map((item) =>
+        preloadImage(item.src, item.img).then(() => {
+          loaded++;
+          updateProgress();
+        })
+      )
+    );
+
+    if (loaderStatus) loaderStatus.textContent = '加载完成 · READY TO FIGHT!';
+    setTimeout(() => {
+      if (loaderScreen) loaderScreen.classList.add('hidden');
+      renderSelectScreen();
+      showScreen('title');
+    }, 180);
+  }
+
+  // Boot with Asset Preloader
+  preloadAllAssets();
 })();

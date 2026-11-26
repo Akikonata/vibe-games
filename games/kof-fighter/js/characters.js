@@ -10,7 +10,7 @@
       style: '草薙流古武术 · 苍炎均衡',
       badge: '京',
       gender: 'male',
-      portrait: 'assets/portraits/kyo.png',
+      portrait: 'assets/portraits/kyo.jpg',
       quote: '「燃尽吧！这就是草薙之炎！」',
       colors: {
         primary: '#f97316',
@@ -56,7 +56,7 @@
       style: '八神流古武术 · 紫炎压制',
       badge: '庵',
       gender: 'male',
-      portrait: 'assets/portraits/iori.png',
+      portrait: 'assets/portraits/iori.jpg',
       quote: '「记住这片紫色的火焰吧……哼！」',
       colors: {
         primary: '#a855f7',
@@ -102,7 +102,7 @@
       style: '不知火流忍术 · 魅惑牵制',
       badge: '舞',
       gender: 'female',
-      portrait: 'assets/portraits/mai.png',
+      portrait: 'assets/portraits/mai.jpg',
       quote: '「日本第一的女忍者，可不是浪得虚名哟！」',
       colors: {
         primary: '#f43f5e',
@@ -148,7 +148,7 @@
       style: '八极圣拳 · 饿狼爆发',
       badge: '狼',
       gender: 'male',
-      portrait: 'assets/portraits/terry.png',
+      portrait: 'assets/portraits/terry.jpg',
       quote: '「Are you OK?! 接下这记能量喷泉吧！」',
       colors: {
         primary: '#f59e0b',
@@ -194,7 +194,7 @@
       style: '荒狂雷光 · 性感摔投',
       badge: '雷',
       gender: 'female',
-      portrait: 'assets/portraits/shermie.png',
+      portrait: 'assets/portraits/shermie.jpg',
       quote: '「讨厌啦，被雷电麻痹的感觉很棒吧？」',
       colors: {
         primary: '#ec4899',
@@ -240,7 +240,7 @@
       style: '疾风桑搏 · 性感特工',
       badge: '玫',
       gender: 'female',
-      portrait: 'assets/portraits/mary.png',
+      portrait: 'assets/portraits/mary.jpg',
       quote: '「任务完成！下次可要更加认真一点哦。」',
       colors: {
         primary: '#38bdf8',
