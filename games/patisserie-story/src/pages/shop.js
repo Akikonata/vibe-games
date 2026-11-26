@@ -2,18 +2,20 @@
 // 星月糖屋 2.5D 三分区经营系统：餐区入座招待 + 玻璃展示柜预置库存 + 后厨大理石台双烤炉批量补烤 + 婉拒空位（扣口碑）
 
 import { RECIPES } from '../data/recipes.js';
+import { DRINKS } from '../data/drinks.js?v=20261126z10';
 import { SHOP_UPGRADES, computeShopBonuses } from '../data/shop_upgrades.js';
 import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js?v=20261126p';
-import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261126z';
+import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261126z10';
 import {
   loadProgress,
   getShopTierTitle,
   recordBusinessDay,
   buyShopUpgrade,
   saveMenuRecipeIds,
+  saveMenuDrinkIds,
   hasSeenTutorial,
   markTutorialSeen
-} from '../utils/store.js?v=20261126w';
+} from '../utils/store.js?v=20261126z10';
 import { createTutorialCardHtml, spawnFloatText } from '../utils/tutorial.js';
 import { showToast } from '../../../../shared/web-ui.js';
 
@@ -83,6 +85,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
   let seatSigs = ['', '', ''];
   let displaySigs = {};
   let ovenSigs = {};
+  let brewerSig = '';
   let handsSig = '';
   let pauseSig = '';
 
@@ -108,6 +111,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     disp_2: { x: 67, y: 69 },
     oven_1: { x: 24, y: 76 },
     oven_2: { x: 76, y: 76 },
+    brewer: { x: 18, y: 69 },
     batch:  { x: 50, y: 76 }
   };
 
@@ -276,6 +280,9 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       shopTierTitle: '🌱 筹备见习糖屋',
       unlockedRecipes: [],
       menuRecipes: [],
+      allDrinks: [],
+      menuDrinks: [],
+      brewer: null,
       isOpen: false,
       isPractice: false,
       isPaused: false,
@@ -333,6 +340,26 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     }
     const menuRecipes = unlockedRecipes.filter(r => menuIds.includes(r.id));
 
+    const allDrinks = DRINKS.map(dr => {
+      const unlocked = dr.isUnlocked(progress);
+      const price = Math.round(dr.basePrice * bonuses.priceMult);
+      const unitProfit = price - dr.unitCost;
+      return {
+        ...dr,
+        unlocked,
+        price,
+        unitProfit,
+        selected: unlocked && (progress.menuDrinkIds || ['sea_latte']).includes(dr.id)
+      };
+    });
+    let menuDrinkIds = (progress.menuDrinkIds || ['sea_latte']).filter(id => allDrinks.some(d => d.id === id && d.unlocked));
+    if (menuDrinkIds.length === 0) {
+      menuDrinkIds = ['sea_latte'];
+      saveMenuDrinkIds(menuDrinkIds);
+      allDrinks.forEach(d => { d.selected = menuDrinkIds.includes(d.id); });
+    }
+    const menuDrinks = allDrinks.filter(d => menuDrinkIds.includes(d.id));
+
     const upgrades = SHOP_UPGRADES.map(u => ({
       ...u,
       owned: progress.purchasedUpgradeIds.includes(u.id),
@@ -346,6 +373,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       shopTierTitle: getShopTierTitle(progress.reputation),
       unlockedRecipes,
       menuRecipes,
+      allDrinks,
+      menuDrinks,
       upgrades,
       purchasedUpgradeIds: progress.purchasedUpgradeIds || []
     });
@@ -355,6 +384,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     seatSigs = ['', '', ''];
     displaySigs = {};
     ovenSigs = {};
+    brewerSig = '';
     handsSig = '';
     pauseSig = '';
 
@@ -467,8 +497,23 @@ export function mountShopPage(root, _params, { navigate } = {}) {
           <div id="k-coco-carry" class="coco-25d-carry"></div>
         </div>
 
-        <!-- 区域 3：后厨大理石烘焙台面 + 最底部手持条 -->
+        <!-- 区域 3：后厨大理石烘焙台面 + 左侧饮品现萃吧台 + 最底部手持条 -->
         <div class="zone-kitchen-floor">
+          ${(d.menuDrinks || []).length > 0 ? `
+            <div class="zone-drink-bar" role="group" aria-label="饮品现萃吧台">
+              <button type="button" id="k-brewer" class="brewer-main-btn state-idle" data-action="tapBrewer" aria-label="饮品现萃台">
+                <div id="k-brewer-ov" class="brewer-ov"><span class="brewer-tag">☕ 饮品吧</span></div>
+              </button>
+              <div class="brewer-picks">
+                ${(d.menuDrinks || []).map(dr => `
+                  <button type="button" class="brewer-pick-btn" data-action="startBrew" data-id="${dr.id}" aria-label="现萃${dr.name}，原料成本${dr.unitCost}金币">
+                    <img class="brewer-pick-img mode-fit" src="${dr.iconImg}" alt="" />
+                    <span>${dr.shortName}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
           <!-- 底部大理石操作台面上的双批量烤炉 + 指定补烤选单 -->
           <div class="zone-marble-bench" aria-label="后厨烘焙大理石台">
             ${ovensMarkup}
@@ -545,20 +590,33 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         decBtn.setAttribute('aria-label', st === 'ordering' ? `不接待${s.name}（空出餐桌，口碑-5）` : '空餐桌');
       }
 
-      const sig = `${st}:${s.npcId || ''}:${s.wantedId || ''}:${isGlow ? 1 : 0}:${isOutOfStock ? 1 : 0}`;
+      const sig = `${st}:${s.npcId || ''}:${s.wantedId || ''}:${s.wantedDrinkId || ''}:${s.dessertServed ? 1 : 0}:${s.drinkServed ? 1 : 0}:${isGlow ? 1 : 0}:${isOutOfStock ? 1 : 0}`;
       if (seatSigs[idx] !== sig) {
         seatSigs[idx] = sig;
         if (st === 'empty') {
           slot.innerHTML = '';
         } else if (st === 'ordering') {
           slot.innerHTML = `
-            <div class="dining-order-bubble ${isOutOfStock ? 'is-soldout' : ''}">
-              <img class="cust-want-img mode-fit" src="${s.wantedIcon}" alt="" />
+            <div class="dining-order-bubble ${isOutOfStock && !s.dessertServed ? 'is-soldout' : ''} ${s.wantedDrinkId ? 'is-combo-order' : ''}">
+              <div class="order-items-row">
+                <div class="order-item-cell ${s.dessertServed ? 'is-served' : ''}">
+                  <img class="cust-want-img mode-fit" src="${s.wantedIcon}" alt="" />
+                  ${s.dessertServed ? '<span class="order-done-tick">✓</span>' : ''}
+                </div>
+                ${s.wantedDrinkId ? `
+                  <div class="order-item-cell ${s.drinkServed ? 'is-served' : ''}">
+                    <img class="cust-want-img mode-fit" src="${s.wantedDrinkIcon}" alt="" />
+                    ${s.drinkServed ? '<span class="order-done-tick">✓</span>' : ''}
+                  </div>
+                ` : ''}
+              </div>
               <div class="cust-patience"><div class="cust-patience-fill ${s.patience < 35 ? 'low' : ''}" style="width:${Math.max(0, Math.round(s.patience))}%;"></div></div>
-              ${isOutOfStock ? '<span class="order-oos-tag">缺货</span>' : ''}
+              ${isOutOfStock && !s.dessertServed ? '<span class="order-oos-tag">缺货</span>' : ''}
             </div>
             ${isGlow ? '<span class="cust-serve-tag">🍰 端上桌</span>' : ''}
             <img class="dining-chibi-guest mode-fit" src="${s.chibiImg}?v=2" alt="${s.name}" />
+            ${s.dessertServed ? `<img class="table-clean-plate mode-fit" src="assets/images/kitchen/prop_clean_plate.png" alt="" /><img class="table-served-dish mode-fit" src="${s.wantedIcon}" alt="" />` : ''}
+            ${s.wantedDrinkId && s.drinkServed ? `<img class="table-served-drink mode-fit" src="${s.wantedDrinkIcon}" alt="" />` : ''}
           `;
         } else if (st === 'eating') {
           slot.innerHTML = `
@@ -567,6 +625,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
             <img class="dining-chibi-guest is-eating mode-fit" src="${s.chibiImg}?v=2" alt="${s.name}" />
             <img class="table-clean-plate mode-fit" src="assets/images/kitchen/prop_clean_plate.png" alt="" />
             <img class="table-served-dish mode-fit" src="${s.wantedIcon}" alt="" />
+            ${s.wantedDrinkId ? `<img class="table-served-drink mode-fit" src="${s.wantedDrinkIcon}" alt="" />` : ''}
           `;
         } else if (st === 'bill') {
           slot.innerHTML = `
@@ -675,9 +734,38 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       }
     });
 
+    // 3b. 增量更新左侧饮品现萃吧台
+    const br = d.brewer;
+    const brBtn = root.querySelector('#k-brewer');
+    const brOv = root.querySelector('#k-brewer-ov');
+    if (br && brBtn && brOv) {
+      const brGlow = d.highlightTarget === 'brewer';
+      brBtn.className = `brewer-main-btn state-${br.state} ${brGlow ? 'is-brewer-glow' : ''}`;
+      const nextBrSig = `${br.state}:${br.drinkId || ''}:${brGlow ? 1 : 0}`;
+      if (brewerSig !== nextBrSig) {
+        brewerSig = nextBrSig;
+        if (br.state === 'idle') {
+          brOv.innerHTML = `<span class="brewer-tag">${brGlow ? '☕ 点此现萃' : '☕ 饮品吧'}</span>`;
+        } else if (br.state === 'brewing') {
+          brOv.innerHTML = `
+            <img class="brewer-cup-img mode-fit" src="${br.drinkIcon}" alt="" />
+            <div class="brewer-prog-track"><div class="brewer-prog-fill" style="width:${br.progress}%;"></div></div>
+          `;
+        } else if (br.state === 'ready') {
+          brOv.innerHTML = `
+            <img class="brewer-cup-img is-ready mode-fit" src="${br.drinkIcon}" alt="" />
+            <span class="brewer-tag ready">✨ 取杯</span>
+          `;
+        }
+      } else if (br.state === 'brewing') {
+        const bf = brOv.querySelector('.brewer-prog-fill');
+        if (bf) bf.style.width = `${br.progress}%`;
+      }
+    }
+
     // 4. 更新可可手中成品状态 + 2.5D 可可端盘视觉
     const h = d.heldItem;
-    const nextHandsSig = h ? `${h.recipeId}:${h.recipeIcon}` : 'empty';
+    const nextHandsSig = h ? `${h.kind || 'dessert'}:${h.recipeId}:${h.recipeIcon}` : 'empty';
     if (handsSig !== nextHandsSig) {
       handsSig = nextHandsSig;
       const handsEl = root.querySelector('#k-hands');
@@ -685,10 +773,10 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         handsEl.innerHTML = h
           ? `<img class="tray-food-img mode-fit" src="${h.recipeIcon}" alt="" />
              <div class="tray-text-col">
-               <span class="tray-recipe-name">${getShortRecipeName({ id: h.recipeId, name: h.recipeName })}</span>
-               <span class="tray-status-dot ready">✨ 点对应餐桌上菜</span>
+               <span class="tray-recipe-name">${h.kind === 'drink' ? h.recipeName : getShortRecipeName({ id: h.recipeId, name: h.recipeName })}</span>
+               <span class="tray-status-dot ready">${h.kind === 'drink' ? '☕ 点对应餐桌送饮品' : '✨ 点对应餐桌上菜'}</span>
              </div>`
-          : '<span class="tray-empty-txt">空手 · 点玻璃展示柜取餐</span>';
+          : '<span class="tray-empty-txt">空手 · 点展示柜取甜点 / 左侧吧台萃饮品</span>';
       }
       syncVisualCarry(h);
     }
@@ -807,6 +895,20 @@ export function mountShopPage(root, _params, { navigate } = {}) {
                  📦 开店预置备货：${d.menuRecipes.length === 1 ? '3' : '每款 2'} 份 · 初始原料成本 <b>🪙 ${openingPrepCost}</b>（卖完按需补烤）
                </div>`
             : ''}
+          <div class="prep-head" style="margin-top:12px;">
+            <span class="prep-title">☕ 今日饮品单（选 1~2 款，现点现萃 · 0 备货风险 · 套餐加小费）</span>
+            <span class="prep-count">已选 ${(d.menuDrinks || []).length} / 2</span>
+          </div>
+          <div class="menu-grid drink-menu-grid">
+            ${(d.allDrinks || []).map(dr => `
+              <button type="button" class="menu-item ${dr.selected ? 'is-picked' : ''} ${dr.unlocked ? '' : 'is-locked'}" data-action="toggleDrink" data-id="${dr.id}" aria-pressed="${dr.selected}">
+                <img class="menu-icon mode-fit" src="${dr.iconImg}" alt="" />
+                <span class="menu-name">${dr.shortName}</span>
+                <span class="menu-flow">${dr.unlocked ? `现萃${(dr.brewTicks / 10).toFixed(1)}s · 套餐+${dr.comboTipBonus}小费` : dr.unlockDesc}</span>
+                <span class="menu-price">${dr.unlocked ? `🪙 ${dr.price}` : '🔒 未解锁'}</span>
+                <span style="font-size:9px;color:#8D6242;">${dr.unlocked ? `成本${dr.unitCost} · 净利+${dr.unitProfit}` : ''}</span>
+              </button>`).join('')}
+          </div>
           ${blockedFromOpening
             ? `<div style="margin-top:8px;padding:9px 11px;border-radius:10px;background:${isInDebt ? '#FCE6E1' : '#FFF3D6'};border:1.5px solid ${isInDebt ? '#D94E3B' : '#E29B2B'};font-size:12px;line-height:1.5;color:${isInDebt ? '#9C2415' : '#824A08'};font-weight:700;">
                  ${isInDebt
@@ -878,9 +980,9 @@ export function mountShopPage(root, _params, { navigate } = {}) {
           <div class="card summary-card" data-stop="true">
             <div class="ribbon-title">${s.isPractice ? '🎓 练习结束 · 不消耗天数' : `🌙 第 ${s.day} 天 · 打烊结算`}</div>
             <div class="summary-rows">
-              <div class="sum-row"><span>今日成功出餐</span><span class="sum-val">${s.served} 份</span></div>
+              <div class="sum-row"><span>今日成功出餐</span><span class="sum-val">${s.served} 桌${(s.drinksServed || 0) > 0 ? `（含饮品 ${s.drinksServed} 杯）` : ''}</span></div>
               <div class="sum-row sub"><span>营业毛收入（含小费 +${s.totalTips || 0}）</span><span class="sum-val">+${s.grossCoins || 0} 🪙</span></div>
-              <div class="sum-row sub"><span>原料总成本（备货 ${s.prepCost || 0} + 补烤 ${s.bakeCost || 0}）</span><span class="sum-val warn">-${s.totalCost || 0} 🪙</span></div>
+              <div class="sum-row sub"><span>原料总成本（备货 ${s.prepCost || 0} + 补烤 ${s.bakeCost || 0}${(s.drinkCost || 0) > 0 ? ` + 饮品 ${s.drinkCost}` : ''}）</span><span class="sum-val warn">-${s.totalCost || 0} 🪙</span></div>
               <div class="sum-row"><span>${s.isPractice ? '练习模拟净利' : '本轮营业净利'}</span><span class="sum-val ${(!s.isPractice && s.coins < 0) ? 'warn' : ''}">${s.isPractice ? `模拟 ${(s.simNet || 0) >= 0 ? '+' : ''}${s.simNet || 0} / 实际入账 0` : `${s.coins >= 0 ? '+' : ''}${s.coins}`} 🪙</span></div>
               <div class="sum-row"><span>${s.isPractice ? '练习模拟口碑' : '新增店铺口碑'}</span><span class="sum-val ${!s.isPractice && s.rep < 0 ? 'warn' : ''}">${s.isPractice ? `模拟 ${s.simRep >= 0 ? '+' : ''}${s.simRep || 0} / 实际入账 0` : `${s.rep >= 0 ? '+' : ''}${s.rep}`} ⭐</span></div>
               <div class="sum-divider"></div>
@@ -926,6 +1028,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     const currentDay = pageProxy.data.day;
     kitchen = createKitchenEngine(pageProxy, {
       menuRecipes: pageProxy.data.menuRecipes,
+      menuDrinks: pageProxy.data.menuDrinks || [],
+      hasEspressoUpgrade: (pageProxy.data.purchasedUpgradeIds || []).includes('brass_espresso'),
       bonuses,
       tutorialMode,
       practiceMode,
@@ -933,23 +1037,23 @@ export function mountShopPage(root, _params, { navigate } = {}) {
         markTutorialSeen('kitchen');
         showToast('🎉 上手啦！正式营业 90 秒开始！', 1600);
       },
-      onServeEffect: ({ seatId }) => {
+      onServeEffect: ({ seatId, isDrink, allServed }) => {
         const scene = root.querySelector('.kitchen-scene');
         const xMap = [22, 50, 78];
         spawnFloatText(scene, {
           xPct: xMap[seatId] || 50,
           yPct: 24,
-          text: '🍰 享用中 😋',
+          text: allServed ? (isDrink ? '✨ 下午茶齐啦 😋' : '🍰 享用中 😋') : (isDrink ? '☕ 饮品已上桌' : '🍰 甜点已上桌'),
           kind: 'cream'
         });
       },
-      onCheckoutEffect: ({ seatId, basePrice, tip }) => {
+      onCheckoutEffect: ({ seatId, basePrice, tip, isCombo }) => {
         const scene = root.querySelector('.kitchen-scene');
         const xMap = [22, 50, 78];
         spawnFloatText(scene, {
           xPct: xMap[seatId] || 50,
           yPct: 22,
-          text: practiceMode ? `🎓 +${basePrice}(小费+${tip})` : `+${basePrice} 🪙 小费+${tip}!`,
+          text: practiceMode ? `🎓 +${basePrice}(小费+${tip})` : `${isCombo ? '✨套餐 ' : ''}+${basePrice} 🪙 小费+${tip}!`,
           kind: 'gold'
         });
       },
@@ -975,7 +1079,6 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       onDeclineEffect: ({ seatId, repPenalty }) => {
         const scene = root.querySelector('.kitchen-scene');
         const xMap = [22, 50, 78];
-        moveCocoTo(`seat_${seatId}`, '🚪');
         spawnFloatText(scene, {
           xPct: xMap[seatId] || 50,
           yPct: 22,
@@ -992,7 +1095,16 @@ export function mountShopPage(root, _params, { navigate } = {}) {
           kind: 'red'
         });
       },
-      onShiftEnd: ({ earnedCoins, grossCoins = 0, prepCost = 0, bakeCost = 0, totalCost = 0, burntCost = 0, earnedRep, servedCount, totalTips = 0, tablesCleaned = 0, lostCustomers, declinedCustomers = 0, burntCount, batchesBaked = 0, undeliveredCount, isPractice }) => {
+      onBrewStartEffect: ({ cost }) => {
+        const scene = root.querySelector('.kitchen-scene');
+        spawnFloatText(scene, {
+          xPct: 14,
+          yPct: 64,
+          text: `-${cost} 🪙 饮品`,
+          kind: 'red'
+        });
+      },
+      onShiftEnd: ({ earnedCoins, grossCoins = 0, prepCost = 0, bakeCost = 0, drinkCost = 0, totalCost = 0, burntCost = 0, earnedRep, servedCount, drinksServed = 0, comboSetsServed = 0, totalTips = 0, tablesCleaned = 0, lostCustomers, declinedCustomers = 0, burntCount, batchesBaked = 0, undeliveredCount, isPractice }) => {
         if (!isPractice) {
           recordBusinessDay({ earnedCoins, earnedRep });
         }
@@ -1014,10 +1126,13 @@ export function mountShopPage(root, _params, { navigate } = {}) {
           daySummary: {
             day: currentDay,
             served: servedCount,
+            drinksServed,
+            comboSetsServed,
             coins: isPractice ? 0 : earnedCoins,
             grossCoins,
             prepCost,
             bakeCost,
+            drinkCost,
             totalCost,
             burntCost,
             simNet: earnedCoins,
@@ -1120,6 +1235,43 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       }
       saveMenuRecipeIds(ids);
       refreshShop();
+    } else if (action === 'toggleDrink') {
+      if (pageProxy.data.isOpen) return;
+      const id = target.dataset.id;
+      const dr = (pageProxy.data.allDrinks || []).find(x => x.id === id);
+      if (!dr || !dr.unlocked) {
+        showToast(dr ? `未解锁：${dr.unlockDesc}` : '该饮品尚未解锁');
+        return;
+      }
+      let ids = (pageProxy.data.menuDrinks || []).map(d => d.id);
+      if (ids.includes(id)) {
+        if (ids.length <= 1) { showToast('至少保留 1 款招牌饮品哦'); return; }
+        ids = ids.filter(x => x !== id);
+      } else {
+        if (ids.length >= 2) { showToast('今日饮品单最多同时上架 2 款饮品'); return; }
+        ids.push(id);
+      }
+      saveMenuDrinkIds(ids);
+      refreshShop();
+    } else if (action === 'tapBrewer') {
+      enqueueCocoTask({
+        key: 'brewer:tap',
+        targetKey: 'brewer',
+        burstEmoji: '☕',
+        run: () => {
+          kitchen?.tapBrewer();
+        }
+      });
+    } else if (action === 'startBrew') {
+      const drinkId = target.dataset.id;
+      enqueueCocoTask({
+        key: `brewer:${drinkId}`,
+        targetKey: 'brewer',
+        burstEmoji: '☕',
+        run: () => {
+          kitchen?.startBrewDrink(drinkId);
+        }
+      });
     } else if (action === 'goJobs') {
       if (typeof navigate === 'function') navigate('jobs');
       else window.location.hash = '#/jobs';

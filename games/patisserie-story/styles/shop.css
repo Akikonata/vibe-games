@@ -2673,3 +2673,171 @@
   font-size: 13px;
   animation: riseSteam 1.4s ease-out infinite;
 }
+
+
+/* =========================================================
+   饮品菜单 + 左侧饮品现萃吧台 + 下午茶双品点单气泡
+   ========================================================= */
+.page-shop .drink-menu-grid .menu-item.is-locked {
+  opacity: 0.56;
+  filter: grayscale(0.65);
+}
+
+.page-shop .order-items-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.page-shop .order-item-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-shop .order-item-cell.is-served .cust-want-img {
+  opacity: 0.42;
+}
+
+.page-shop .order-done-tick {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  color: #2E7D32;
+  text-shadow: 0 0 4px #FFF;
+}
+
+.page-shop .dining-order-bubble.is-combo-order {
+  padding: 3px 6px;
+}
+
+/* 桌上并排摆放的饮品杯（贴合蕾丝桌垫右侧，与玫瑰瓷盘甜点相得益彰） */
+.page-shop .table-served-drink {
+  position: absolute;
+  left: 84%;
+  bottom: 58px;
+  transform: translateX(-50%);
+  width: 21px;
+  height: 21px;
+  z-index: 7;
+  filter: drop-shadow(0 2px 2px rgba(48, 22, 6, 0.42));
+  pointer-events: none;
+}
+
+/* 左侧后厨饮品现萃吧台（紧凑贴合左侧木台，不遮挡展示柜与烤炉） */
+.page-shop .zone-drink-bar {
+  position: absolute;
+  left: 1.8%;
+  top: 64.5%;
+  width: 78px;
+  z-index: 16;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.page-shop .brewer-main-btn {
+  width: 100%;
+  min-height: 36px;
+  padding: 4px 5px;
+  border-radius: 10px;
+  background: rgba(68, 36, 16, 0.9);
+  border: 1.5px solid #E5B97C;
+  box-shadow: 0 3px 8px rgba(32, 12, 4, 0.36);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.page-shop .brewer-main-btn.state-ready {
+  background: rgba(52, 108, 44, 0.94);
+  border-color: #FFF0A6;
+}
+
+.page-shop .brewer-main-btn.is-brewer-glow {
+  animation: inCaseGlow 0.75s ease-in-out infinite alternate;
+}
+
+.page-shop .brewer-ov {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.page-shop .brewer-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #FFF6DF;
+  white-space: nowrap;
+}
+
+.page-shop .brewer-tag.ready {
+  color: #FFF9B8;
+}
+
+.page-shop .brewer-cup-img {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 2px 3px rgba(24, 10, 2, 0.4));
+}
+
+.page-shop .brewer-cup-img.is-ready {
+  animation: sceneBounce 0.75s ease-in-out infinite alternate;
+}
+
+.page-shop .brewer-prog-track {
+  width: 88%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 244, 220, 0.25);
+  overflow: hidden;
+}
+
+.page-shop .brewer-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD86E, #F28C28);
+  transition: width 0.1s linear;
+}
+
+.page-shop .brewer-picks {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+}
+
+.page-shop .brewer-pick-btn {
+  width: 100%;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: rgba(255, 251, 242, 0.94);
+  border: 1.2px solid #B5753C;
+  color: #4A2511;
+  font-size: 8.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(32, 12, 4, 0.24);
+}
+
+.page-shop .brewer-pick-img {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}

@@ -29,6 +29,8 @@ function getBatchProfile(recipeId) {
 
 export function createKitchenEngine(page, {
   menuRecipes,
+  menuDrinks = [],
+  hasEspressoUpgrade = false,
   bonuses,
   tutorialMode = false,
   practiceMode = false,
@@ -39,6 +41,7 @@ export function createKitchenEngine(page, {
   onDeclineEffect,
   onHarvestEffect,
   onBakeStartEffect,
+  onBrewStartEffect,
   onShiftEnd
 }) {
   let timer = null;
@@ -54,10 +57,26 @@ export function createKitchenEngine(page, {
   let burntCost = 0;
   let prepCost = 0;
   let bakeCost = 0;
+  let drinkCost = 0;
+  let drinksServed = 0;
+  let comboSetsServed = 0;
   let batchesBaked = 0;
   let tablesCleaned = 0;
   let totalTips = 0;
   let refillTimers = [0, 0, 0];
+
+  function makeIdleBrewer() {
+    return {
+      state: 'idle', // 'idle' | 'brewing' | 'ready'
+      drinkId: null,
+      drinkName: '',
+      shortName: '',
+      drinkIcon: '',
+      unitCost: 0,
+      duration: 24,
+      progress: 0
+    };
+  }
 
   function isPaused() {
     return pauseReasons.size > 0;
@@ -149,7 +168,7 @@ export function createKitchenEngine(page, {
     return minSlot ? minSlot.recipeId : (menuRecipes[0] && menuRecipes[0].id);
   }
 
-  function computeHintAndHighlight(heldItem, displayStock, ovens, seats) {
+  function computeHintAndHighlight(heldItem, displayStock, ovens, seats, brewer = null) {
     const warnOven = ovens.find(o => o.state === 'ready' && o.nearBurn);
     if (warnOven) {
       return { highlight: warnOven.id, hint: `🔥 【${warnOven.shortName}】快烤糊啦！快点击收获 +${warnOven.batchSize} 入柜！` };
@@ -166,11 +185,22 @@ export function createKitchenEngine(page, {
     }
 
     if (heldItem) {
-      const matchingSeat = seats.find(s => s.status === 'ordering' && s.wantedId === heldItem.recipeId);
+      if (heldItem.kind === 'drink') {
+        const drinkSeat = seats.find(s => s.status === 'ordering' && s.wantedDrinkId === heldItem.recipeId && !s.drinkServed);
+        if (drinkSeat) {
+          return { highlight: `seat_${drinkSeat.id}`, hint: `☕ 端着【${heldItem.recipeName}】！点击【${drinkSeat.name}】餐桌送上饮品！` };
+        }
+        return { highlight: 'brewer', hint: `目前没人点【${heldItem.recipeName}】，点左侧饮品吧台暂存即可！` };
+      }
+      const matchingSeat = seats.find(s => s.status === 'ordering' && s.wantedId === heldItem.recipeId && !s.dessertServed);
       if (matchingSeat) {
         return { highlight: `seat_${matchingSeat.id}`, hint: `🍰 端着【${heldItem.recipeName}】！点击【${matchingSeat.name}】的餐桌上菜！` };
       }
       return { highlight: `disp_${heldItem.recipeId}`, hint: `目前没人点【${heldItem.recipeName}】，点展示柜放回库存即可！` };
+    }
+
+    if (brewer && brewer.state === 'ready') {
+      return { highlight: 'brewer', hint: `☕ 【${brewer.drinkName}】现萃完成！点击左侧饮品吧台取杯送桌！` };
     }
 
     const readyOven = ovens.find(o => o.state === 'ready');
@@ -179,7 +209,7 @@ export function createKitchenEngine(page, {
     }
 
     const servableSeat = seats.find(s => {
-      if (s.status !== 'ordering') return false;
+      if (s.status !== 'ordering' || s.dessertServed) return false;
       const slot = displayStock.find(d => d.recipeId === s.wantedId);
       return slot && slot.stock > 0;
     });
@@ -191,8 +221,16 @@ export function createKitchenEngine(page, {
       };
     }
 
+    const needDrinkSeat = seats.find(s => s.status === 'ordering' && s.wantedDrinkId && !s.drinkServed);
+    if (needDrinkSeat && brewer && brewer.state === 'idle') {
+      return {
+        highlight: 'brewer',
+        hint: `☕ 【${needDrinkSeat.name}】点了【${needDrinkSeat.wantedDrinkName}】！点左侧饮品吧台现萃出杯！`
+      };
+    }
+
     const soldOutSeat = seats.find(s => {
-      if (s.status !== 'ordering') return false;
+      if (s.status !== 'ordering' || s.dessertServed) return false;
       const slot = displayStock.find(d => d.recipeId === s.wantedId);
       return slot && slot.stock <= 0;
     });
@@ -211,7 +249,7 @@ export function createKitchenEngine(page, {
       return { highlight: '', hint: `😋 ${eatingSeat.name} 正在开心享用【${eatingSeat.wantedName}】，马上就结账啦！` };
     }
 
-    return { highlight: 'oven_1', hint: '点展示柜取餐招待，用完餐点餐桌结账收小费并清台！' };
+    return { highlight: 'oven_1', hint: '点展示柜取甜点、点左侧吧台萃饮品，凑齐下午茶套餐拿额外小费！' };
   }
 
   function spawnCustomerInto(seats) {
@@ -219,6 +257,10 @@ export function createKitchenEngine(page, {
     if (emptyIdx === -1 || menuRecipes.length === 0) return seats;
 
     const wanted = menuRecipes[Math.floor(Math.random() * menuRecipes.length)];
+    const wantDrink = (menuDrinks.length > 0 && Math.random() < 0.55)
+      ? menuDrinks[Math.floor(Math.random() * menuDrinks.length)]
+      : null;
+
     const busyIds = seats.filter(s => s.npcId).map(s => s.npcId);
     const candidates = CUSTOMER_POOL.filter(c => !busyIds.includes(c.npcId));
     const pick = candidates.length > 0
@@ -237,7 +279,14 @@ export function createKitchenEngine(page, {
       wantedId: wanted.id,
       wantedName: wanted.name,
       wantedIcon: wanted.iconImg,
-      price: wanted.price,
+      dessertServed: false,
+      wantedDrinkId: wantDrink ? wantDrink.id : null,
+      wantedDrinkName: wantDrink ? wantDrink.name : '',
+      wantedDrinkIcon: wantDrink ? wantDrink.iconImg : '',
+      drinkPrice: wantDrink ? wantDrink.price : 0,
+      drinkComboTip: wantDrink ? wantDrink.comboTipBonus : 0,
+      drinkServed: !wantDrink,
+      price: wanted.price + (wantDrink ? wantDrink.price : 0),
       patience: 100,
       eatProgress: 0,
       servePatience: 100,
@@ -253,7 +302,7 @@ export function createKitchenEngine(page, {
     const undeliveredCount = (page.data.ovens || []).filter(o => o.state === 'working' || o.state === 'ready').length
       + (page.data.heldItem ? 1 : 0);
     const grossCoins = page.data.shiftGrossCoins || 0;
-    const totalCost = prepCost + bakeCost;
+    const totalCost = prepCost + bakeCost + drinkCost;
     const netCoins = grossCoins - totalCost;
     if (typeof onShiftEnd === 'function') {
       onShiftEnd({
@@ -261,10 +310,13 @@ export function createKitchenEngine(page, {
         grossCoins,
         prepCost,
         bakeCost,
+        drinkCost,
         totalCost,
         burntCost,
         earnedRep: page.data.shiftRep,
         servedCount: page.data.shiftServed,
+        drinksServed,
+        comboSetsServed,
         totalTips,
         tablesCleaned,
         lostCustomers,
@@ -286,6 +338,9 @@ export function createKitchenEngine(page, {
     burntCount = 0;
     burntCost = 0;
     bakeCost = 0;
+    drinkCost = 0;
+    drinksServed = 0;
+    comboSetsServed = 0;
     batchesBaked = 0;
     tablesCleaned = 0;
     totalTips = 0;
@@ -299,12 +354,13 @@ export function createKitchenEngine(page, {
       makeEmptyOven('oven_1', '红砖批量烤炉 1', '烤炉 1'),
       makeEmptyOven('oven_2', '红砖批量烤炉 2', '烤炉 2')
     ];
+    const brewer = makeIdleBrewer();
 
     let seats = [makeEmptySeat(0), makeEmptySeat(1), makeEmptySeat(2)];
     seats = spawnCustomerInto(seats);
     seats = spawnCustomerInto(seats);
 
-    const guide = computeHintAndHighlight(null, displayStock, ovens, seats);
+    const guide = computeHintAndHighlight(null, displayStock, ovens, seats, brewer);
 
     page.setData({
       isOpen: true,
@@ -323,6 +379,7 @@ export function createKitchenEngine(page, {
       seats,
       displayStock,
       ovens,
+      brewer,
       heldItem: null,
       inTutorial,
       highlightTarget: guide.highlight,
@@ -355,14 +412,16 @@ export function createKitchenEngine(page, {
     if (typeof onTutorialDone === 'function') onTutorialDone();
   }
 
-  function syncGuide(heldItem, displayStock, ovens, seats, customMsg) {
-    const guide = computeHintAndHighlight(heldItem, displayStock, ovens, seats);
+  function syncGuide(heldItem, displayStock, ovens, seats, customMsg, nextBrewer = null) {
+    const brewer = nextBrewer || page.data.brewer || makeIdleBrewer();
+    const guide = computeHintAndHighlight(heldItem, displayStock, ovens, seats, brewer);
     if (customMsg) msgHoldTicks = 18;
     page.setData({
       heldItem,
       displayStock,
       ovens,
       seats,
+      brewer,
       highlightTarget: guide.highlight,
       serviceMsg: customMsg || guide.hint
     });
@@ -448,7 +507,20 @@ export function createKitchenEngine(page, {
       seats = spawnCustomerInto(seats);
     }
 
-    const guide = computeHintAndHighlight(page.data.heldItem, page.data.displayStock, ovens, seats);
+    // 1b. 推进左侧饮品吧台现萃进度（饮品现点现萃，绝不会烤糊！）
+    let brewer = page.data.brewer ? Object.assign({}, page.data.brewer) : makeIdleBrewer();
+    if (brewer.state === 'brewing') {
+      const nextProg = Math.min(100, brewer.progress + (100 / brewer.duration) * speedMult);
+      if (nextProg >= 100) {
+        brewer.progress = 100;
+        brewer.state = 'ready';
+        customMsg = `☕ 【${brewer.drinkName}】现萃出杯啦！点击左侧吧台取杯送桌！`;
+      } else {
+        brewer.progress = Math.round(nextProg);
+      }
+    }
+
+    const guide = computeHintAndHighlight(page.data.heldItem, page.data.displayStock, ovens, seats, brewer);
     if (customMsg) {
       msgHoldTicks = 18;
     } else if (msgHoldTicks > 0) {
@@ -459,6 +531,7 @@ export function createKitchenEngine(page, {
       shiftTimeLeft: timeLeft,
       ovens,
       seats,
+      brewer,
       highlightTarget: guide.highlight,
       serviceMsg: nextMsg
     });
@@ -480,6 +553,11 @@ export function createKitchenEngine(page, {
     if (idx === -1) return;
     const slot = stockList[idx];
     const held = page.data.heldItem;
+
+    if (held && held.kind === 'drink') {
+      flashMsg(`手里正端着饮品【${held.recipeName}】，请先送上桌或放回左侧饮品吧台！`);
+      return;
+    }
 
     if (held && held.recipeId === recipeId) {
       if (slot.stock < slot.maxStock) {
@@ -543,7 +621,7 @@ export function createKitchenEngine(page, {
     const o = ovens[ovenIdx];
     const cost = slot.batchCost || (getUnitCost(slot.recipeId) * slot.batchSize);
     bakeCost += cost;
-    const totalCost = prepCost + bakeCost;
+    const totalCost = prepCost + bakeCost + drinkCost;
     const nextNet = (page.data.shiftGrossCoins || 0) - totalCost;
 
     ovens[ovenIdx] = Object.assign({}, o, {
@@ -619,7 +697,100 @@ export function createKitchenEngine(page, {
     startBatchBake(null, ovenId);
   }
 
-  // 点击餐桌：按餐桌当前状态执行【上菜进入吃东西 / 结账收小费 / 清理残渣餐盘】
+  // 左侧饮品吧台：点击具体饮品冲泡，或点击吧台本体智能现萃/取杯/放回
+  function startBrewDrink(drinkId) {
+    if (ended || isPaused()) return { ok: false };
+    const brewer = page.data.brewer ? Object.assign({}, page.data.brewer) : makeIdleBrewer();
+    const held = page.data.heldItem;
+
+    if (brewer.state === 'ready') {
+      return tapBrewer();
+    }
+    if (brewer.state === 'brewing') {
+      flashMsg(`☕ 正在现萃【${brewer.drinkName}】（${brewer.progress}%），马上就好！`);
+      return { ok: false, reason: 'busy' };
+    }
+    const drink = menuDrinks.find(d => d.id === drinkId) || menuDrinks[0];
+    if (!drink) {
+      flashMsg('今日尚未上架饮品哦～');
+      return { ok: false, reason: 'none' };
+    }
+    const cost = drink.unitCost || 8;
+    drinkCost += cost;
+    const totalCost = prepCost + bakeCost + drinkCost;
+    const nextNet = (page.data.shiftGrossCoins || 0) - totalCost;
+    const dur = hasEspressoUpgrade ? Math.max(12, Math.round(drink.brewTicks * 0.7)) : drink.brewTicks;
+
+    const nextBrewer = {
+      state: 'brewing',
+      drinkId: drink.id,
+      drinkName: drink.name,
+      shortName: drink.shortName,
+      drinkIcon: drink.iconImg,
+      unitCost: cost,
+      duration: dur,
+      progress: 8
+    };
+    page.setData({ shiftCost: totalCost, shiftCoins: nextNet });
+    if (typeof onBrewStartEffect === 'function') {
+      onBrewStartEffect({ cost, drinkName: drink.name });
+    }
+    syncGuide(held, page.data.displayStock, page.data.ovens, page.data.seats, `☕ 现萃【${drink.shortName}】原料 -${cost} 🪙（${(dur / 10).toFixed(1)}s 出杯）`, nextBrewer);
+    return { ok: true, drinkId: drink.id, cost };
+  }
+
+  function tapBrewer() {
+    if (ended || isPaused()) return { ok: false };
+    const brewer = page.data.brewer ? Object.assign({}, page.data.brewer) : makeIdleBrewer();
+    const held = page.data.heldItem;
+
+    if (brewer.state === 'ready') {
+      if (held) {
+        flashMsg(`手里还端着【${held.recipeName}】，请先送上桌或放回原处再取饮品！`);
+        return { ok: false };
+      }
+      const picked = {
+        kind: 'drink',
+        recipeId: brewer.drinkId,
+        recipeName: brewer.drinkName,
+        recipeIcon: brewer.drinkIcon
+      };
+      syncGuide(picked, page.data.displayStock, page.data.ovens, page.data.seats, `☕ 已端起【${brewer.drinkName}】，快去对应餐桌送上饮品！`, makeIdleBrewer());
+      return { ok: true, action: 'pickup' };
+    }
+
+    if (brewer.state === 'brewing') {
+      flashMsg(`☕ 正在现萃【${brewer.drinkName}】（${brewer.progress}%）`);
+      return { ok: false };
+    }
+
+    // 空闲时若手里端着饮品 -> 放回吧台暂存
+    if (held && held.kind === 'drink') {
+      const stored = {
+        state: 'ready',
+        drinkId: held.recipeId,
+        drinkName: held.recipeName,
+        shortName: held.recipeName.slice(0, 4),
+        drinkIcon: held.recipeIcon,
+        unitCost: 0,
+        duration: 24,
+        progress: 100
+      };
+      syncGuide(null, page.data.displayStock, page.data.ovens, page.data.seats, `☕ 已将【${held.recipeName}】暂存在饮品吧台`, stored);
+      return { ok: true, action: 'store' };
+    }
+
+    // 空闲时智能挑选当前顾客需要的饮品开萃
+    const seats = page.data.seats || [];
+    const needSeat = seats.find(s => s.status === 'ordering' && s.wantedDrinkId && !s.drinkServed);
+    const targetDrinkId = needSeat ? needSeat.wantedDrinkId : (menuDrinks[0] && menuDrinks[0].id);
+    if (targetDrinkId) {
+      return startBrewDrink(targetDrinkId);
+    }
+    return { ok: false };
+  }
+
+  // 点击餐桌：按餐桌当前状态执行【上甜点/上饮品 -> 凑齐进入吃东西 / 结账收小费 / 清理残渣餐盘】
   function tapSeat(seatId) {
     if (ended || isPaused()) return;
     const seats = page.data.seats.slice();
@@ -634,9 +805,11 @@ export function createKitchenEngine(page, {
       const quickBillTip = (seat.billWaitTicks || 0) <= 35 ? 6 : 0;
       const comboTip = nextCombo >= 2 ? Math.min(15, nextCombo * 3) : 0;
       const upgradeTip = bonuses ? bonuses.tipBonus : 0;
-      const tip = serveTip + quickBillTip + comboTip + upgradeTip;
+      const comboDrinkTip = seat.wantedDrinkId ? (seat.drinkComboTip || 8) : 0;
+      const tip = serveTip + quickBillTip + comboTip + upgradeTip + comboDrinkTip;
       const earned = seat.price + tip;
-      const rep = Math.round(10 * (bonuses ? bonuses.repMult : 1));
+      const rep = Math.round((seat.wantedDrinkId ? 13 : 10) * (bonuses ? bonuses.repMult : 1));
+      if (seat.wantedDrinkId) comboSetsServed += 1;
 
       totalTips += tip;
       seats[seatId] = {
@@ -646,11 +819,11 @@ export function createKitchenEngine(page, {
       };
 
       if (typeof onCheckoutEffect === 'function') {
-        onCheckoutEffect({ seatId, basePrice: seat.price, tip, earned, customerName: seat.name });
+        onCheckoutEffect({ seatId, basePrice: seat.price, tip, earned, customerName: seat.name, isCombo: !!seat.wantedDrinkId });
       }
 
       const nextGross = (page.data.shiftGrossCoins || 0) + earned;
-      const totalCost = prepCost + bakeCost;
+      const totalCost = prepCost + bakeCost + drinkCost;
       page.setData({
         shiftGrossCoins: nextGross,
         shiftCoins: nextGross - totalCost,
@@ -701,30 +874,70 @@ export function createKitchenEngine(page, {
       return;
     }
 
-    // 4. 点单等待中 -> 上菜开始享用动画！
+    // 4. 点单等待中 -> 支持任意顺序先上甜点或先上饮品，全部上齐后进入享用动画！
     if (!held) {
-      const slot = page.data.displayStock.find(d => d.recipeId === seat.wantedId);
-      if (slot && slot.stock > 0) {
-        flashMsg(`🧁 ${seat.name} 点了【${seat.wantedName}】，请先点中间展示柜取餐（余 ${slot.stock} 份）！`);
-      } else {
-        flashMsg(`🔥 【${seat.wantedName}】库存不足！请点下方烤炉批量烤制补货，或点「婉拒」空桌！`);
+      if (!seat.dessertServed) {
+        const slot = page.data.displayStock.find(d => d.recipeId === seat.wantedId);
+        if (slot && slot.stock > 0) {
+          flashMsg(`🧁 ${seat.name} 点了【${seat.wantedName}】，请先点展示柜取餐（余 ${slot.stock} 份）！`);
+        } else {
+          flashMsg(`🔥 【${seat.wantedName}】库存不足！请点下方烤炉批量烤制补货，或点「婉拒」空桌！`);
+        }
+      } else if (seat.wantedDrinkId && !seat.drinkServed) {
+        flashMsg(`☕ ${seat.name} 还在等饮品【${seat.wantedDrinkName}】，点左侧饮品吧台现萃出杯！`);
       }
       return;
     }
 
-    if (held.recipeId !== seat.wantedId) {
-      flashMsg(`送错桌啦！${seat.name} 点的是【${seat.wantedName}】，点展示柜可放回换餐！`);
+    if (held.kind === 'drink') {
+      if (!seat.wantedDrinkId || seat.drinkServed || held.recipeId !== seat.wantedDrinkId) {
+        flashMsg(seat.wantedDrinkId && !seat.drinkServed
+          ? `饮品不对哦！${seat.name} 点的是【${seat.wantedDrinkName}】！`
+          : `${seat.name} 这一桌没有点这杯饮品哦～`);
+        return;
+      }
+      drinksServed += 1;
+      const allServed = !!seat.dessertServed;
+      seats[seatId] = Object.assign({}, seat, {
+        drinkServed: true,
+        patience: Math.min(100, seat.patience + 18),
+        status: allServed ? 'eating' : 'ordering',
+        eatProgress: allServed ? 8 : 0,
+        servePatience: allServed ? Math.min(100, seat.patience + 18) : seat.servePatience
+      });
+      if (typeof onServeEffect === 'function') {
+        onServeEffect({ seatId, customerName: seat.name, recipeIcon: held.recipeIcon, isDrink: true, allServed });
+      }
+      syncGuide(
+        null,
+        page.data.displayStock,
+        page.data.ovens,
+        seats,
+        allServed
+          ? `✨ 下午茶套餐齐啦！${seat.name} 正在开心品尝【${seat.wantedName} + ${seat.wantedDrinkName}】！`
+          : `☕ 【${seat.wantedDrinkName}】已送上桌（耐心回升），再送上【${seat.wantedName}】就齐啦！`
+      );
       return;
     }
 
+    if (seat.dessertServed || held.recipeId !== seat.wantedId) {
+      flashMsg(seat.dessertServed
+        ? `${seat.name} 的甜点已经上过啦，只差饮品【${seat.wantedDrinkName}】！`
+        : `送错桌啦！${seat.name} 点的是【${seat.wantedName}】，点展示柜可放回换餐！`);
+      return;
+    }
+
+    const allServed = !seat.wantedDrinkId || !!seat.drinkServed;
     seats[seatId] = Object.assign({}, seat, {
-      status: 'eating',
-      eatProgress: 8,
-      servePatience: seat.patience
+      dessertServed: true,
+      patience: Math.min(100, seat.patience + 18),
+      status: allServed ? 'eating' : 'ordering',
+      eatProgress: allServed ? 8 : 0,
+      servePatience: allServed ? Math.min(100, seat.patience + 18) : seat.servePatience
     });
 
     if (typeof onServeEffect === 'function') {
-      onServeEffect({ seatId, customerName: seat.name, recipeIcon: held.recipeIcon });
+      onServeEffect({ seatId, customerName: seat.name, recipeIcon: held.recipeIcon, isDrink: false, allServed });
     }
 
     syncGuide(
@@ -732,7 +945,9 @@ export function createKitchenEngine(page, {
       page.data.displayStock,
       page.data.ovens,
       seats,
-      `😋 【${seat.wantedName}】已端上桌，${seat.name} 正在开心品尝！`
+      allServed
+        ? `😋 【${seat.wantedName}】已端上桌，${seat.name} 正在开心品尝！`
+        : `🍰 【${seat.wantedName}】已上桌（耐心回升），再去左侧吧台萃一杯【${seat.wantedDrinkName}】吧！`
     );
   }
 
@@ -784,6 +999,8 @@ export function createKitchenEngine(page, {
     tapDisplay,
     tapOven,
     startBatchBake,
+    tapBrewer,
+    startBrewDrink,
     tapSeat,
     declineSeat
   };

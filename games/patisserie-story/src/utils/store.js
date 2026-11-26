@@ -26,7 +26,8 @@ function getDefaultSave() {
     day: 1,
     partTimeCount: 0,
     purchasedUpgradeIds: [],
-    menuRecipeIds: []
+    menuRecipeIds: [],
+    menuDrinkIds: ['sea_latte']
   };
 }
 
@@ -43,6 +44,7 @@ export function loadProgress() {
     storyFlags: saved.storyFlags || {},
     purchasedUpgradeIds: saved.purchasedUpgradeIds || [],
     menuRecipeIds: saved.menuRecipeIds || [],
+    menuDrinkIds: Array.isArray(saved.menuDrinkIds) && saved.menuDrinkIds.length > 0 ? saved.menuDrinkIds : ['sea_latte'],
     coins: typeof saved.coins === 'number' ? saved.coins : 120,
     reputation: typeof saved.reputation === 'number' ? saved.reputation : 0,
     day: typeof saved.day === 'number' ? saved.day : 1,
@@ -148,6 +150,13 @@ export function buyShopUpgrade(upgradeId, cost) {
 export function saveMenuRecipeIds(ids) {
   const progress = loadProgress();
   progress.menuRecipeIds = ids.slice(0, 6);
+  storage.set(STORAGE_KEY, progress);
+  return progress;
+}
+
+export function saveMenuDrinkIds(ids) {
+  const progress = loadProgress();
+  progress.menuDrinkIds = ids.slice(0, 2);
   storage.set(STORAGE_KEY, progress);
   return progress;
 }
