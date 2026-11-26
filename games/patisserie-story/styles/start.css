@@ -43,23 +43,25 @@
   pointer-events: none;
 }
 
-/* 可可立绘迎宾区（向上提拉至按钮上方并底部柔光渐隐，构图更舒展） */
+/* 可可全身迎宾立绘（从石板路底部自然站立至门廊中央，无需半身渐隐） */
 .page-start .start-coco-wrap {
   position: absolute;
   left: 50%;
-  bottom: 84px;
+  bottom: -6px;
   transform: translateX(-50%);
-  width: 286px;
+  height: 73vh;
+  max-height: 640px;
+  min-height: 440px;
+  width: auto;
   z-index: 2;
   pointer-events: none;
-  filter: drop-shadow(0 6px 12px rgba(28, 12, 4, 0.42));
+  filter: drop-shadow(0 8px 14px rgba(28, 12, 4, 0.48));
 }
 
 .page-start .start-coco-img {
-  width: 100%;
+  height: 100%;
+  width: auto;
   display: block;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 66%, transparent 100%);
 }
 
 .page-start .start-canopy {
