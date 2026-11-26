@@ -1,106 +1,94 @@
 // src/utils/live2d_portrait.js
-// 轻量级纯 HTML5 Live2D 风格动态立绘驱动引擎：
-// 支持 60fps 呼吸律动、鼠标视线 3D 视差微跟随、说话节奏口型/点头律动、4 态情绪动作与表情特效
+// 真实面部表情与自然眨眼立绘驱动（拒绝纸片乱飘！人物稳稳站立，专注眨眼、微笑、惊讶、认真等面部差分）
 
 const EMO_META = {
   normal:    { badge: '🌿 微笑', fx: [] },
-  happy:     { badge: '✨ 开心', fx: ['✨', '♪', '💗'] },
-  surprised: { badge: '❗ 惊讶', fx: ['❗', '💦'] },
-  serious:   { badge: '🔥 认真', fx: ['✦', '🔥'] }
+  happy:     { badge: '✨ 开心', fx: ['✨', '♪'] },
+  surprised: { badge: '❗ 惊讶', fx: ['❗'] },
+  serious:   { badge: '🔥 认真', fx: [] }
 };
+
+// 拥有像素级对齐闭眼眨眼帧的立绘映射
+const BLINK_MAP = {
+  'assets/images/portraits/coco.png': 'assets/images/portraits/coco_blink.png'
+};
+
+// 预加载眨眼帧与表情差分，保证切换 0 闪烁
+Object.values(BLINK_MAP).concat([
+  'assets/images/portraits/coco_happy.png',
+  'assets/images/portraits/coco_surprised.png',
+  'assets/images/portraits/coco_serious.png'
+]).forEach(src => {
+  const img = new Image();
+  img.src = src;
+});
 
 export function getEmotionMeta(emotion) {
   return EMO_META[emotion] || EMO_META.normal;
 }
 
 /**
- * 为页面内所有 `.l2d-rig` 容器绑定 60fps 呼吸 + 鼠标 3D 视线跟随动画
- * 返回 cleanup 函数，在页面 unmount 时调用
+ * 为页面内 `.l2d-rig` 立绘绑定真实自然眨眼定时器（人物本体静止稳重，不晃动、不倾斜）
  */
 export function attachLive2DController(root) {
-  let rafId = null;
-  let pointerX = 0; // -1 .. 1
-  let pointerY = 0; // -1 .. 1
-  let smoothX = 0;
-  let smoothY = 0;
-  const startTs = performance.now();
+  let stopped = false;
+  let nextTimer = null;
+  let restoreTimers = [];
 
-  const onPointerMove = (e) => {
-    const rect = root.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-    pointerX = Math.max(-1, Math.min(1, nx));
-    pointerY = Math.max(-1, Math.min(1, ny));
-  };
+  function clearRestoreTimers() {
+    restoreTimers.forEach(id => clearTimeout(id));
+    restoreTimers = [];
+  }
 
-  const onPointerLeave = () => {
-    pointerX = 0;
-    pointerY = 0;
-  };
+  function triggerBlinkOnImg(img) {
+    if (!img) return;
+    const rawSrc = img.getAttribute('src') || '';
+    const baseSrc = rawSrc.split('?')[0];
+    const blinkSrc = BLINK_MAP[baseSrc];
+    if (!blinkSrc) return;
 
-  root.addEventListener('pointermove', onPointerMove, { passive: true });
-  root.addEventListener('pointerleave', onPointerLeave, { passive: true });
-
-  const tick = (now) => {
-    const t = (now - startTs) / 1000;
-    smoothX += (pointerX - smoothX) * 0.08;
-    smoothY += (pointerY - smoothY) * 0.08;
-
-    const rigs = root.querySelectorAll('.l2d-rig');
-    rigs.forEach((rig, idx) => {
-      const phase = idx * 1.4;
-      const isSpeaking = rig.dataset.speaking === '1';
-      const emo = rig.dataset.emotion || 'normal';
-
-      // 基础呼吸（胸腔起伏 + 柔和左右微摆）
-      const breathFreq = isSpeaking ? 2.6 : 1.75;
-      const breath = Math.sin(t * breathFreq + phase);
-      const sway = Math.sin(t * 0.95 + phase * 0.7);
-
-      // 说话时加入细腻的点头/语调节奏
-      const talkBob = isSpeaking ? Math.abs(Math.sin(t * 9.5 + phase)) * -2.2 : 0;
-
-      // 不同情绪的姿态微调
-      let emoTilt = 0;
-      let emoScale = 1;
-      if (emo === 'happy') {
-        emoTilt = Math.sin(t * 3.2 + phase) * 1.5;
-        emoScale = 1.015;
-      } else if (emo === 'surprised') {
-        emoTilt = -1.2;
-        emoScale = 1.02;
-      } else if (emo === 'serious') {
-        emoTilt = 0.6;
-        emoScale = 1.01;
+    img.dataset.openSrc = rawSrc;
+    img.setAttribute('src', blinkSrc);
+    const t1 = setTimeout(() => {
+      if (stopped) return;
+      if ((img.getAttribute('src') || '').startsWith(blinkSrc)) {
+        img.setAttribute('src', img.dataset.openSrc || baseSrc);
       }
+    }, 135);
+    restoreTimers.push(t1);
+  }
 
-      // 鼠标视线 3D 视差微跟随（Live2D 招牌立体感）
-      const rotY = (smoothX * 5.2).toFixed(2);
-      const rotX = (-smoothY * 3.2).toFixed(2);
-      const shiftX = (smoothX * 3.5 + sway * 1.6).toFixed(2);
-      const shiftY = (breath * -2.8 + talkBob).toFixed(2);
-      const scaleY = (emoScale + breath * 0.014).toFixed(4);
-      const scaleX = (emoScale - breath * 0.006).toFixed(4);
-      const rotZ = (sway * 0.9 + emoTilt).toFixed(2);
+  function scheduleBlink() {
+    if (stopped) return;
+    const delay = 2600 + Math.floor(Math.random() * 2400);
+    nextTimer = setTimeout(() => {
+      if (stopped) return;
+      const imgs = root.querySelectorAll('.l2d-rig img');
+      imgs.forEach(img => triggerBlinkOnImg(img));
 
-      rig.style.transform = `perspective(760px) translate3d(${shiftX}px, ${shiftY}px, 0) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg) scale(${scaleX}, ${scaleY})`;
-    });
+      // 25% 概率触发自然的双连眨眼
+      if (Math.random() < 0.25) {
+        const t2 = setTimeout(() => {
+          if (stopped) return;
+          root.querySelectorAll('.l2d-rig img').forEach(img => triggerBlinkOnImg(img));
+        }, 260);
+        restoreTimers.push(t2);
+      }
+      scheduleBlink();
+    }, delay);
+  }
 
-    rafId = requestAnimationFrame(tick);
-  };
-
-  rafId = requestAnimationFrame(tick);
+  scheduleBlink();
 
   return () => {
-    if (rafId) cancelAnimationFrame(rafId);
-    root.removeEventListener('pointermove', onPointerMove);
-    root.removeEventListener('pointerleave', onPointerLeave);
+    stopped = true;
+    clearTimeout(nextTimer);
+    clearRestoreTimers();
   };
 }
 
 /**
- * 触发一次情绪反应粒子（如开心星星、惊讶感叹号、认真光晕）
+ * 轻量表情气泡特效（仅在开心/惊讶时点缀，绝不带动人物乱晃）
  */
 export function buildEmotionFxHtml(emotion, isSpeaking) {
   if (!isSpeaking || !emotion || emotion === 'normal') return '';

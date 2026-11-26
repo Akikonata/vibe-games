@@ -2,7 +2,7 @@
 // 游戏标题首页（焦糖欧风门面 + 缓慢推镜 + 可可迎宾立绘 + 返回大厅入口）
 
 import { loadProgress } from '../utils/store.js';
-import { attachLive2DController, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261126z12';
+import { attachLive2DController, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261126z13';
 
 const POKE_LINES = [
   { emo: 'happy',     img: 'assets/images/portraits/coco_happy.png',     text: '✨ 欢迎来到星月糖屋！今天也要烤出最香的玛德琳～' },

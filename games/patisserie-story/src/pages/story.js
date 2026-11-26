@@ -4,7 +4,7 @@
 import { resolveStoryContext, resolveDialogueFrame } from '../utils/story_engine.js?v=20261126z12';
 import { setStoryFlag, hasStoryFlag } from '../utils/store.js';
 import { CUTSCENES } from '../data/cutscenes.js';
-import { attachLive2DController, getEmotionMeta, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261126z12';
+import { attachLive2DController, getEmotionMeta, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261126z13';
 
 export function mountStoryPage(root, params, { navigate, setPageTitle }) {
   const ctx = resolveStoryContext({

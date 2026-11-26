@@ -412,14 +412,10 @@
   100% { transform: translateY(-18px) scale(1.15); opacity: 0; }
 }
 
-.page-story .portrait-slot.l2d-react-happy {
-  animation: l2dHappyHop 0.42s ease-out;
-}
-.page-story .portrait-slot.l2d-react-surprised {
-  animation: l2dSurpriseJump 0.34s cubic-bezier(0.22, 1.4, 0.36, 1);
-}
+.page-story .portrait-slot.l2d-react-happy,
+.page-story .portrait-slot.l2d-react-surprised,
 .page-story .portrait-slot.l2d-react-serious {
-  animation: l2dSeriousLean 0.36s ease-out;
+  animation: none;
 }
 
 @keyframes l2dHappyHop {
