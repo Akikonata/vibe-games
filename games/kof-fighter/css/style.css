@@ -19,8 +19,8 @@
   user-select: none;
 }
 
-html,
-body {
+html {
+  background-color: #090b10;
   height: 100%;
   overscroll-behavior: none;
 }
@@ -29,11 +29,14 @@ body {
   background: radial-gradient(circle at 50% 0%, #1d1530 0%, #090b10 70%);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  height: 100%;
   min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  overscroll-behavior: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 body.in-battle {
@@ -1541,7 +1544,7 @@ kbd {
     align-items: stretch;
     justify-content: flex-start;
     overflow: hidden;
-    padding: 4px;
+    padding: max(4px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
     height: 100dvh;
   }
 
@@ -1736,6 +1739,83 @@ kbd {
 
   .combo-count {
     font-size: 34px;
+  }
+}
+
+/* Landscape Mobile / iOS Home-Screen PWA Compact Layout (fits 100% with zero clipping) */
+@media (max-height: 520px) and (orientation: landscape) {
+  .overlay-screen {
+    align-items: center;
+    padding: 8px 14px;
+  }
+
+  .title-content {
+    padding: 14px 22px;
+    max-width: 720px;
+  }
+
+  .title-eyebrow {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .logo-cn {
+    font-size: 36px;
+  }
+
+  .logo-year {
+    font-size: 24px;
+  }
+
+  .logo-sub {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .mode-cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .mode-card {
+    padding: 11px 14px;
+    gap: 12px;
+  }
+
+  .mode-icon-badge {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mode-icon-badge svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .mode-title {
+    font-size: 16px;
+  }
+
+  .mode-desc {
+    font-size: 11px;
+  }
+
+  .title-footer {
+    font-size: 11px;
+  }
+
+  .select-main {
+    grid-template-columns: 190px 1fr 190px;
+    gap: 10px;
+  }
+
+  .preview-avatar {
+    height: 76px;
+  }
+
+  .move-preview {
+    display: none;
   }
 }
 
