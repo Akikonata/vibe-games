@@ -1931,12 +1931,12 @@
   border-radius: 999px;
 }
 
-/* 中腰：加高版双层 6 格玻璃甜点展示柜内层（z:14，上下每层宽敞易点且名称签零遮挡！） */
+/* 中腰：加高版双层 6 格玻璃甜点展示柜内层（z:14，精确居中对齐三格黄铜立柱间距，上下每层宽敞易点且名称签零遮挡！） */
 .page-shop .zone-display-case {
   position: absolute;
   top: 47.4%;
-  left: 9.2%;
-  right: 23.2%;
+  left: 5.5%;
+  right: 17.5%;
   height: 11.4%;
   z-index: 14;
   display: grid;
