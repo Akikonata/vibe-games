@@ -1642,6 +1642,13 @@ kbd {
   .mode-cards {
     grid-template-columns: 1fr;
     gap: 10px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #btn-mode-pvp {
+    display: none;
   }
 
   .mode-card {
@@ -1805,9 +1812,10 @@ kbd {
   }
 
   .mode-cards {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    max-width: 380px;
+    margin: 0 auto 10px;
     gap: 12px;
-    margin-bottom: 10px;
   }
 
   .mode-card {
