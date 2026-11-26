@@ -90,6 +90,8 @@ export function mountShopPage(root, _params, { navigate } = {}) {
   let cocoPos = { x: 50, y: 72, facing: 1 };
   let cocoWalkTimer = null;
   let cocoPathRunId = 0;
+  // 视觉端盘同步覆盖（undef = 跟随真实 heldItem；null = 走到展示柜前先保持空手；obj = 送餐路上全程端着餐盘直到抵达餐桌！）
+  let visualCarryOverride = undefined;
 
   const GATE_SOUTH = { x: 87.5, y: 68 };
   const GATE_NORTH = { x: 87.5, y: 47 };
@@ -117,11 +119,26 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     setTimeout(() => el.remove(), 700);
   }
 
-  function moveCocoTo(targetKey, burstEmoji = '') {
+  function syncVisualCarry(heldItem) {
+    const carryEl = root.querySelector('#k-coco-carry');
+    if (!carryEl) return;
+    const shown = visualCarryOverride !== undefined ? visualCarryOverride : heldItem;
+    carryEl.innerHTML = shown
+      ? `<div class="coco-serving-tray">
+           <img class="coco-tray-plate mode-fit" src="assets/images/kitchen/prop_clean_plate.png" alt="" />
+           <img class="coco-tray-dish mode-fit" src="${shown.recipeIcon}" alt="" />
+         </div>`
+      : '';
+  }
+
+  function moveCocoTo(targetKey, burstEmoji = '', onArrive = null) {
     const wp = COCO_WAYPOINTS[targetKey];
     const actor = root.querySelector('#k-coco-actor');
     const scene = root.querySelector('.kitchen-scene');
-    if (!wp || !actor) return;
+    if (!wp || !actor) {
+      if (typeof onArrive === 'function') onArrive();
+      return;
+    }
 
     // 取消上一段未走完的路径，从当前视觉坐标无缝起新路径
     cocoPathRunId += 1;
@@ -146,6 +163,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       if (runId !== cocoPathRunId || destroyed) return;
       if (idx >= queue.length) {
         actor.classList.remove('is-walking');
+        if (typeof onArrive === 'function') onArrive();
         if (burstEmoji && scene) {
           spawnStepBurst(scene, cocoPos.x, cocoPos.y - 5, burstEmoji, 'spark');
         }
@@ -605,7 +623,6 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     if (handsSig !== nextHandsSig) {
       handsSig = nextHandsSig;
       const handsEl = root.querySelector('#k-hands');
-      const carryEl = root.querySelector('#k-coco-carry');
       if (handsEl) {
         handsEl.innerHTML = h
           ? `<img class="tray-food-img mode-fit" src="${h.recipeIcon}" alt="" />
@@ -615,14 +632,7 @@ export function mountShopPage(root, _params, { navigate } = {}) {
              </div>`
           : '<span class="tray-empty-txt">空手 · 点玻璃展示柜取餐</span>';
       }
-      if (carryEl) {
-        carryEl.innerHTML = h
-          ? `<div class="coco-serving-tray">
-               <img class="coco-tray-plate mode-fit" src="assets/images/kitchen/prop_clean_plate.png" alt="" />
-               <img class="coco-tray-dish mode-fit" src="${h.recipeIcon}" alt="" />
-             </div>`
-          : '';
-      }
+      syncVisualCarry(h);
     }
 
     // 5. 练习模式 / 教学顶部横幅
@@ -1081,9 +1091,16 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       launchKitchenShift({ tutorialMode: false, practiceMode: true });
     } else if (action === 'tapDisplay') {
       const idx = Number(target.dataset.idx) || 0;
-      moveCocoTo(`disp_${idx % 3}`, '🧁');
+      const prevHeld = pageProxy.data.heldItem;
+      // 走向展示柜取餐/放回途中，先保持出发前的手持状态；抵达展示柜后再更新手上托盘！
+      visualCarryOverride = prevHeld || null;
+      syncVisualCarry(prevHeld);
       pulseProp(`#k-disp-${target.dataset.id}`);
       kitchen?.tapDisplay(target.dataset.id);
+      moveCocoTo(`disp_${idx % 3}`, '🧁', () => {
+        visualCarryOverride = undefined;
+        syncVisualCarry(pageProxy.data.heldItem);
+      });
     } else if (action === 'tapOven') {
       const oId = target.dataset.id;
       moveCocoTo(oId, '🔥');
@@ -1099,8 +1116,17 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       }
     } else if (action === 'tapSeat') {
       const seatId = Number(target.dataset.id);
-      moveCocoTo(`seat_${seatId}`, '🍰');
+      const prevHeld = pageProxy.data.heldItem;
+      // 上菜途中全程保持手上端着餐盘穿过柜台小门送到餐桌，抵达餐桌时再放下变空手！
+      if (prevHeld) {
+        visualCarryOverride = prevHeld;
+        syncVisualCarry(prevHeld);
+      }
       kitchen?.tapSeat(seatId);
+      moveCocoTo(`seat_${seatId}`, '🍰', () => {
+        visualCarryOverride = undefined;
+        syncVisualCarry(pageProxy.data.heldItem);
+      });
     } else if (action === 'declineSeat') {
       kitchen?.declineSeat(Number(target.dataset.id));
     } else if (action === 'closeSummary') {
