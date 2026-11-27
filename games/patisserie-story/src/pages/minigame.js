@@ -112,7 +112,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
       statRows += `<div><span>节拍命中</span><strong>${details.hits} / ${details.target} 拍</strong></div>`;
       statRows += `<div><span>漏拍次数</span><strong>${details.misses} 次</strong></div>`;
     } else if (details.mode === 'catch') {
-      statRows += `<div><span>收集份数</span><strong>${details.collected} / ${details.target} 份（≥${details.minNeed}份过关）</strong></div>`;
+      statRows += `<div><span>收集份数</span><strong>${details.collected} / ${details.target} 份</strong></div>`;
       statRows += `<div><span>剩余生命</span><strong>${details.lives} / 3 心</strong></div>`;
     } else if (details.mode === 'stacker') {
       statRows += `<div><span>完成层数</span><strong>${details.served} / ${details.target} 层</strong></div>`;
@@ -127,7 +127,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
            <strong>${rank === 'B' ? '未达 A 级原因：' : '距 S 级差一步：'}</strong>
            ${details.downgradeReasons.map(r => `<div>• ${r}</div>`).join('')}
          </div>`
-      : `<div class="rank-downgrade-box is-s">🌟 零失误且达成 90%+ 得分率，解锁 S 级传奇评价！</div>`;
+      : `<div class="rank-downgrade-box is-s">🌟 完美发挥，解锁 S 级主厨评价！</div>`;
 
     slot.innerHTML = `
       <div class="fail-modal-mask" role="dialog" aria-modal="true" aria-label="本关通关结算">
@@ -549,7 +549,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     } else {
       hud.innerHTML = `
         <span class="hud-score">得分 ${d.catchScore}</span>
-        <span class="hud-layers">${d.catchCollected}/${d.catchTarget}(≥${d.catchMinPass || 4}过) · ⏱${d.catchTimeLeft}s</span>
+        <span class="hud-layers">${d.catchCollected}/${d.catchTarget} · ⏱${d.catchTimeLeft}s</span>
         <div class="hud-lives">
           <span class="heart ${d.catchLives >= 1 ? 'on' : ''}">♥</span>
           <span class="heart ${d.catchLives >= 2 ? 'on' : ''}">♥</span>
@@ -568,7 +568,7 @@ export function mountMinigamePage(root, params, { navigate, setPageTitle }) {
     if (d.gameFailed !== lastFailState) {
       lastFailState = d.gameFailed;
       if (d.gameFailed) pendingWinSummary = null;
-      const ruleHint = d.failRuleText || '规则：达成最低份数与基础得分获 B 级过关；满额且 ≥72% 且失误可控获 A 级；≥90% 且零失误获 S 级！';
+      const ruleHint = d.failRuleText || '小贴士：稳住节奏、减少失误，就能轻松过关并冲击 A / S 级评价！';
       root.querySelector('#mg-fail-slot').innerHTML = d.gameFailed
         ? `<div class="fail-modal-mask" role="dialog" aria-modal="true" aria-label="制作失败">
             <div class="card fail-modal-card">

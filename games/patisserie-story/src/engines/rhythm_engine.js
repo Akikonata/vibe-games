@@ -39,14 +39,8 @@ const RHYTHM_CONFIGS = {
   }
 };
 
-function getRhythmRuleText(cfg) {
-  const total = cfg.totalNotes;
-  const maxScore = total * 100;
-  const minHits = Math.ceil(total * 0.5);
-  const bMin = Math.ceil(maxScore * 0.42);
-  const aMin = Math.ceil(maxScore * 0.72);
-  const sMin = Math.ceil(maxScore * 0.90);
-  return `规则：B级过关(命中≥${minHits}/${total}拍、≥${bMin}分) · A级(≥${aMin}分且漏拍≤2) · S级(≥${sMin}分且0漏拍)`;
+function getRhythmRuleText() {
+  return '小贴士：踩准底部圆圈节拍，高连击、少漏拍即可冲刺 A / S 级！';
 }
 
 function evaluateRhythmRank({ score, hits, misses, cfg }) {
@@ -67,11 +61,11 @@ function evaluateRhythmRank({ score, hits, misses, cfg }) {
   const sMinScore = Math.ceil(maxScore * 0.90);
   const downgradeReasons = [];
   if (res.passed && res.rank === 'B') {
-    if (res.score < aMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），未达 A 级 72%（${aMinScore} 分）`);
-    if (misses > 2) downgradeReasons.push(`漏拍 ${misses} 次，超过 A 级允许的 ≤ 2 次`);
+    if (res.score < aMinScore) downgradeReasons.push('精准命中更多节拍即可升到 A 级');
+    if (misses > 2) downgradeReasons.push(`漏拍 ${misses} 次，减少漏拍可获更高评级`);
   } else if (res.passed && res.rank === 'A') {
-    if (res.score < sMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），距 S 级 90%（${sMinScore} 分）差 ${sMinScore - res.score} 分`);
-    if (misses > 0) downgradeReasons.push(`漏拍 ${misses} 次，S 级要求 0 次漏拍`);
+    if (res.score < sMinScore) downgradeReasons.push('节拍精准度再高一点就能达成 S 级');
+    if (misses > 0) downgradeReasons.push('零漏拍通关即可解锁 S 级评价');
   }
   return {
     ...res,
@@ -163,7 +157,7 @@ function createRhythmEngine(page, type, onComplete, onFail, opts = {}) {
       if (onFail) {
         onFail({
           title: '🎵 节拍命中不足！',
-          reason: `本轮命中 ${rhythmHits}/${totalNotes} 拍（得分 ${summary.score}/${summary.maxScore}，过关需 ≥${summary.minHits} 拍且 ≥${summary.bMinScore} 分）。`,
+          reason: `本轮命中 ${rhythmHits}/${totalNotes} 拍，跟着节拍再来一轮吧！`,
           score: summary.score,
           ruleText: summary.ruleText,
           summary

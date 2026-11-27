@@ -48,14 +48,8 @@ const CATCH_CONFIGS = {
   }
 };
 
-function getCatchRuleText(cfg) {
-  const target = cfg.targetGood;
-  const minNeed = cfg.minPassGood || Math.ceil(target * 0.5);
-  const maxScore = target * 100;
-  const bMin = Math.ceil(maxScore * 0.40);
-  const aMin = Math.ceil(maxScore * 0.72);
-  const sMin = Math.ceil(maxScore * 0.90);
-  return `规则：B级过关(接住≥${minNeed}份、≥${bMin}分且生命>0；${target}份为满额) · A级(满${target}份、≥${aMin}分且生命≥2) · S级(满${target}份、≥${sMin}分且满3心)`;
+function getCatchRuleText() {
+  return '小贴士：多多接住优质食材、避开瑕疵坏料，满额无伤可获 S 级！';
 }
 
 function evaluateCatchRank({ score, collected, lives, missed, cfg }) {
@@ -76,12 +70,12 @@ function evaluateCatchRank({ score, collected, lives, missed, cfg }) {
   const sMinScore = Math.ceil(maxScore * 0.90);
   const downgradeReasons = [];
   if (res.passed && res.rank === 'B') {
-    if (res.score < aMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），未达 A 级 72%（${aMinScore} 分）`);
-    if (collected < target) downgradeReasons.push(`接住 ${collected}/${target} 份，未达 A 级满额 ${target} 份`);
-    if (lives < 2) downgradeReasons.push(`剩余生命 ${lives}/3 心，A 级要求 ≥ 2 心`);
+    if (res.score < aMinScore) downgradeReasons.push('再多拿一点分数就能升到 A 级');
+    if (collected < target) downgradeReasons.push(`收满 ${target} 份优质食材就能冲击 A 级`);
+    if (lives < 2) downgradeReasons.push('注意避开坏料，保留更多红心可获更高评级');
   } else if (res.passed && res.rank === 'A') {
-    if (res.score < sMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），距 S 级 90%（${sMinScore} 分）差 ${sMinScore - res.score} 分`);
-    if (lives < 3) downgradeReasons.push(`剩余生命 ${lives}/3 心，S 级要求满 3 心（零坏料）`);
+    if (res.score < sMinScore) downgradeReasons.push('得分再高一点就能达成 S 级');
+    if (lives < 3) downgradeReasons.push('无伤满心通关即可解锁 S 级评价');
   }
   return {
     ...res,
@@ -140,7 +134,7 @@ function createCatchEngine(page, type, onComplete, onFail, opts = {}) {
       catchMinPass: cfg.minPassGood || 4,
       catchLives: 3,
       catchTimeLeft: cfg.timeLimit,
-      catchTip: `拖动或按 ←/→ 接住优质食材！≥${cfg.minPassGood}份过关，${cfg.targetGood}份满额冲高评级，躲开【${cfg.badItem.label}】！`,
+      catchTip: `拖动或按 ←/→ 接住优质食材，躲开【${cfg.badItem.label}】！`,
       gameFailed: false
     }, () => {
       startLoop();
@@ -186,7 +180,7 @@ function createCatchEngine(page, type, onComplete, onFail, opts = {}) {
       if (onFail) {
         onFail({
           title: '⏱ 时间到，优质食材未达过关线！',
-          reason: `本轮接住 ${catchCollected}/${cfg.targetGood} 份（得分 ${summary.score}/${summary.maxScore}，过关需 ≥${summary.minNeed} 份且 ≥${summary.bMinScore} 分）。`,
+          reason: `本轮收集了 ${catchCollected}/${cfg.targetGood} 份食材，再接多一点就能过关啦！`,
           score: summary.score,
           ruleText: summary.ruleText,
           summary
@@ -266,7 +260,7 @@ function createCatchEngine(page, type, onComplete, onFail, opts = {}) {
     if (catchLives <= 0) {
       triggerFail({
         title: '💥 混入 3 次瑕疵坏料啦！',
-        reason: `接到了 3 次【${cfg.badItem.label}】，左右避开坏料、接住 ≥${cfg.minPassGood} 份优质食材即可过关！`,
+        reason: `接到了 3 次【${cfg.badItem.label}】，注意左右避开坏料再来一轮吧！`,
         score: catchScore,
         ruleText: getCatchRuleText(cfg)
       });

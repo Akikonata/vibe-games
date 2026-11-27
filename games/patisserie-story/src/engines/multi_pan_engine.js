@@ -68,14 +68,7 @@ const MULTI_PAN_CONFIGS = {
 };
 
 function getMultiPanRuleText(cfg) {
-  const target = cfg.targetServings || 6;
-  const maxScore = target * 100;
-  const minNeed = Math.ceil(target * 0.5);
-  const bMinScore = Math.ceil(maxScore * 0.40);
-  const aMinScore = Math.ceil(maxScore * 0.72);
-  const sMinScore = Math.ceil(maxScore * 0.90);
-  const maxBurnt = cfg.maxBurnt || 4;
-  return `规则：B级过关(≥${minNeed}份、≥${bMinScore}分且烧焦<${maxBurnt}) · A级(满${target}份、≥${aMinScore}分且烧焦≤1) · S级(满${target}份、≥${sMinScore}分且0烧焦)`;
+  return `小贴士：金色区及时${cfg.actionVerb}、避免烧焦，满额零烧焦可获 S 级！`;
 }
 
 function evaluateMultiPanRank({ score, served, burnt, cfg }) {
@@ -99,12 +92,12 @@ function evaluateMultiPanRank({ score, served, burnt, cfg }) {
   const downgradeReasons = [];
 
   if (res.passed && res.rank === 'B') {
-    if (res.score < aMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），未达 A 级 72%（${aMinScore} 分）`);
-    if (served < target) downgradeReasons.push(`${cfg.actionVerb} ${served}/${target} 份，未满 A 级要求的 ${target} 份`);
-    if (burnt > 1) downgradeReasons.push(`烧焦 ${burnt} 次，超过 A 级允许的 ≤ 1 次`);
+    if (res.score < aMinScore) downgradeReasons.push('多抓金色中心出锅即可升到 A 级');
+    if (served < target) downgradeReasons.push(`做满 ${target} 份就能冲击 A 级`);
+    if (burnt > 1) downgradeReasons.push(`本轮烧焦 ${burnt} 次，减少烧焦可获更高评级`);
   } else if (res.passed && res.rank === 'A') {
-    if (res.score < sMinScore) downgradeReasons.push(`得分 ${res.score}/${maxScore}（${ratioPct}%），距 S 级 90%（${sMinScore} 分）差 ${sMinScore - res.score} 分`);
-    if (burnt > 0) downgradeReasons.push(`烧焦 ${burnt} 次，S 级要求 0 次烧焦`);
+    if (res.score < sMinScore) downgradeReasons.push('多拿几次金色完美出锅就能达成 S 级');
+    if (burnt > 0) downgradeReasons.push('全程零烧焦即可解锁 S 级评价');
   }
 
   return {
@@ -407,7 +400,7 @@ function createMultiPanEngine(page, type, onComplete, onFail, opts = {}) {
       if (onFail) {
         onFail({
           title: `⏱ 时间到，${cfg.actionVerb}数量或得分不足！`,
-          reason: `本轮${cfg.actionVerb} ${panServed}/${cfg.targetServings} 份（得分 ${summary.score}/${summary.maxScore}，过关需 ≥${summary.minNeed} 份且 ≥${summary.bMinScore} 分）。`,
+          reason: `本轮${cfg.actionVerb} ${panServed}/${cfg.targetServings} 份，掌握好节奏再来一轮吧！`,
           score: summary.score,
           ruleText: summary.ruleText,
           summary

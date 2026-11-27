@@ -7,11 +7,7 @@ import { evaluateStackerResult } from './rank_evaluator.js';
 const ARENA_PLATE_TOP = 456;
 
 function getStackerRuleText(totalLayers) {
-  const maxScore = totalLayers * 100;
-  const bMin = Math.ceil(maxScore * 0.35);
-  const aMin = Math.ceil(maxScore * 0.72);
-  const sMin = Math.ceil(maxScore * 0.90);
-  return `规则：B级过关(叠完${totalLayers}层、≥${bMin}分且生命>0) · A级(≥${aMin}分且生命≥2) · S级(≥${sMin}分且满3心)`;
+  return `小贴士：尽量对准虚线中心稳稳叠完 ${totalLayers} 层，满心高分可获 S 级！`;
 }
 
 function createStackerEngine(page, stackConfig, onComplete, onFail) {
@@ -201,11 +197,11 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
       const sMinScore = Math.ceil(maxScore * 0.90);
       const downgradeReasons = [];
       if (result.passed && result.rank === 'B') {
-        if (result.score < aMinScore) downgradeReasons.push(`得分 ${result.score}/${maxScore}（${ratioPct}%），未达 A 级 72%（${aMinScore} 分）`);
-        if (lives < 2) downgradeReasons.push(`剩余生命 ${lives}/3 心，A 级要求 ≥ 2 心`);
+        if (result.score < aMinScore) downgradeReasons.push('落点再对准中心一些就能升到 A 级');
+        if (lives < 2) downgradeReasons.push('减少滑落、保留更多红心可获更高评级');
       } else if (result.passed && result.rank === 'A') {
-        if (result.score < sMinScore) downgradeReasons.push(`得分 ${result.score}/${maxScore}（${ratioPct}%），距 S 级 90%（${sMinScore} 分）差 ${sMinScore - result.score} 分`);
-        if (lives < 3) downgradeReasons.push(`剩余生命 ${lives}/3 心，S 级要求满 3 心`);
+        if (result.score < sMinScore) downgradeReasons.push('落点再精准一点就能达成 S 级');
+        if (lives < 3) downgradeReasons.push('零滑落满心通关即可解锁 S 级评价');
       }
 
       page.setData({
@@ -223,7 +219,7 @@ function createStackerEngine(page, stackConfig, onComplete, onFail) {
         if (onFail) {
           onFail({
             title: '💥 堆叠偏移过大，得分不足！',
-            reason: `总得分 ${result.score}/${maxScore}（${ratioPct}%），过关需 ≥35%（${Math.ceil(maxScore * 0.35)} 分）。`,
+            reason: '整体偏移稍大，对准虚线中心再稳稳叠一次吧！',
             score: result.score,
             ruleText: getStackerRuleText(totalLayers)
           });

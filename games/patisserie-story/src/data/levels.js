@@ -36,7 +36,7 @@ const LEVELS = [
     recipeId: 'macaron',
     minigameType: 'orbit_match',
     minigameTitle: '果园马卡龙 · 鲜果接盘收集',
-    targetDesc: '左右移动礼盒接住鲜果马卡龙、躲开烤裂壳（≥4份且≥320分过关，8份满额冲A/S）',
+    targetDesc: '左右移动礼盒接住鲜果马卡龙，避开烤裂壳',
     prerequisiteIds: ['main_1'],
     introDialogue: [
       { speaker: 'lillian', emotion: 'surprised', text: '可可！你来得太及时了，今年梯田的树莓、开心果和柠檬大丰收，可我正愁找不到好搭档呢！' },
@@ -143,7 +143,7 @@ const LEVELS = [
     recipeId: 'mont_blanc',
     minigameType: 'spiral_draw',
     minigameTitle: '蒙布朗 · 三轨节拍裱花',
-    targetDesc: '音符落入底部瓷环时按 1/2/3 或点击轨道挤出栗子泥丝带（≥5拍过关）',
+    targetDesc: '音符落入底部瓷环时按 1/2/3 或点击轨道，挤出丝滑栗子泥',
     prerequisiteIds: ['main_3'],
     introDialogue: [
       { speaker: 'emily', emotion: 'normal', text: '可可你看，我烧制了一整套“秋日银杏骨瓷盘”，却一直找不到能撑起它留白构图的甜点。' },
@@ -164,7 +164,7 @@ const LEVELS = [
     recipeId: 'basque_cheesecake',
     minigameType: 'whisk_dash',
     minigameTitle: '230°C 巴斯克高温出炉',
-    targetDesc: '盯紧三烤位焦糖火候，金色区点击出炉（B级过关：≥3份、≥240分且焦糊<4；A级：满6份、≥432分且焦糊≤1；S级：满6份、≥540分且0焦糊）',
+    targetDesc: '盯紧三烤位焦糖火候，趁金色流心区间及时出炉',
     prerequisiteIds: ['main_3'],
     introDialogue: [
       { speaker: 'coco', emotion: 'surprised', text: '暴风雨封锁了旧港，进口香草和可可全数延误……可今晚还有客人预约！' },
@@ -185,7 +185,7 @@ const LEVELS = [
     recipeId: 'sachertorte',
     minigameType: 'balance_scale',
     minigameTitle: '萨赫蛋糕 · 黑巧杏子严选收集',
-    targetDesc: '左右移动托盘接住黑可可与鲜杏子、躲开粗盐块（≥4份且≥320分过关，8份满额）',
+    targetDesc: '左右移动托盘接住黑可可与鲜杏子，避开粗盐块',
     prerequisiteIds: ['main_4'],
     introDialogue: [
       { speaker: 'casper', emotion: 'happy', text: '天晴了！远洋商船带来了顶级黑可可豆。听说维也纳人喜欢用杏子果酱来解腻，你敢试试吗？' },
@@ -206,7 +206,7 @@ const LEVELS = [
     recipeId: 'opera',
     minigameType: 'memory_layers',
     minigameTitle: '歌剧院 · 七层手工精准叠层',
-    targetDesc: '对准动态虚线落点，依次叠好 7 层咖啡海绵与黑巧甘纳许（叠完且生命>0过关）',
+    targetDesc: '对准动态虚线落点，依次叠好 7 层咖啡海绵与黑巧甘纳许',
     prerequisiteIds: ['main_4'],
     introDialogue: [
       { speaker: 'silver_spoon', emotion: 'serious', text: '我们“银匙机械烘焙”每天能产出三千块标准蛋糕。你们这种小作坊，拿什么和效率竞争？' },

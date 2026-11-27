@@ -19,7 +19,7 @@ const STAGE_TIPS = [
 const OVEN_TIME_LIMIT = 35;
 const STAGE_SPEEDS = [2.2, 2.7, 3.2];
 const MAX_MISTAKES = 6;
-const OVEN_RULE_TEXT = '规则：B级过关(命中3次、失误<6且≥105分) · A级(≥216分/72%且失误≤1) · S级(≥270分/90%且0失误)';
+const OVEN_RULE_TEXT = '小贴士：越靠近 180°C 中心得分越高，零失误高分可获 S 级！';
 
 function createOvenEngine(page, onComplete, onFail) {
   let timer = null;
@@ -123,11 +123,11 @@ function createOvenEngine(page, onComplete, onFail) {
         const ratioPct = Math.round(result.ratio * 100);
         const downgradeReasons = [];
         if (result.rank === 'B') {
-          if (result.score < 216) downgradeReasons.push(`得分 ${result.score}/300（${ratioPct}%），未达 A 级 72%（216 分）`);
-          if (mistakes > 1) downgradeReasons.push(`温控失误 ${mistakes} 次，超过 A 级允许的 ≤ 1 次`);
+          if (result.score < 216) downgradeReasons.push('多瞄准 180°C 正中心拿高分即可升到 A 级');
+          if (mistakes > 1) downgradeReasons.push(`本轮失误 ${mistakes} 次，减少失误可获更高评级`);
         } else if (result.rank === 'A') {
-          if (result.score < 270) downgradeReasons.push(`得分 ${result.score}/300（${ratioPct}%），距 S 级 90%（270 分）差 ${270 - result.score} 分`);
-          if (mistakes > 0) downgradeReasons.push(`温控失误 ${mistakes} 次，S 级要求 0 次失误`);
+          if (result.score < 270) downgradeReasons.push('多命中几次正中心完美温控就能达成 S 级');
+          if (mistakes > 0) downgradeReasons.push('零失误通关即可解锁 S 级评价');
         }
         onComplete(result.rank, result.score, {
           ...result,
