@@ -57,14 +57,14 @@ var light_preset_buttons: Dictionary = {}
 const LIGHT_PRESETS := {
 	"studio": {
 		"label": "明亮棚拍",
-		"exposure": 1.18,
-		"ambient": 0.92,
-		"key_energy": 1.95,
+		"exposure": 0.95,
+		"ambient": 0.65,
+		"key_energy": 1.35,
 		"key_yaw": 26.0,
-		"fill_energy": 1.35,
-		"rim_energy": 1.85,
-		"sky_top": Color(0.18, 0.16, 0.24),
-		"sky_horizon": Color(0.42, 0.30, 0.34),
+		"fill_energy": 0.72,
+		"rim_energy": 1.45,
+		"sky_top": Color(0.16, 0.14, 0.22),
+		"sky_horizon": Color(0.38, 0.26, 0.30),
 		"fog_density": 0.006,
 	},
 	"daylight": {
