@@ -6,3 +6,8 @@ dist/
 .vscode/
 .idea/
 tmp/
+.env
+.env.*
+**/.godot/
+godot-mai-physics/tools/*.glb
+godot-mai-physics/tools/*.task.json
