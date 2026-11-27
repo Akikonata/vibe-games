@@ -31,6 +31,7 @@ export function createKitchenEngine(page, {
   menuRecipes,
   menuDrinks = [],
   hasEspressoUpgrade = false,
+  shiftSeconds = SHIFT_SECONDS,
   bonuses,
   tutorialMode = false,
   practiceMode = false,
@@ -368,7 +369,7 @@ export function createKitchenEngine(page, {
       isPaused: false,
       pauseManual: false,
       pauseHidden: false,
-      shiftTimeLeft: SHIFT_SECONDS,
+      shiftTimeLeft: shiftSeconds,
       shiftGrossCoins: 0,
       shiftCost: prepCost,
       shiftCoins: -prepCost,
@@ -431,7 +432,7 @@ export function createKitchenEngine(page, {
     if (ended || isPaused()) return;
     const frozenClock = inTutorial || practiceMode;
     if (!frozenClock) tick += 1;
-    const timeLeft = Math.max(0, SHIFT_SECONDS - Math.floor(tick / 10));
+    const timeLeft = Math.max(0, shiftSeconds - Math.floor(tick / 10));
     let customMsg = '';
     const speedMult = frozenClock ? 1.5 : 1;
 

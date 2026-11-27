@@ -236,3 +236,180 @@
   0%   { transform: translateX(-50%) scale(0.84) translateY(6px); opacity: 0; }
   100% { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; }
 }
+
+
+/* 右上角「⚙️ 设置」按钮 & 焦糖风游戏设置弹窗 */
+.page-start .start-settings-pill {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 24;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(62, 32, 14, 0.86);
+  border: 1.5px solid #E5B97C;
+  color: #FFF7E8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(32, 12, 4, 0.34);
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.page-start .start-settings-pill:active {
+  transform: scale(0.95);
+}
+
+.page-start .start-settings-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(34, 16, 6, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.page-start .start-settings-card {
+  width: 100%;
+  max-width: 360px;
+  margin: 0;
+  padding: 14px 15px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-start .settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-start .settings-close-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #F4E4CE;
+  border: 1.5px solid #C89662;
+  color: #5E3015;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.page-start .settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.page-start .setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #FFFBF4;
+  border: 1px solid #E5CCA8;
+}
+
+.page-start .setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.page-start .setting-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #4A2511;
+}
+
+.page-start .setting-desc {
+  font-size: 10px;
+  color: #845938;
+}
+
+.page-start .setting-toggle,
+.page-start .setting-mini-btn {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1.5px solid #C89662;
+  background: #F4E6D4;
+  color: #6B3B18;
+}
+
+.page-start .setting-toggle.is-on {
+  background: linear-gradient(180deg, #6EA45E, #4A7D3C);
+  border-color: #3A662E;
+  color: #FFFDF8;
+}
+
+.page-start .setting-seg {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.page-start .seg-btn {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #F4E6D4;
+  border: 1px solid #C89662;
+  color: #6B3B18;
+  cursor: pointer;
+}
+
+.page-start .seg-btn.is-active {
+  background: linear-gradient(180deg, #C77436, #934A19);
+  border-color: #6E3410;
+  color: #FFF9EE;
+}
+
+.page-start .settings-save-box {
+  padding: 10px 11px;
+  border-radius: 11px;
+  background: #FDF2E6;
+  border: 1.5px dashed #C89662;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-start .save-box-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #5E3015;
+}
+
+.page-start .save-box-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7D4E2A;
+}
+
+.page-start .settings-danger-btn {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #D9503E, #A82A1C);
+  border: 1.5px solid #7E1C12;
+  color: #FFF9F5;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(130, 28, 18, 0.25);
+}

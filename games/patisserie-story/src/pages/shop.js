@@ -2,12 +2,13 @@
 // 星月糖屋 2.5D 三分区经营系统：餐区入座招待 + 玻璃展示柜预置库存 + 后厨大理石台双烤炉批量补烤 + 婉拒空位（扣口碑）
 
 import { RECIPES } from '../data/recipes.js';
-import { DRINKS } from '../data/drinks.js?v=20261126z10';
+import { DRINKS } from '../data/drinks.js?v=20261127b';
 import { SHOP_UPGRADES, computeShopBonuses } from '../data/shop_upgrades.js';
 import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js?v=20261126p';
-import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261126z10';
+import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261127b';
 import {
   loadProgress,
+  loadGameSettings,
   getShopTierTitle,
   recordBusinessDay,
   buyShopUpgrade,
@@ -15,7 +16,7 @@ import {
   saveMenuDrinkIds,
   hasSeenTutorial,
   markTutorialSeen
-} from '../utils/store.js?v=20261126z10';
+} from '../utils/store.js?v=20261127b';
 import { createTutorialCardHtml, spawnFloatText } from '../utils/tutorial.js';
 import { showToast } from '../../../../shared/web-ui.js';
 
@@ -342,11 +343,13 @@ export function mountShopPage(root, _params, { navigate } = {}) {
 
     const allDrinks = DRINKS.map(dr => {
       const unlocked = dr.isUnlocked(progress);
+      const canTrigger = dr.canTriggerStory ? dr.canTriggerStory(progress) : true;
       const price = Math.round(dr.basePrice * bonuses.priceMult);
       const unitProfit = price - dr.unitCost;
       return {
         ...dr,
         unlocked,
+        canTrigger,
         price,
         unitProfit,
         selected: unlocked && (progress.menuDrinkIds || ['sea_latte']).includes(dr.id)
@@ -898,12 +901,13 @@ export function mountShopPage(root, _params, { navigate } = {}) {
           </div>
           <div class="menu-grid drink-menu-grid">
             ${(d.allDrinks || []).map(dr => `
-              <button type="button" class="menu-item ${dr.selected ? 'is-picked' : ''} ${dr.unlocked ? '' : 'is-locked'}" data-action="toggleDrink" data-id="${dr.id}" aria-pressed="${dr.selected}">
+              <button type="button" class="menu-item ${dr.selected ? 'is-picked' : ''} ${dr.unlocked ? '' : (dr.canTrigger ? 'is-story-ready' : 'is-locked')}" data-action="${!dr.unlocked && dr.canTrigger ? 'playDrinkStory' : 'toggleDrink'}" data-id="${dr.id}" aria-pressed="${dr.selected}">
                 <img class="menu-icon mode-fit" src="${dr.iconImg}" alt="" />
                 <span class="menu-name">${dr.shortName}</span>
-                <span class="menu-flow">${dr.unlocked ? `现萃${(dr.brewTicks / 10).toFixed(1)}s · 套餐+${dr.comboTipBonus}小费` : dr.unlockDesc}</span>
-                <span class="menu-price">${dr.unlocked ? `🪙 ${dr.price}` : '🔒 未解锁'}</span>
+                <span class="menu-flow">${dr.unlocked ? `现萃${(dr.brewTicks / 10).toFixed(1)}s · 套餐+${dr.comboTipBonus}小费` : (dr.canTrigger ? '✨ 达成条件 · 点此看剧情解锁！' : dr.unlockDesc)}</span>
+                <span class="menu-price">${dr.unlocked ? `🪙 ${dr.price}` : (dr.canTrigger ? '📖 解锁剧情' : '🔒 未解锁')}</span>
                 <span style="font-size:9px;color:#8D6242;">${dr.unlocked ? `成本${dr.unitCost} · 净利+${dr.unitProfit}` : ''}</span>
+                ${dr.unlocked ? `<span class="drink-story-replay" data-action="playDrinkStory" data-id="${dr.id}" data-stop="true">📖 剧情</span>` : ''}
               </button>`).join('')}
           </div>
           ${blockedFromOpening
@@ -1023,16 +1027,18 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     kitchenMounted = false;
     helpModalOpen = false;
     const currentDay = pageProxy.data.day;
+    const shiftSecs = loadGameSettings().shiftDuration || 90;
     kitchen = createKitchenEngine(pageProxy, {
       menuRecipes: pageProxy.data.menuRecipes,
       menuDrinks: pageProxy.data.menuDrinks || [],
       hasEspressoUpgrade: (pageProxy.data.purchasedUpgradeIds || []).includes('brass_espresso'),
+      shiftSeconds: shiftSecs,
       bonuses,
       tutorialMode,
       practiceMode,
       onTutorialDone: () => {
         markTutorialSeen('kitchen');
-        showToast('🎉 上手啦！正式营业 90 秒开始！', 1600);
+        showToast(`🎉 上手啦！正式营业 ${shiftSecs} 秒开始！`, 1600);
       },
       onServeEffect: ({ seatId, isDrink, allServed }) => {
         const scene = root.querySelector('.kitchen-scene');
@@ -1232,6 +1238,10 @@ export function mountShopPage(root, _params, { navigate } = {}) {
       }
       saveMenuRecipeIds(ids);
       refreshShop();
+    } else if (action === 'playDrinkStory') {
+      const drinkId = target.dataset.id;
+      if (typeof navigate === 'function') navigate('story', { drinkId });
+      else window.location.hash = `#/story?drinkId=${drinkId}`;
     } else if (action === 'toggleDrink') {
       if (pageProxy.data.isOpen) return;
       const id = target.dataset.id;

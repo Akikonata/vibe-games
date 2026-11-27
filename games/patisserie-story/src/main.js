@@ -1,13 +1,13 @@
 // src/main.js
 // 《甜点屋物语》纯 HTML5 Hash 路由器与页面生命周期调度
 
-import { mountStartPage } from './pages/start.js?v=20261126z15';
+import { mountStartPage } from './pages/start.js?v=20261127b';
 import { mountIntroPage } from './pages/intro.js';
 import { mountHomePage } from './pages/home.js?v=20261126q';
 import { mountMapPage } from './pages/map.js';
-import { mountStoryPage } from './pages/story.js?v=20261127a';
+import { mountStoryPage } from './pages/story.js?v=20261127b';
 import { mountMinigamePage } from './pages/minigame.js';
-import { mountShopPage } from './pages/shop.js?v=20261126z11';
+import { mountShopPage } from './pages/shop.js?v=20261127b';
 import { mountJobsPage } from './pages/jobs.js?v=20261126w';
 import { mountRecipesPage } from './pages/recipes.js';
 import { preloadCriticalAssets, preloadBackgroundAssets } from './utils/preloader.js?v=20261126z16';

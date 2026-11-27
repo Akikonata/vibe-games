@@ -2,42 +2,84 @@
 // RPG 视觉小说舞台（双人半身立绘 + S/A/B 支线剧情 + 食谱解锁奖励卡 + 自动衔接主线尾声漫画）
 
 import { resolveStoryContext, resolveDialogueFrame } from '../utils/story_engine.js?v=20261127a';
-import { setStoryFlag, hasStoryFlag } from '../utils/store.js';
+import { setStoryFlag, hasStoryFlag, unlockDrinkByStory } from '../utils/store.js?v=20261127b';
+import { getDrinkById } from '../data/drinks.js?v=20261127b';
+import { getPortraitPath } from '../data/characters.js?v=20261127a';
 import { CUTSCENES } from '../data/cutscenes.js';
-import { attachLive2DController, getEmotionMeta, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261127a';
+import { attachLive2DController, getEmotionMeta, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261127b';
 
 export function mountStoryPage(root, params, { navigate, setPageTitle }) {
-  const ctx = resolveStoryContext({
-    levelId: params.levelId || 'main_1',
-    phase: params.phase || 'intro',
-    rank: params.rank || 'A',
-    score: params.score || 0
-  });
+  const drinkObj = params.drinkId ? getDrinkById(params.drinkId) : null;
+  const isDrinkMode = !!drinkObj;
 
-  if (ctx.branchFlag) {
-    setStoryFlag(ctx.branchFlag, true);
+  let state;
+  if (isDrinkMode) {
+    setPageTitle(drinkObj.storyTitle || '饮品物语');
+    state = {
+      isDrinkMode: true,
+      drink: drinkObj,
+      drinkUnlockResult: null,
+      level: {
+        id: `drink_${drinkObj.id}`,
+        title: drinkObj.storyTitle,
+        location: drinkObj.storyLocation,
+        bgImage: drinkObj.storyBg,
+        minigameTitle: ''
+      },
+      recipe: null,
+      phase: 'outro',
+      rank: 'S',
+      rankMeta: { label: '☕ 饮品配方解锁', badgeClass: 'rank-s' },
+      score: 0,
+      dialogueList: drinkObj.storyDialogue || [],
+      currentIndex: 0,
+      leftPortrait: getPortraitPath('coco', 'normal'),
+      rightPortrait: getPortraitPath(drinkObj.storyNpcId || 'theo', 'normal'),
+      leftEmotion: 'normal',
+      rightEmotion: 'normal'
+    };
+  } else {
+    const ctx = resolveStoryContext({
+      levelId: params.levelId || 'main_1',
+      phase: params.phase || 'intro',
+      rank: params.rank || 'A',
+      score: params.score || 0
+    });
+
+    if (ctx.branchFlag) {
+      setStoryFlag(ctx.branchFlag, true);
+    }
+
+    setPageTitle(ctx.level.title || '甜点屋物语');
+
+    state = {
+      isDrinkMode: false,
+      drink: null,
+      drinkUnlockResult: null,
+      level: ctx.level,
+      recipe: ctx.recipe,
+      phase: ctx.phase,
+      rank: ctx.rank,
+      rankMeta: ctx.rankMeta,
+      score: ctx.score,
+      dialogueList: ctx.dialogueList,
+      currentIndex: 0,
+      leftPortrait: ctx.initialLeftPortrait,
+      rightPortrait: ctx.initialRightPortrait,
+      leftEmotion: 'normal',
+      rightEmotion: 'normal'
+    };
   }
-
-  setPageTitle(ctx.level.title || '甜点屋物语');
-
-  const state = {
-    level: ctx.level,
-    recipe: ctx.recipe,
-    phase: ctx.phase,
-    rank: ctx.rank,
-    rankMeta: ctx.rankMeta,
-    score: ctx.score,
-    dialogueList: ctx.dialogueList,
-    currentIndex: 0,
-    leftPortrait: ctx.initialLeftPortrait,
-    rightPortrait: ctx.initialRightPortrait,
-    leftEmotion: 'normal',
-    rightEmotion: 'normal'
-  };
 
   let stopLive2D = null;
 
   function advancePhase() {
+    if (state.isDrinkMode) {
+      state.drinkUnlockResult = unlockDrinkByStory(state.drink.id);
+      state.phase = 'reward';
+      render();
+      return;
+    }
     if (state.phase === 'intro') {
       navigate('minigame', { levelId: state.level.id }, { replace: true });
     } else if (state.phase === 'outro') {
@@ -65,9 +107,11 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
 
         const nextCue = state.currentIndex + 1 < state.dialogueList.length
           ? '<span class="next-cue">点击继续 ▼</span>'
-          : (state.phase === 'intro'
-            ? `<span class="next-cue highlight">✨ 开始制作：${state.level.minigameTitle} ▶</span>`
-            : '<span class="next-cue highlight">📕 翻开解锁食谱 ▶</span>');
+          : (state.isDrinkMode
+            ? '<span class="next-cue highlight">☕ 收录新饮品配方 ▶</span>'
+            : (state.phase === 'intro'
+              ? `<span class="next-cue highlight">✨ 开始制作：${state.level.minigameTitle} ▶</span>`
+              : '<span class="next-cue highlight">📕 翻开解锁食谱 ▶</span>'));
 
         bodyHtml = `
           <div class="vn-theatre" data-action="nextLine">
@@ -105,6 +149,42 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
           </div>
         `;
       }
+    } else if (state.isDrinkMode && state.drink) {
+      const dr = state.drink;
+      const isNew = !!(state.drinkUnlockResult && state.drinkUnlockResult.isNew);
+      bodyHtml = `
+        <div class="reward-overlay">
+          <div class="card reward-card">
+            <div class="rank-banner rank-s">
+              <span class="rank-banner-text">${isNew ? '🎉 新饮品配方解锁！口碑 +15 ⭐' : '☕ 饮品配方重温完成'}</span>
+            </div>
+
+            <div class="reward-body-scroll scrollarea">
+              <div class="reward-hero">
+                <div class="reward-medallion">
+                  <img class="reward-svg-icon mode-fit" src="${dr.iconImg}" alt="${dr.name}" />
+                </div>
+                <span class="reward-name">${dr.name}</span>
+                <span class="reward-en">${dr.englishName} · 现萃 ${(dr.brewTicks / 10).toFixed(1)}s</span>
+                <div class="reward-facility">🪙 基础售价 ${dr.basePrice} · 原料 ${dr.unitCost} · 套餐小费 +${dr.comboTipBonus}</div>
+              </div>
+              <div class="culture-block">
+                <span class="culture-label">☕ 饮品手账</span>
+                <span class="culture-body">${dr.storyDesc}</span>
+              </div>
+              <div class="culture-block">
+                <span class="culture-label">💡 营业机制</span>
+                <span class="culture-body">在星月糖屋营业准备页勾选「今日饮品单」即可上架；营业时于左侧饮品现萃吧台现点现萃，零备货积压风险，搭配任意甜点即可触发下午茶套餐额外小费！</span>
+              </div>
+            </div>
+
+            <div class="reward-actions">
+              <div class="btn-primary reward-btn" data-action="goShop">🥐 前往星月糖屋上架饮品</div>
+              <div class="btn-secondary reward-btn" data-action="goHome">🏠 返回星月糖屋主页</div>
+            </div>
+          </div>
+        </div>
+      `;
     } else if (state.recipe) {
       const r = state.recipe;
       bodyHtml = `
@@ -179,6 +259,8 @@ export function mountStoryPage(root, params, { navigate, setPageTitle }) {
       }
     } else if (action === 'retryForS') {
       navigate('minigame', { levelId: state.level.id }, { replace: true });
+    } else if (action === 'goShop') {
+      navigate('shop', {}, { replace: true });
     } else if (action === 'goRecipes') {
       navigate('recipes', {}, { replace: true });
     } else if (action === 'goHome') {

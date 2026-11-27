@@ -1,6 +1,8 @@
 // src/utils/live2d_portrait.js
 // 真实面部表情与丝滑三段式眨眼立绘驱动（open -> half -> closed -> half -> open，叠层透明度过渡，零闪烁不突兀）
 
+import { loadGameSettings } from './store.js?v=20261127b';
+
 const EMO_META = {
   normal:    { badge: '🌿 微笑', fx: [] },
   happy:     { badge: '✨ 开心', fx: ['✨', '♪'] },
@@ -71,6 +73,7 @@ export function attachLive2DController(root) {
   }
 
   function playSmoothBlink(rig) {
+    if (!loadGameSettings().portraitEffects) return;
     const baseImg = rig.querySelector('img:not(.l2d-blink-overlay)');
     if (!baseImg) return;
     const baseSrc = (baseImg.getAttribute('src') || '').split('?')[0];
@@ -128,6 +131,7 @@ export function attachLive2DController(root) {
  * 轻量表情气泡特效（仅在开心/惊讶时点缀，人物本体稳重不乱晃）
  */
 export function buildEmotionFxHtml(emotion, isSpeaking) {
+  if (!loadGameSettings().portraitEffects) return '';
   if (!isSpeaking || !emotion || emotion === 'normal') return '';
   const meta = getEmotionMeta(emotion);
   if (!meta.fx || meta.fx.length === 0) return '';

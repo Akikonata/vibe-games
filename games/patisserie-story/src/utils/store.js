@@ -13,6 +13,13 @@ const RANK_ORDER = { B: 1, A: 2, S: 3 };
 const RANK_REWARD_COINS = { S: 120, A: 80, B: 50 };
 const RANK_REWARD_REP = { S: 30, A: 20, B: 10 };
 
+const DEFAULT_SETTINGS = {
+  portraitEffects: true,
+  showGuideTips: true,
+  shiftDuration: 90,
+  haptics: true
+};
+
 function getDefaultSave() {
   return {
     completedLevelIds: [],
@@ -27,7 +34,9 @@ function getDefaultSave() {
     partTimeCount: 0,
     purchasedUpgradeIds: [],
     menuRecipeIds: [],
-    menuDrinkIds: ['sea_latte']
+    menuDrinkIds: ['sea_latte'],
+    unlockedDrinkIds: ['sea_latte'],
+    settings: Object.assign({}, DEFAULT_SETTINGS)
   };
 }
 
@@ -45,11 +54,49 @@ export function loadProgress() {
     purchasedUpgradeIds: saved.purchasedUpgradeIds || [],
     menuRecipeIds: saved.menuRecipeIds || [],
     menuDrinkIds: Array.isArray(saved.menuDrinkIds) && saved.menuDrinkIds.length > 0 ? saved.menuDrinkIds : ['sea_latte'],
+    unlockedDrinkIds: Array.isArray(saved.unlockedDrinkIds) && saved.unlockedDrinkIds.length > 0 ? saved.unlockedDrinkIds : ['sea_latte'],
+    settings: Object.assign({}, DEFAULT_SETTINGS, saved.settings || {}),
     coins: typeof saved.coins === 'number' ? saved.coins : 120,
     reputation: typeof saved.reputation === 'number' ? saved.reputation : 0,
     day: typeof saved.day === 'number' ? saved.day : 1,
     partTimeCount: typeof saved.partTimeCount === 'number' ? saved.partTimeCount : 0
   });
+}
+
+export function loadGameSettings() {
+  return loadProgress().settings;
+}
+
+export function updateGameSettings(patch = {}) {
+  const progress = loadProgress();
+  progress.settings = Object.assign({}, DEFAULT_SETTINGS, progress.settings || {}, patch);
+  storage.set(STORAGE_KEY, progress);
+  return progress.settings;
+}
+
+export function resetAllTutorials() {
+  const progress = loadProgress();
+  Object.keys(progress.storyFlags || {}).forEach(k => {
+    if (k.startsWith('tut_')) delete progress.storyFlags[k];
+  });
+  storage.set(STORAGE_KEY, progress);
+  return progress;
+}
+
+export function unlockDrinkByStory(drinkId) {
+  const progress = loadProgress();
+  if (!Array.isArray(progress.unlockedDrinkIds)) progress.unlockedDrinkIds = ['sea_latte'];
+  const isNew = !progress.unlockedDrinkIds.includes(drinkId);
+  if (isNew) {
+    progress.unlockedDrinkIds.push(drinkId);
+    if (progress.menuDrinkIds.length < 2 && !progress.menuDrinkIds.includes(drinkId)) {
+      progress.menuDrinkIds.push(drinkId);
+    }
+    progress.reputation = (progress.reputation || 0) + 15;
+  }
+  progress.storyFlags[`drink_story_${drinkId}`] = true;
+  storage.set(STORAGE_KEY, progress);
+  return { isNew, progress };
 }
 
 export function markIntroSeen() {

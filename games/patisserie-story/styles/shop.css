@@ -2877,3 +2877,22 @@
   height: 13px;
   flex-shrink: 0;
 }
+
+
+/* 饮品解锁剧情高亮与重温小标签 */
+.page-shop .drink-menu-grid .menu-item.is-story-ready {
+  background: linear-gradient(180deg, #FFF7DF 0%, #FDEAC0 100%);
+  border-color: #E08D1E;
+  box-shadow: 0 0 0 2px rgba(242, 158, 36, 0.35);
+}
+
+.page-shop .drink-story-replay {
+  margin-top: 2px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(122, 68, 32, 0.12);
+  border: 1px solid #C89662;
+  color: #6B3B18;
+  font-size: 9px;
+  font-weight: 800;
+}
