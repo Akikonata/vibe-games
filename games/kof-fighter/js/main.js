@@ -690,7 +690,9 @@
       window.KOF.PORTRAITS[ch.id] = pImg;
       queue.push({ src: ch.portrait, img: pImg });
       queue.push({ src: ch.sprite, img: window.KOF.SPRITES && window.KOF.SPRITES[ch.id] });
+      queue.push({ src: ch.idleSprite, img: window.KOF.IDLE_SPRITES && window.KOF.IDLE_SPRITES[ch.id] });
       queue.push({ src: ch.walkSprite, img: window.KOF.WALK_SPRITES && window.KOF.WALK_SPRITES[ch.id] });
+      queue.push({ src: ch.combatSprite, img: window.KOF.COMBAT_SPRITES && window.KOF.COMBAT_SPRITES[ch.id] });
     });
 
     const total = queue.length;

@@ -57,6 +57,7 @@
       this.bustX = 0;
       this.bustVx = 0;
       this.wasGrounded = true;
+      this.landingFrames = 0;
       this.walkPhase = 0;
       this.lastStepIndex = -1;
       if (!Fighter.bustCanvas && typeof document !== 'undefined') {
@@ -180,11 +181,14 @@
         this.bustX = Math.max(-4.5, Math.min(4.5, this.bustX + this.bustVx));
       }
 
-      // Landing impulse into secondary spring
+      // Landing impulse into secondary spring & brief landing cushion animation
       const groundedNow = this.isGrounded();
       if (groundedNow && !this.wasGrounded) {
+        this.landingFrames = 6;
         this.springVel += isFemale ? 5.0 : 2.6;
         if (isFemale) this.bustVy += 6.2;
+      } else if (this.landingFrames > 0) {
+        this.landingFrames--;
       }
       this.wasGrounded = groundedNow;
 
@@ -199,11 +203,13 @@
           this.currentMoveKey &&
           (this.currentMoveKey === 'super' || this.currentMoveKey === 'sp2' || this.currentMoveKey === 'sp3'));
       if (leaveTrail && this.animTime % 2 === 0) {
+        const pose = this.getSpritePose();
         this.afterimages.push({
           x: this.x,
           y: this.y,
           facing: this.facing,
-          frameIdx: this.getSpriteFrameIndex(),
+          sheet: pose.sheet,
+          frameIdx: pose.frameIdx,
           life: 10,
           maxLife: 10
         });
@@ -683,24 +689,139 @@
       }
     }
 
-    getSpriteFrameIndex() {
-      // 0 = Idle/Plant, 1 = Forward Stride/Dash/Jump/Roll, 2 = Normal Attack, 3 = Special/Super/Victory
-      if (this.state === 'attack' && this.currentMoveKey) {
-        if (this.currentMoveKey === 'super' || this.currentMoveKey.startsWith('sp')) return 3;
-        return 2;
+    getSheetImage(sheetKey) {
+      const id = this.config.id;
+      const map = {
+        base: window.KOF.SPRITES,
+        idle: window.KOF.IDLE_SPRITES,
+        walk: window.KOF.WALK_SPRITES,
+        combat: window.KOF.COMBAT_SPRITES
+      };
+      const img = map[sheetKey] ? map[sheetKey][id] : null;
+      if (img && img.complete && img.naturalWidth > 0) return img;
+      return null;
+    }
+
+    getSpritePose() {
+      const hasIdle = !!this.getSheetImage('idle');
+      const hasWalk = !!this.getSheetImage('walk');
+      const hasCombat = !!this.getSheetImage('combat');
+      const baseIsKick = !!this.config.baseNormalIsKick;
+
+      const punchPose =
+        baseIsKick && hasCombat ? { sheet: 'combat', frameIdx: 1 } : { sheet: 'base', frameIdx: 2 };
+      const kickPose =
+        !baseIsKick && hasCombat ? { sheet: 'combat', frameIdx: 1 } : { sheet: 'base', frameIdx: 2 };
+
+      // 1. Multi-phase finely sliced Attack choreography (Startup -> Active -> Recovery)
+      if (this.state === 'attack' && this.currentMoveKey && this.currentMove) {
+        const m = this.currentMove;
+        const key = this.currentMoveKey;
+        const isSpecial = key === 'super' || key.startsWith('sp');
+        const isKick = key === 'lk' || key === 'hk';
+        const strikePose = isSpecial ? { sheet: 'base', frameIdx: 3 } : isKick ? kickPose : punchPose;
+
+        // Phase A: Startup / Anticipation Windup
+        if (this.moveFrame < m.startup) {
+          if (m.startup >= 5 && this.moveFrame === m.startup - 1 && hasIdle) {
+            return { sheet: 'idle', frameIdx: 2 };
+          }
+          if ((m.level === 'low' || m.heavy || isSpecial) && hasCombat) {
+            return { sheet: 'combat', frameIdx: 0 };
+          }
+          if (hasIdle) {
+            return { sheet: 'idle', frameIdx: 1 };
+          }
+          return { sheet: 'base', frameIdx: 0 };
+        }
+
+        // Phase B: Active Impact Frames
+        if (this.moveFrame <= m.startup + m.active) {
+          if ((m.type === 'rush' || m.type === 'superDash') && this.moveFrame < m.startup + 3) {
+            return { sheet: 'base', frameIdx: 1 };
+          }
+          return strikePose;
+        }
+
+        // Phase C: Recovery / Follow-Through Settle
+        const recFrame = this.moveFrame - (m.startup + m.active);
+        const recRatio = recFrame / Math.max(1, m.recovery);
+        if (recRatio < 0.45) {
+          return strikePose;
+        }
+        if (hasIdle) {
+          return { sheet: 'idle', frameIdx: recRatio < 0.78 ? 3 : 0 };
+        }
+        return { sheet: 'base', frameIdx: 0 };
       }
-      if (this.state === 'victory') return 3;
-      if (this.state === 'jump' || this.state === 'roll') return 1;
+
+      // 2. Victory
+      if (this.state === 'victory') {
+        return { sheet: 'base', frameIdx: 3 };
+      }
+
+      // 3. Knockdown / KO
+      if (this.state === 'knockdown' || this.state === 'ko') {
+        return hasCombat ? { sheet: 'combat', frameIdx: 3 } : { sheet: 'base', frameIdx: 0 };
+      }
+
+      // 4. Wakeup (multi-frame rise from ground)
+      if (this.state === 'wakeup') {
+        if (this.stateTimer > 7 && hasCombat) return { sheet: 'combat', frameIdx: 0 };
+        if (hasIdle) return { sheet: 'idle', frameIdx: 1 };
+        return { sheet: 'base', frameIdx: 0 };
+      }
+
+      // 5. Blockstun / Guard
+      if (this.state === 'blockstun') {
+        return hasCombat ? { sheet: 'combat', frameIdx: 2 } : { sheet: 'base', frameIdx: 0 };
+      }
+
+      // 6. Hitstun
+      if (this.state === 'hitstun') {
+        return hasCombat ? { sheet: 'combat', frameIdx: 3 } : { sheet: 'base', frameIdx: 0 };
+      }
+
+      // 7. Crouch
+      if (this.state === 'crouch') {
+        return hasCombat ? { sheet: 'combat', frameIdx: 0 } : { sheet: 'base', frameIdx: 0 };
+      }
+
+      // 8. Jump / Roll
+      if (this.state === 'jump' || this.state === 'roll') {
+        return { sheet: 'base', frameIdx: 1 };
+      }
+
+      // 9. Walk (true 4-frame bipedal walk cycle)
       if (this.state === 'walk') {
         const walkingForward = this.vx * this.facing > 0;
-        if (!walkingForward) {
-          // Cautious backward guard-step: stay in guarded stance (never sprint forward while moving back!)
-          return 0;
+        if (hasWalk) {
+          const rawIdx = Math.floor(this.walkPhase / (Math.PI * 0.5)) % 4;
+          const idx = walkingForward ? (rawIdx + 4) % 4 : 3 - ((rawIdx + 4) % 4);
+          return { sheet: 'walk', frameIdx: idx };
         }
-        // Rhythmic human forward walk cycle: alternate planted stance (0) <-> push-off stride (1)
-        return Math.sin(this.walkPhase) >= 0 ? 1 : 0;
+        if (!walkingForward) return { sheet: 'base', frameIdx: 0 };
+        return { sheet: 'base', frameIdx: Math.sin(this.walkPhase) >= 0 ? 1 : 0 };
       }
-      return 0;
+
+      // 10. Brief landing knee-cushion absorb
+      if (this.landingFrames > 0) {
+        if (this.landingFrames > 3 && hasCombat) return { sheet: 'combat', frameIdx: 0 };
+        if (hasIdle) return { sheet: 'idle', frameIdx: 1 };
+      }
+
+      // 11. Idle (true 4-frame fighting-stance body animation, NO artificial scale!)
+      if (hasIdle) {
+        const stepFrames = this.config.stats.speed >= 90 ? 7 : this.config.stats.speed <= 76 ? 9 : 8;
+        const idleIdx = Math.floor(this.animTime / stepFrames) % 4;
+        return { sheet: 'idle', frameIdx: idleIdx };
+      }
+
+      return { sheet: 'base', frameIdx: 0 };
+    }
+
+    getSpriteFrameIndex() {
+      return this.getSpritePose().frameIdx;
     }
 
     drawSkillVfx(ctx) {
@@ -853,25 +974,26 @@
 
     draw(ctx) {
       const c = this.config.colors;
-      const baseSpriteImg = window.KOF.SPRITES ? window.KOF.SPRITES[this.config.id] : null;
-      const walkSpriteImg = window.KOF.WALK_SPRITES ? window.KOF.WALK_SPRITES[this.config.id] : null;
-      const useWalkSheet =
-        this.state === 'walk' && walkSpriteImg && walkSpriteImg.complete && walkSpriteImg.naturalWidth > 0;
-      const spriteImg = useWalkSheet ? walkSpriteImg : baseSpriteImg;
-      const hasSprite = spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0;
+      const pose = this.getSpritePose();
+      const spriteImg = this.getSheetImage(pose.sheet) || this.getSheetImage('base');
+      const hasSprite = !!(spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0);
+      const useIdleSheet = pose.sheet === 'idle' && hasSprite;
+      const useWalkSheet = pose.sheet === 'walk' && hasSprite;
+      const useCombatSheet = pose.sheet === 'combat' && hasSprite;
 
       // Draw Ghost Afterimages first (in world coordinates)
       if (hasSprite && this.afterimages.length > 0) {
-        const fw = spriteImg.naturalWidth / 4;
-        const fh = spriteImg.naturalHeight;
         for (const ghost of this.afterimages) {
+          const gImg = this.getSheetImage(ghost.sheet || 'base') || spriteImg;
+          const gfw = gImg.naturalWidth / 4;
+          const gfh = gImg.naturalHeight;
           const alpha = (ghost.life / ghost.maxLife) * 0.42;
           ctx.save();
           ctx.translate(ghost.x, ghost.y);
           ctx.scale(ghost.facing, 1);
           ctx.globalAlpha = alpha;
           ctx.filter = `drop-shadow(0 0 10px ${c.primary}) brightness(1.3)`;
-          ctx.drawImage(spriteImg, ghost.frameIdx * fw, 0, fw, fh, -96, -184, 192, 192);
+          ctx.drawImage(gImg, ghost.frameIdx * gfw, 0, gfw, gfh, -96, -184, 192, 192);
           ctx.restore();
         }
       }
@@ -910,36 +1032,31 @@
       if (hasSprite) {
         const fw = spriteImg.naturalWidth / 4;
         const fh = spriteImg.naturalHeight;
-        let frameIdx = this.getSpriteFrameIndex();
-        if (useWalkSheet) {
-          // True 4-frame bipedal walk cycle! Forward: 0->1->2->3, Backward: 3->2->1->0
-          const rawIdx = Math.floor((this.walkPhase / (Math.PI * 0.5))) % 4;
-          const walkingForward = this.vx * this.facing > 0;
-          frameIdx = walkingForward ? (rawIdx + 4) % 4 : (3 - ((rawIdx + 4) % 4));
-        }
+        const frameIdx = pose.frameIdx;
         const isFemale = this.config.gender === 'female';
 
-        // 3-Phase Choreography (Anticipation Windup -> Explosive Strike -> Recovery Follow-Through)
+        // Subtle kinetic polish on top of true multi-frame sprite animation (ZERO crude scaling!)
         let scaleX = 1;
         let scaleY = 1;
         let offsetY = 0;
         let offsetX = 0;
         let rot = 0;
-        let musclePump = 0;
 
         if (this.state === 'idle') {
-          const breath = Math.sin(this.animTime * 0.16);
-          scaleY = 1 + breath * 0.032;
-          scaleX = 1 - breath * 0.018;
-          musclePump = Math.max(0, breath) * 0.045;
+          if (!useIdleSheet) {
+            // Fallback only if idle sheet hasn't finished loading
+            const breath = Math.sin(this.animTime * 0.16);
+            scaleY = 1 + breath * 0.032;
+            scaleX = 1 - breath * 0.018;
+          }
+          // When true 4-frame idle sheet is active: pure hand-drawn body animation, zero image distortion!
         } else if (this.state === 'walk') {
           const walkingForward = this.vx * this.facing > 0;
           const strideSin = Math.sin(this.walkPhase);
           const lift = Math.abs(strideSin);
           if (useWalkSheet) {
-            // Subtle grounded gait bob on top of true 4-frame walk animation!
-            offsetY = -lift * 3.5;
-            rot = walkingForward ? 0.025 : -0.02;
+            offsetY = -lift * 3.0;
+            rot = walkingForward ? 0.02 : -0.015;
           } else if (walkingForward) {
             offsetY = -lift * 9;
             offsetX = strideSin * 4;
@@ -954,20 +1071,26 @@
             scaleX = 1.02 - lift * 0.03;
           }
         } else if (this.state === 'jump') {
-          scaleY = this.vy < 0 ? 1.07 : 0.96;
-          scaleX = this.vy < 0 ? 0.95 : 1.04;
-          rot = this.vy * 0.008;
+          rot = this.vy * 0.007;
         } else if (this.state === 'crouch') {
-          scaleY = 0.72;
-          scaleX = 1.1;
+          if (!useCombatSheet) {
+            scaleY = 0.72;
+            scaleX = 1.1;
+          }
         } else if (this.state === 'blockstun') {
-          scaleX = 0.94;
-          rot = -0.11;
+          offsetX = -4;
+          if (!useCombatSheet) {
+            scaleX = 0.94;
+            rot = -0.11;
+          }
         } else if (this.state === 'hitstun') {
-          rot = -0.24;
-          offsetX = -12;
-          scaleX = 0.95;
-          scaleY = 1.04;
+          offsetX = -6;
+          if (!useCombatSheet) {
+            rot = -0.24;
+            offsetX = -12;
+            scaleX = 0.95;
+            scaleY = 1.04;
+          }
         } else if (this.state === 'knockdown' || this.state === 'ko') {
           offsetY = -22;
           rot = -Math.PI / 2.15;
@@ -975,31 +1098,25 @@
           ctx.translate(0, -56);
           ctx.rotate((this.animTime * 0.5) % (Math.PI * 2));
           ctx.translate(0, 56);
-          scaleY = 0.78;
+          scaleY = 0.82;
         } else if (this.state === 'attack' && this.currentMove) {
           const m = this.currentMove;
           if (this.moveFrame < m.startup) {
-            // Phase 1: Anticipation coil back!
+            // Phase 1: Crisp anticipation coil back (driven primarily by windup sprite frame)
             const p = this.moveFrame / Math.max(1, m.startup);
-            offsetX = -10 * p;
-            rot = -0.09 * p;
-            scaleX = 1 - 0.04 * p;
-            scaleY = 1 + 0.04 * p;
-            musclePump = 0.06 * p;
+            offsetX = -6 * p;
+            rot = -0.03 * p;
           } else if (this.moveFrame <= m.startup + m.active) {
-            // Phase 2: Explosive strike snap forward!
-            offsetX = m.heavy ? 20 : 14;
-            rot = m.heavy ? 0.11 : 0.06;
-            scaleX = m.heavy ? 1.13 : 1.08;
-            scaleY = 0.94;
-            musclePump = m.heavy ? 0.095 : 0.055;
+            // Phase 2: Punchy forward snap into impact frame (minimal distortion!)
+            offsetX = m.heavy ? 12 : 7;
+            rot = m.heavy ? 0.04 : 0.02;
+            scaleX = m.heavy ? 1.03 : 1.015;
           } else {
-            // Phase 3: Recoil follow-through settle
+            // Phase 3: Smooth recovery follow-through
             const recP = (this.moveFrame - (m.startup + m.active)) / Math.max(1, m.recovery);
             const ease = 1 - recP;
-            offsetX = 10 * ease;
-            rot = 0.05 * ease;
-            musclePump = 0.04 * ease;
+            offsetX = 6 * ease;
+            rot = 0.02 * ease;
           }
         }
 
@@ -1045,8 +1162,8 @@
 
         ctx.drawImage(spriteImg, sx, 0, fw, fh, baseX, baseY, drawSize, drawSize);
 
-        // 2) Seamless Feathered Soft-Body Bust Bounce Overlay for Female Fighters (Mai / Shermie / Blue Mary)
-        if (isFemale && Fighter.bustCtx && this.state !== 'knockdown' && this.state !== 'ko' && this.state !== 'roll') {
+        // 2) Seamless Feathered Soft-Body Bust Bounce Overlay for Female Fighters (only on base/walk sheets, never over Guard arms or hand-drawn Idle!)
+        if (isFemale && Fighter.bustCtx && !useIdleSheet && !useCombatSheet && this.state !== 'knockdown' && this.state !== 'ko' && this.state !== 'roll') {
           const CHEST_ANCHORS = {
             mai: [
               [0.51, 0.30],

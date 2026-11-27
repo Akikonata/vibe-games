@@ -285,18 +285,33 @@
     return window.KOF.CHARACTERS.find((c) => c.id === id) || window.KOF.CHARACTERS[0];
   };
 
-  // Preload transparent 4-pose action sprites & dedicated 4-frame walk-cycle sprites for all fighters
+  // Preload transparent 4-pose action sprites, 4-frame idle, 4-frame walk, & 4-pose combat/defense sprites for all fighters
   window.KOF.SPRITES = {};
+  window.KOF.IDLE_SPRITES = {};
   window.KOF.WALK_SPRITES = {};
+  window.KOF.COMBAT_SPRITES = {};
+  const BASE_IS_KICK = { mai: true, shermie: true, mary: true };
   window.KOF.CHARACTERS.forEach((ch) => {
+    ch.baseNormalIsKick = !!BASE_IS_KICK[ch.id];
     ch.sprite = `assets/sprites/${ch.id}.png`;
+    ch.idleSprite = `assets/sprites/${ch.id}-idle.png`;
     ch.walkSprite = `assets/sprites/${ch.id}-walk.png`;
+    ch.combatSprite = `assets/sprites/${ch.id}-combat.png`;
+
     const img = new Image();
     img.src = ch.sprite;
     window.KOF.SPRITES[ch.id] = img;
 
+    const iImg = new Image();
+    iImg.src = ch.idleSprite;
+    window.KOF.IDLE_SPRITES[ch.id] = iImg;
+
     const wImg = new Image();
     wImg.src = ch.walkSprite;
     window.KOF.WALK_SPRITES[ch.id] = wImg;
+
+    const cImg = new Image();
+    cImg.src = ch.combatSprite;
+    window.KOF.COMBAT_SPRITES[ch.id] = cImg;
   });
 })();
