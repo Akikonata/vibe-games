@@ -285,12 +285,18 @@
     return window.KOF.CHARACTERS.find((c) => c.id === id) || window.KOF.CHARACTERS[0];
   };
 
-  // Preload transparent 4-pose sprite sheets for all fighters
+  // Preload transparent 4-pose action sprites & dedicated 4-frame walk-cycle sprites for all fighters
   window.KOF.SPRITES = {};
+  window.KOF.WALK_SPRITES = {};
   window.KOF.CHARACTERS.forEach((ch) => {
     ch.sprite = `assets/sprites/${ch.id}.png`;
+    ch.walkSprite = `assets/sprites/${ch.id}-walk.png`;
     const img = new Image();
     img.src = ch.sprite;
     window.KOF.SPRITES[ch.id] = img;
+
+    const wImg = new Image();
+    wImg.src = ch.walkSprite;
+    window.KOF.WALK_SPRITES[ch.id] = wImg;
   });
 })();

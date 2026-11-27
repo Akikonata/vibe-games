@@ -853,7 +853,11 @@
 
     draw(ctx) {
       const c = this.config.colors;
-      const spriteImg = window.KOF.SPRITES ? window.KOF.SPRITES[this.config.id] : null;
+      const baseSpriteImg = window.KOF.SPRITES ? window.KOF.SPRITES[this.config.id] : null;
+      const walkSpriteImg = window.KOF.WALK_SPRITES ? window.KOF.WALK_SPRITES[this.config.id] : null;
+      const useWalkSheet =
+        this.state === 'walk' && walkSpriteImg && walkSpriteImg.complete && walkSpriteImg.naturalWidth > 0;
+      const spriteImg = useWalkSheet ? walkSpriteImg : baseSpriteImg;
       const hasSprite = spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0;
 
       // Draw Ghost Afterimages first (in world coordinates)
@@ -906,7 +910,13 @@
       if (hasSprite) {
         const fw = spriteImg.naturalWidth / 4;
         const fh = spriteImg.naturalHeight;
-        const frameIdx = this.getSpriteFrameIndex();
+        let frameIdx = this.getSpriteFrameIndex();
+        if (useWalkSheet) {
+          // True 4-frame bipedal walk cycle! Forward: 0->1->2->3, Backward: 3->2->1->0
+          const rawIdx = Math.floor((this.walkPhase / (Math.PI * 0.5))) % 4;
+          const walkingForward = this.vx * this.facing > 0;
+          frameIdx = walkingForward ? (rawIdx + 4) % 4 : (3 - ((rawIdx + 4) % 4));
+        }
         const isFemale = this.config.gender === 'female';
 
         // 3-Phase Choreography (Anticipation Windup -> Explosive Strike -> Recovery Follow-Through)
@@ -926,15 +936,17 @@
           const walkingForward = this.vx * this.facing > 0;
           const strideSin = Math.sin(this.walkPhase);
           const lift = Math.abs(strideSin);
-          if (walkingForward) {
-            // Natural bipedal forward walk: knee-dip at foot plant, lift & lean on push-off
+          if (useWalkSheet) {
+            // Subtle grounded gait bob on top of true 4-frame walk animation!
+            offsetY = -lift * 3.5;
+            rot = walkingForward ? 0.025 : -0.02;
+          } else if (walkingForward) {
             offsetY = -lift * 9;
             offsetX = strideSin * 4;
             rot = 0.045 + lift * 0.055;
             scaleY = 0.965 + lift * 0.06;
             scaleX = 1.03 - lift * 0.045;
           } else {
-            // Cautious KOF back-step: guarded heel-toe rhythm
             offsetY = -lift * 6;
             offsetX = -strideSin * 3;
             rot = -0.04 - lift * 0.03;
@@ -1056,8 +1068,9 @@
             ]
           };
           const anchors = CHEST_ANCHORS[this.config.id];
-          if (anchors && anchors[frameIdx]) {
-            const [u, v] = anchors[frameIdx];
+          const anchorIdx = useWalkSheet ? 0 : frameIdx;
+          if (anchors && anchors[anchorIdx]) {
+            const [u, v] = anchors[anchorIdx];
             const bCanvas = Fighter.bustCanvas;
             const bCtx = Fighter.bustCtx;
             const bw = bCanvas.width;

@@ -690,6 +690,7 @@
       window.KOF.PORTRAITS[ch.id] = pImg;
       queue.push({ src: ch.portrait, img: pImg });
       queue.push({ src: ch.sprite, img: window.KOF.SPRITES && window.KOF.SPRITES[ch.id] });
+      queue.push({ src: ch.walkSprite, img: window.KOF.WALK_SPRITES && window.KOF.WALK_SPRITES[ch.id] });
     });
 
     const total = queue.length;
