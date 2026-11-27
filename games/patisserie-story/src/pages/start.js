@@ -56,18 +56,6 @@ export function mountStartPage(root, _params, { navigate }) {
 
               <div class="setting-row">
                 <div class="setting-info">
-                  <span class="setting-name">⏱️ 单局营业时长</span>
-                  <span class="setting-desc">调整糖屋挂牌开张的每班倒计时</span>
-                </div>
-                <div class="setting-seg">
-                  ${[60, 90, 120].map(sec => `
-                    <button type="button" class="seg-btn ${settings.shiftDuration === sec ? 'is-active' : ''}" data-action="setDuration" data-val="${sec}">${sec}s</button>
-                  `).join('')}
-                </div>
-              </div>
-
-              <div class="setting-row">
-                <div class="setting-info">
                   <span class="setting-name">📳 触觉反馈</span>
                   <span class="setting-desc">移动端操作时的轻震动提示</span>
                 </div>
@@ -187,13 +175,6 @@ export function mountStartPage(root, _params, { navigate }) {
       showToast(key === 'portraitEffects'
         ? (!cur[key] ? '已开启立绘眨眼与表情特效' : '已关闭立绘眨眼与表情特效')
         : (!cur[key] ? '已开启触觉反馈' : '已关闭触觉反馈'));
-      return;
-    }
-    if (action === 'setDuration') {
-      const sec = Number(target.dataset.val) || 90;
-      updateGameSettings({ shiftDuration: sec });
-      render();
-      showToast(`已将每局营业时长设为 ${sec} 秒`);
       return;
     }
     if (action === 'resetTutorials') {

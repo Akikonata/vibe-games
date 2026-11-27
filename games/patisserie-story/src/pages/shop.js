@@ -8,7 +8,6 @@ import { getKitchenFlow, getUnitCost } from '../data/kitchen_recipes.js?v=202611
 import { createKitchenEngine } from '../engines/kitchen_engine.js?v=20261127b';
 import {
   loadProgress,
-  loadGameSettings,
   getShopTierTitle,
   recordBusinessDay,
   buyShopUpgrade,
@@ -1027,18 +1026,16 @@ export function mountShopPage(root, _params, { navigate } = {}) {
     kitchenMounted = false;
     helpModalOpen = false;
     const currentDay = pageProxy.data.day;
-    const shiftSecs = loadGameSettings().shiftDuration || 90;
     kitchen = createKitchenEngine(pageProxy, {
       menuRecipes: pageProxy.data.menuRecipes,
       menuDrinks: pageProxy.data.menuDrinks || [],
       hasEspressoUpgrade: (pageProxy.data.purchasedUpgradeIds || []).includes('brass_espresso'),
-      shiftSeconds: shiftSecs,
       bonuses,
       tutorialMode,
       practiceMode,
       onTutorialDone: () => {
         markTutorialSeen('kitchen');
-        showToast(`🎉 上手啦！正式营业 ${shiftSecs} 秒开始！`, 1600);
+        showToast('🎉 上手啦！正式营业 90 秒开始！', 1600);
       },
       onServeEffect: ({ seatId, isDrink, allServed }) => {
         const scene = root.querySelector('.kitchen-scene');

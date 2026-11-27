@@ -16,7 +16,6 @@ const RANK_REWARD_REP = { S: 30, A: 20, B: 10 };
 const DEFAULT_SETTINGS = {
   portraitEffects: true,
   showGuideTips: true,
-  shiftDuration: 90,
   haptics: true
 };
 

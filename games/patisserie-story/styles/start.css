@@ -353,29 +353,6 @@
   color: #FFFDF8;
 }
 
-.page-start .setting-seg {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.page-start .seg-btn {
-  padding: 4px 8px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 800;
-  background: #F4E6D4;
-  border: 1px solid #C89662;
-  color: #6B3B18;
-  cursor: pointer;
-}
-
-.page-start .seg-btn.is-active {
-  background: linear-gradient(180deg, #C77436, #934A19);
-  border-color: #6E3410;
-  color: #FFF9EE;
-}
-
 .page-start .settings-save-box {
   padding: 10px 11px;
   border-radius: 11px;
