@@ -16,9 +16,9 @@ function getPortraitPath(charId, emotion) {
   const safeId = CHARACTERS[charId] ? charId : 'coco';
   const safeEmo = VALID_EMOTIONS.includes(emotion) ? emotion : 'normal';
   if (MULTI_EXPR_CHARS.has(safeId) && safeEmo !== 'normal') {
-    return `assets/images/portraits/${safeId}_${safeEmo}.png`;
+    return `assets/images/portraits/${safeId}_${safeEmo}.png?v=20261127a`;
   }
-  return `assets/images/portraits/${safeId}.png`;
+  return `assets/images/portraits/${safeId}.png?v=20261127a`;
 }
 
 const CHARACTERS = {

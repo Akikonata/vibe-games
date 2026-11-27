@@ -1,10 +1,10 @@
 // src/pages/story.js
 // RPG 视觉小说舞台（双人半身立绘 + S/A/B 支线剧情 + 食谱解锁奖励卡 + 自动衔接主线尾声漫画）
 
-import { resolveStoryContext, resolveDialogueFrame } from '../utils/story_engine.js?v=20261126z12';
+import { resolveStoryContext, resolveDialogueFrame } from '../utils/story_engine.js?v=20261127a';
 import { setStoryFlag, hasStoryFlag } from '../utils/store.js';
 import { CUTSCENES } from '../data/cutscenes.js';
-import { attachLive2DController, getEmotionMeta, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261126z15';
+import { attachLive2DController, getEmotionMeta, buildEmotionFxHtml } from '../utils/live2d_portrait.js?v=20261127a';
 
 export function mountStoryPage(root, params, { navigate, setPageTitle }) {
   const ctx = resolveStoryContext({

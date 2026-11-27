@@ -11,18 +11,18 @@ const EMO_META = {
 // 像素级对齐的三段式眨眼帧（半闭眼 + 全闭眼）
 const BLINK_FRAMES = {
   'assets/images/portraits/coco.png': {
-    half:   'assets/images/portraits/coco_blink_half.png',
-    closed: 'assets/images/portraits/coco_blink.png'
+    half:   'assets/images/portraits/coco_blink_half.png?v=20261127a',
+    closed: 'assets/images/portraits/coco_blink.png?v=20261127a'
   }
 };
 
 // 预加载全部眨眼帧与表情差分
 [
-  'assets/images/portraits/coco_blink_half.png',
-  'assets/images/portraits/coco_blink.png',
-  'assets/images/portraits/coco_happy.png',
-  'assets/images/portraits/coco_surprised.png',
-  'assets/images/portraits/coco_serious.png'
+  'assets/images/portraits/coco_blink_half.png?v=20261127a',
+  'assets/images/portraits/coco_blink.png?v=20261127a',
+  'assets/images/portraits/coco_happy.png?v=20261127a',
+  'assets/images/portraits/coco_surprised.png?v=20261127a',
+  'assets/images/portraits/coco_serious.png?v=20261127a'
 ].forEach(src => {
   const img = new Image();
   img.src = src;

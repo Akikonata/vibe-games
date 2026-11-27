@@ -117,20 +117,20 @@
 .page-story .portrait-slot.is-speaking {
   opacity: 1;
   filter: brightness(1.03) drop-shadow(0 4px 9px rgba(42, 18, 6, 0.35));
-  transform: scale(1.04) translateY(-4px);
+  transform: scale(1.02) translateY(-2px);
   z-index: 6;
 }
 
 .page-story .portrait-slot.is-listening {
   opacity: 1;
-  filter: brightness(0.62) saturate(0.8);
-  transform: scale(0.94) translateY(4px);
+  filter: brightness(0.68) saturate(0.84);
+  transform: scale(0.98) translateY(2px);
   z-index: 3;
 }
 
-/* 可可立绘头身构图较近，在双人对话舞台缩小至 85% 贴底对齐，与婆婆及各位成年 NPC 头身比例自然和谐 */
+/* 全员立绘已完成 560×840 统一头身与眼线归一化，对话两侧 1:1 原比例对齐 */
 .page-story .slot-left .l2d-rig {
-  width: 85%;
+  width: 100%;
 }
 
 .page-story .character-bust {
